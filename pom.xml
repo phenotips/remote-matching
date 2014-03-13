@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+* See the NOTICE file distributed with this work for additional
+* information regarding copyright ownership.
+*
+* This is free software; you can redistribute it and/or modify it
+* under the terms of the GNU Lesser General Public License as
+* published by the Free Software Foundation; either version 2.1 of
+* the License, or (at your option) any later version.
+*
+* This software is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this software; if not, write to the Free
+* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.phenomecentral</groupId>
+    <artifactId>phenomecentral-parent</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <relativePath>../phenomecentral.org/</relativePath>
+  </parent>
+  <groupId>org.remotematching</groupId>
+  <artifactId>remote-matching-parent</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>Remote Matching - Parent POM</name>
+  <description>Remote Matching is a module for PhenomeCentral for interacting with other resources that do searches on patients with rare disorders.</description>
+  <url>http://phenomecentral.org/</url>
+  <inceptionYear>2014</inceptionYear>
+
+  <licenses>
+    <license>
+      <name>LGPL 2.1</name>
+      <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:git://github.com/phenotips/remote-matching.git</connection>
+    <developerConnection>scm:git:git@github.com:phenotips/remote-matching.git</developerConnection>
+    <url>https://github.com/phenotips/remote-matching.git/tree/master/</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <organization>
+    <name>University of Toronto, Computational Biology Lab</name>
+    <url>http://compbio.cs.toronto.edu/</url>
+  </organization>
+
+  <properties>
+    <xwiki.version>5.4.2</xwiki.version>
+    <phenotips.version>1.0-SNAPSHOT</phenotips.version>
+    <patientNetwork.version>1.0-SNAPSHOT</patientNetwork.version>
+    <medsavant.version>1.2-SNAPSHOT</medsavant.version>
+    <slf4j.version>1.7.6</slf4j.version>
+    <!-- Disable Clirr since this is the first version -->
+    <clirr.skip>true</clirr.skip>
+  </properties>
+
+  <modules>
+    <!--<module>rest</module>-->
+    <module>ui</module>
+  </modules>
+
+  <build>
+    <plugins>
+      <plugin>
+        <!-- API backwards compatibility check -->
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>clirr-maven-plugin</artifactId>
+        <configuration>
+          <!-- List of specific CLIRR excludes. See http://mojo.codehaus.org/clirr-maven-plugin/examples/ignored-differences.html-->
+          <excludes>
+            <exclude>**/internal/**</exclude>
+            <exclude>**/test/**</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
