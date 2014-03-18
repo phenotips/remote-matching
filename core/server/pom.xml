@@ -24,11 +24,11 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.remotematching</groupId>
-    <artifactId>remote-matching-rest</artifactId>
+    <artifactId>remote-matching-core</artifactId>
     <version>1.0-SNAPSHOT</version>
   </parent>
-  <artifactId>remote-matching-rest-server</artifactId>
-  <name>Remote Matching - REST Resources - Server</name>
+  <artifactId>remote-matching-core-server</artifactId>
+  <name>Remote Matching - Core - Server</name>
   <dependencies>
     <dependency>
       <groupId>org.xwiki.platform</groupId>

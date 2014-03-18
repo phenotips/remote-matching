@@ -24,11 +24,11 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.remotematching</groupId>
-    <artifactId>remote-matching-rest</artifactId>
+    <artifactId>remote-matching-core</artifactId>
     <version>1.0-SNAPSHOT</version>
   </parent>
-  <artifactId>remote-matching-rest-client</artifactId>
-  <name>Remote Matching - REST Resources - Client</name>
+  <artifactId>remote-matching-core-client</artifactId>
+  <name>Remote Matching - Core - Client</name>
   <dependencies>
     <dependency>
       <groupId>org.xwiki.commons</groupId>
@@ -56,9 +56,9 @@
       <version>${xwiki.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.phenotips</groupId>
-      <artifactId>patient-data-api</artifactId>
-      <version>${project.version}</version>
+      <groupId> org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <!-- Needs version -->
     </dependency>
     <dependency>
       <groupId>net.sf.json-lib</groupId>

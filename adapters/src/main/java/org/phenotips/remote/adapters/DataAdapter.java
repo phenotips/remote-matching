@@ -17,23 +17,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.script;
+package org.phenotips.remote.adapters;
 
-import org.xwiki.component.annotation.Component;
-import org.xwiki.script.service.ScriptService;
+import org.xwiki.component.annotation.Role;
 import org.xwiki.stability.Unstable;
 
-import javax.inject.Named;
-import javax.inject.Singleton;
+import com.xpn.xwiki.XWikiException;
+
+import net.sf.json.JSONObject;
 
 /**
- * Gives velocity access to the functions it needs to perform remote matching.
- * There is a set of functions for sending the request, and a set for retrieving the data.
+ * Serves no purpose but to provide a way to inject XWiki's execution context into {@link PatientAdapterImpl}.
  */
 @Unstable
-@Component
-@Named("ontologies")
-@Singleton
-public class RemoteMatchingScriptService implements ScriptService
+@Role
+public interface DataAdapter
 {
+    void setPatient(String patientDocumentId) throws XWikiException;
+
+    void setSubmitter(String fullUserId) throws XWikiException;
+
+    void setPeriodic(Boolean isPeriodic);
+
+    JSONObject toJSON();
 }

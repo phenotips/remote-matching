@@ -1,0 +1,2 @@
+org.phenotips.remote.adapters.internal.DataAdapterImpl
+org.phenotips.remote.adapters.script.RemoteMatchingScriptService
