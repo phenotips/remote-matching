@@ -21,7 +21,7 @@ package org.phenotips.remote.server.internal;
 
 import org.phenotips.Constants;
 import org.phenotips.data.Patient;
-import org.phenotips.remote.server.PatientPhenotypeInterface;
+import org.phenotips.remote.server.ExampleInterface;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.EntityType;
@@ -44,8 +44,8 @@ import com.xpn.xwiki.objects.BaseStringProperty;
  *
  * @version $Id: a5e0487469d4280ae58cd29e702f50b6bc891ab6 $
  */
-@Component("org.phenotips.data.rest.internal.PatientPhenotypeResource")
-public class PatientPhenotypeResource extends XWikiResource implements PatientPhenotypeInterface
+@Component("org.phenotips.remote.server.internal.ExampleResource")
+public class ExampleResource extends XWikiResource implements ExampleInterface
 {
     private static final EntityReference PHENOTYPE_CLASS_REFERENCE =
         new EntityReference("PhenotypeMetaClass", EntityType.DOCUMENT,

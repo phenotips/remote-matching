@@ -17,14 +17,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.api;
+package org.phenotips.remote.api.internal;
+
+import org.phenotips.remote.api.RequestConfiguration;
 
 /**
- * Todo fixme.
- *
- * The object that is used by the core client (and server) to as a source of remote server/search's configuration.
+ * TODO fix the doc
  */
-public interface RequestConfiguration
+public class RequestConfigurationImpl implements RequestConfiguration
 {
-    String getRequestURL();
+    private String url = "http://localhost:8080/rest/remoteMatcher";
+
+    private String key = "THE_KEY";
+
+    public String getRequestURL()
+    {
+        return url+"/match?media=json&key="+key;
+    }
 }

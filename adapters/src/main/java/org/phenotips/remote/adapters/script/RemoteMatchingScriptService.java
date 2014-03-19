@@ -19,7 +19,10 @@
  */
 package org.phenotips.remote.adapters.script;
 
+import org.phenotips.remote.RemoteMatchingClient;
 import org.phenotips.remote.adapters.DataAdapter;
+import org.phenotips.remote.api.RequestConfiguration;
+import org.phenotips.remote.api.internal.RequestConfigurationImpl;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.script.service.ScriptService;
@@ -55,9 +58,12 @@ public class RemoteMatchingScriptService implements ScriptService
             dataAdapter.setSubmitter(submitterId);
             dataAdapter.setPeriodic(isPeriodic);
             JSONObject json = dataAdapter.toJSON();
+            RequestConfiguration configuration = new RequestConfigurationImpl();
+
+            RemoteMatchingClient.sendRequest(json, configuration);
             return true;
         } catch (Exception ex) {
-            logger.error("Failed to process data", ex);
+            logger.error("Failed to send request", ex);
         }
         return false;
     }

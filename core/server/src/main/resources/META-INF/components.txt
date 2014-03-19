@@ -1,1 +1,2 @@
-org.phenotips.data.rest.internal.PatientPhenotypeResource
+org.phenotips.remote.server.internal.MatchResource
+org.phenotips.remote.server.internal.ExampleResource

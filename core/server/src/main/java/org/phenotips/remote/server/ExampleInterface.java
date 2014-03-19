@@ -37,7 +37,7 @@ import com.xpn.xwiki.XWikiException;
  * @version $Id: 2a40da554444794e3dadbee73dbce9828151e281 $
  */
 @Path("/patient/{patientId}/phenotype")
-public interface PatientPhenotypeInterface
+public interface ExampleInterface
 {
     /**
      * Get full list of phenotypes.

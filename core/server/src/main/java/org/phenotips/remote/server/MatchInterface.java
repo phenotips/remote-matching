@@ -17,14 +17,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.api;
+package org.phenotips.remote.server;
+
+import org.xwiki.rest.XWikiRestException;
+
+import java.util.Map;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
+
+import com.xpn.xwiki.XWikiException;
 
 /**
- * Todo fixme.
+ * Interface for the /match endpoint. This is where a remote request would send the request to.
  *
- * The object that is used by the core client (and server) to as a source of remote server/search's configuration.
+ * @version $Id: 2a40da554444794e3dadbee73dbce9828151e281 $
  */
-public interface RequestConfiguration
+@Path("/remoteMatcher/match")
+public interface MatchInterface
 {
-    String getRequestURL();
+    /**
+     * Place a search request to this server.
+     *
+     * FIXME The get version is here only for testing through the browser. Delete for production.
+     * TODO fix the doc.
+     */
+    @GET Map<String, ?> matchGet(@QueryParam("key") String key)
+        throws XWikiRestException, XWikiException;
+
+    @POST Map<String, ?> matchPost(@QueryParam("key") String key)
+        throws XWikiRestException, XWikiException;
 }
+

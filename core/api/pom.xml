@@ -56,9 +56,9 @@
       <version>${xwiki.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.remotematching</groupId>
-      <artifactId>remote-matching-adapters</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <groupId>org.phenotips</groupId>
+      <artifactId>patient-data-api</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>net.sf.json-lib</groupId>
