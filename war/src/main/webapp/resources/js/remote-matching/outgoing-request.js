@@ -17,27 +17,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.api;
 
-import org.phenotips.data.similarity.PatientSimilarityView;
-import org.phenotips.similarity.SimilarPatientsFinder;
+var RemoteMatching = (function(RemoteMatching) {
+    // Start augmentation.
+    var outgoingRequest = RemoteMatching.outgoingRequest = RemoteMatching.outgoingRequest || {};
 
-import java.util.List;
 
-/**
- * The functions essential to the servers ability to store, track, an answer search requests.
- */
-public interface RequestEntity
-{
-    long getRequestId();
-
-    String getResponseType();
-
-    boolean getResponseStatus();
-
-    String getResponseTargetURL();
-
-    String getSubmitterEmail();
-
-    List<PatientSimilarityView> getResults(SimilarPatientsFinder finder);
-}
+    // End augmentation.
+    return RemoteMatching;
+}(RemoteMatching || {}));

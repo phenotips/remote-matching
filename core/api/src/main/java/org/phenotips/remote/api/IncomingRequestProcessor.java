@@ -19,25 +19,17 @@
  */
 package org.phenotips.remote.api;
 
-import org.phenotips.data.similarity.PatientSimilarityView;
-import org.phenotips.similarity.SimilarPatientsFinder;
+import org.xwiki.component.annotation.Role;
 
-import java.util.List;
+import com.xpn.xwiki.XWikiException;
+
+import net.sf.json.JSONObject;
 
 /**
- * The functions essential to the servers ability to store, track, an answer search requests.
+ * TODO fix the doc
  */
-public interface RequestEntity
+@Role
+public interface IncomingRequestProcessor
 {
-    long getRequestId();
-
-    String getResponseType();
-
-    boolean getResponseStatus();
-
-    String getResponseTargetURL();
-
-    String getSubmitterEmail();
-
-    List<PatientSimilarityView> getResults(SimilarPatientsFinder finder);
+    JSONObject processRequest(String json) throws XWikiException;
 }

@@ -40,7 +40,7 @@ import net.sf.json.JSONObject;
  */
 public class RemoteMatchingClient
 {
-    public static boolean sendRequest(JSONObject json, RequestConfiguration configuration)
+    public static String sendRequest(JSONObject json, RequestConfiguration configuration)
         throws IOException
     {
         CloseableHttpClient client = HttpClients.createDefault();
@@ -52,6 +52,6 @@ public class RemoteMatchingClient
 
         CloseableHttpResponse httpResponse = client.execute(request);
         String jsonResponse = EntityUtils.toString(httpResponse.getEntity());
-        return true;
+        return jsonResponse;
     }
 }

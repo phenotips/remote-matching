@@ -19,6 +19,8 @@
  */
 package org.phenotips.remote.adapters;
 
+import org.phenotips.data.Patient;
+
 import org.xwiki.component.annotation.Role;
 import org.xwiki.stability.Unstable;
 
@@ -35,9 +37,15 @@ public interface DataAdapter
 {
     void setPatient(String patientDocumentId) throws XWikiException;
 
+    void setPatient(Patient patientObject);
+
     void setSubmitter(String fullUserId) throws XWikiException;
 
     void setPeriodic(Boolean isPeriodic);
 
-    JSONObject toJSON();
+    JSONObject patientJSON() throws Exception;
+
+    JSONObject toJSON() throws Exception;
+
+    Patient getPatient();
 }

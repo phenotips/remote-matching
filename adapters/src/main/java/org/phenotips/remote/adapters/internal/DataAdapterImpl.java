@@ -80,6 +80,8 @@ public class DataAdapterImpl implements DataAdapter, Initializable
 
     private String queryType;
 
+    private Boolean setPatientCalled = false;
+
     public void initialize() throws InitializationException
     {
         context = (XWikiContext) this.execution.getContext().getProperty("xwikicontext");
@@ -94,6 +96,18 @@ public class DataAdapterImpl implements DataAdapter, Initializable
         XWikiDocument doc = wiki.getDocument(patientReference, context);
 
         patient = new PhenoTipsPatient(doc);
+        setPatientCalled = true;
+    }
+
+    public void setPatient(Patient patientObject)
+    {
+        patient = patientObject;
+        setPatientCalled = true;
+    }
+
+    public Patient getPatient()
+    {
+        return patient;
     }
 
     public void setSubmitter(String fullUserId) throws XWikiException
@@ -122,7 +136,7 @@ public class DataAdapterImpl implements DataAdapter, Initializable
         }
     }
 
-    private JSONObject patientJSON()
+    public JSONObject patientJSON() throws Exception
     {
         /*
             The way this is implemented is that if when looking up a piece of data in the extraData of the patient,
@@ -130,6 +144,11 @@ public class DataAdapterImpl implements DataAdapter, Initializable
             FIXME In the API there should be an interface class that would specify exactly how to hold this data.
             FIXME This way the API will be more reusable
         */
+        if (!setPatientCalled) {
+            //Fixme exception not specific enough
+            throw new Exception("The patient object was never set");
+        }
+
         Map<String, String> remappedGlobalQualifierStrings = new HashMap<String, String>();
         Map<String, String> remappedGlobalQualifiers = new HashMap<String, String>();
         remappedGlobalQualifierStrings.put("global_age_of_onset", "age_of_onset");
@@ -138,20 +157,21 @@ public class DataAdapterImpl implements DataAdapter, Initializable
         JSONObject json = new JSONObject();
         JSONArray disorders = new JSONArray();
         JSONArray features = new JSONArray();
-        //FIXME Java has outdone itself... Or IDEA...
+
         PatientData<ImmutablePair<String, SolrOntologyTerm>> globalQualifiers =
             patient.<ImmutablePair<String, SolrOntologyTerm>>getData("global-qualifiers");
-        for (ImmutablePair<String, SolrOntologyTerm> qualifierPair : globalQualifiers) {
-            for (String key : remappedGlobalQualifierStrings.keySet()) {
-                //Could do contains, but is it safe?
-                if (StringUtils.equalsIgnoreCase(qualifierPair.getLeft(), key)) {
-                    remappedGlobalQualifiers
-                        .put(remappedGlobalQualifierStrings.get(key), qualifierPair.getRight().getId());
-                    break;
+        if (globalQualifiers != null) {
+            for (ImmutablePair<String, SolrOntologyTerm> qualifierPair : globalQualifiers) {
+                for (String key : remappedGlobalQualifierStrings.keySet()) {
+                    //Could do contains, but is it safe?
+                    if (StringUtils.equalsIgnoreCase(qualifierPair.getLeft(), key)) {
+                        remappedGlobalQualifiers
+                            .put(remappedGlobalQualifierStrings.get(key), qualifierPair.getRight().getId());
+                        break;
+                    }
                 }
             }
         }
-
 //        PatientData<ImmutablePair<String, String>> getSexData = patient.<ImmutablePair<String, String>>getData("sex");
 //        ImmutablePair<String, String> getSexPair = getSexData.get(0);
 //        String sex = getSexPair.getRight();
@@ -164,7 +184,7 @@ public class DataAdapterImpl implements DataAdapter, Initializable
             JSONObject phenotypeJson = phenotype.toJSON();
             JSONObject featureJson = new JSONObject();
             featureJson.put("id", phenotypeJson.get("id"));
-            featureJson.put("observed", phenotypeJson.get("isPresent"));
+            featureJson.put("observed", trueFalseToYesNo(phenotypeJson.getString("isPresent")));
             Object ageOfOnset = phenotypeJson.get("age_of_onset");
             if (ageOfOnset != null) {
                 featureJson.put("ageOfOnset", ageOfOnset.toString());
@@ -194,19 +214,35 @@ public class DataAdapterImpl implements DataAdapter, Initializable
         return json;
     }
 
-    public JSONObject toJSON()
+    public JSONObject toJSON() throws Exception
     {
         //TODO make sure all setters were called
         //It is much easier to take the patient JSON object and plug the rest of the data into it, than to be
         //ideologically correct and do proper merging.
+
         JSONObject fullJson;
         JSONObject submitterJson = submitterJSON();
-        JSONObject patientJson = patientJSON();
-
+        JSONObject patientJson;
+        try {
+            patientJson = patientJSON();
+        } catch (Exception ex) {
+            throw ex;
+        }
         fullJson = patientJson;
         fullJson.put("submitter", submitterJson);
         fullJson.put("queryType", queryType);
 
         return fullJson;
+    }
+
+    protected static String trueFalseToYesNo(String text)
+    {
+        if (StringUtils.equalsIgnoreCase(text, "true")) {
+            return "yes";
+        } else if (StringUtils.equalsIgnoreCase(text, "false")) {
+            return "no";
+        } else {
+            return text;
+        }
     }
 }

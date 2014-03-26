@@ -1,8 +1,8 @@
 Remote Matching service
 =======================
 
-**This repository is in a state of constant and deliberate flux.
-Please do not expect anything of it just yet**
+**Soon, this repository will be a beautiful little butterfly, with spotless, glossy, polished wings.
+But right its a cocoon oozing with imperfection**
 
 
 Path                     | Details

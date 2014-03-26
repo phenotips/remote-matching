@@ -66,9 +66,29 @@
       <version>${xwiki.version}</version>
     </dependency>
     <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>remote-matching-core-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>remote-matching-adapters</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <!-- Group id should not be constant -->
       <groupId>org.phenotips</groupId>
       <artifactId>phenotips-constants</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.phenotips</groupId>
+      <artifactId>patient-similarity-search</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.phenotips</groupId>
+      <artifactId>xwiki-platform-users-wiki</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

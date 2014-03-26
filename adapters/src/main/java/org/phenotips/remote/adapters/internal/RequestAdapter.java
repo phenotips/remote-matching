@@ -22,6 +22,6 @@ package org.phenotips.remote.adapters.internal;
 /**
  * Functions to retrieve configuration data of a remote search application/server/engine.
  */
-public class RequestConfigurationAdapter
+public class RequestAdapter
 {
 }

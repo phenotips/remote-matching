@@ -19,25 +19,12 @@
  */
 package org.phenotips.remote.api;
 
-import org.phenotips.data.similarity.PatientSimilarityView;
-import org.phenotips.similarity.SimilarPatientsFinder;
-
-import java.util.List;
-
 /**
- * The functions essential to the servers ability to store, track, an answer search requests.
+ * The functions essential to the servers ability to track outgoing search requests.
  */
-public interface RequestEntity
+public interface OutgoingRequestEntity
 {
-    long getRequestId();
+    String getRequestExternalId();
 
-    String getResponseType();
-
-    boolean getResponseStatus();
-
-    String getResponseTargetURL();
-
-    String getSubmitterEmail();
-
-    List<PatientSimilarityView> getResults(SimilarPatientsFinder finder);
+    void setRequestExternalId(String id);
 }

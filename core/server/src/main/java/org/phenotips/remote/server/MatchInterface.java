@@ -23,10 +23,10 @@ import org.xwiki.rest.XWikiRestException;
 
 import java.util.Map;
 
-import javax.ws.rs.GET;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 
 import com.xpn.xwiki.XWikiException;
 
@@ -44,10 +44,8 @@ public interface MatchInterface
      * FIXME The get version is here only for testing through the browser. Delete for production.
      * TODO fix the doc.
      */
-    @GET Map<String, ?> matchGet(@QueryParam("key") String key)
-        throws XWikiRestException, XWikiException;
-
-    @POST Map<String, ?> matchPost(@QueryParam("key") String key)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @POST Map<String, ?> matchPost(String json)
         throws XWikiRestException, XWikiException;
 }
 
