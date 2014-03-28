@@ -18,10 +18,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-var RemoteMatching = (function(RemoteMatching) {
+var RemoteMatching = (function (RemoteMatching)
+{
     // Start augmentation.
     var outgoingRequest = RemoteMatching.outgoingRequest = RemoteMatching.outgoingRequest || {};
 
+    require(['jquery'], function ($)
+    {
+        outgoingRequest.simpleAjaxCall = function (url, data, domObj)
+        {
+            $.get(url, data, function (response)
+            {
+//                domObj.html(response);
+            });
+        };
+
+        $("div.remoteSearch span.buttonwrapper a").click(function (event)
+        {
+            event.stopPropagation();
+            var parent = $(event.target).parents("div.remoteSearch");
+            var requestGuid = parent.attr("id");
+            var patientId = parent.children("input#patientId").val();
+            var user = parent.children("input#userName").val();
+            var url = parent.children("input#url").val();
+            outgoingRequest.simpleAjaxCall(url, {"patientId": patientId, "user": user, "guid": requestGuid},
+                parent.children("span#requestStatus"));
+            return false;
+        });
+    });
 
     // End augmentation.
     return RemoteMatching;

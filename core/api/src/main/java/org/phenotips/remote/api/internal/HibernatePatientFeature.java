@@ -19,19 +19,29 @@
  */
 package org.phenotips.remote.api.internal;
 
+import org.phenotips.components.ComponentManagerRegistry;
 import org.phenotips.data.Feature;
 import org.phenotips.data.FeatureMetadatum;
+import org.phenotips.ontology.OntologyManager;
+import org.phenotips.ontology.OntologyTerm;
+
+import org.xwiki.component.manager.ComponentLookupException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.persistence.Basic;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 
+import org.apache.commons.lang3.StringUtils;
+
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -47,13 +57,18 @@ public class HibernatePatientFeature implements Feature
     @Basic
     private String id;
 
-    @ManyToOne
-    @JoinColumn(name="hibernatepatient_id")
-    private HibernatePatient hibernatePatient;
+    @ManyToOne(fetch = FetchType.EAGER)
+    public HibernatePatient hibernatepatient;
 
     /** 1 - true, -1 - false, 0 - NA */
     @Basic
     private int present = 0;
+
+    @Basic
+    private String name;
+
+    @Transient
+    private Map<String, FeatureMetadatum> metadata = new TreeMap<String, FeatureMetadatum>();
 
     public String getId()
     {
@@ -62,7 +77,21 @@ public class HibernatePatientFeature implements Feature
 
     public String getName()
     {
-        throw new UnsupportedOperationException();
+        if (this.name != null) {
+            return this.name;
+        }
+        try {
+            OntologyManager om =
+                ComponentManagerRegistry.getContextComponentManager().getInstance(OntologyManager.class);
+            OntologyTerm term = om.resolveTerm(this.id);
+            if (term != null && StringUtils.isNotEmpty(term.getName())) {
+                this.name = term.getName();
+                return this.name;
+            }
+        } catch (ComponentLookupException ex) {
+            // Shouldn't happen
+        }
+        return this.id;
     }
 
     public String getType()
@@ -88,7 +117,19 @@ public class HibernatePatientFeature implements Feature
 
     public JSONObject toJSON()
     {
-        throw new UnsupportedOperationException();
+        JSONObject result = new JSONObject();
+        result.element("id", getId());
+        result.element("name", getName());
+        result.element("type", getType());
+        result.element("isPresent", this.present);
+        if (!this.metadata.isEmpty()) {
+            JSONArray metadataList = new JSONArray();
+            for (FeatureMetadatum metadatum : this.metadata.values()) {
+                metadataList.add(metadatum.toJSON());
+            }
+            result.element("metadata", metadataList);
+        }
+        return result;
     }
 
     public void setId(String newId) {

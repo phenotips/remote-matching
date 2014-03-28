@@ -79,7 +79,8 @@ public class OutgoingResultsAdapter
             }
             String idString = id.toString();
             featureJson.put("id", id);
-            featureJson.put("observed", negativePositiveToYesNo(phenotypeJson.getString("queryType")));
+            //FIXME json changed it seems
+            featureJson.put("observed", negativePositiveToYesNo(phenotypeJson.getString("type")));
             features.add(featureJson);
         }
 

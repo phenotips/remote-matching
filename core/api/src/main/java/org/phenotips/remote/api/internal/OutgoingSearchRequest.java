@@ -33,14 +33,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
-import javax.persistence.Transient;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -56,12 +56,6 @@ import net.sf.json.JSONObject;
 @Entity
 public class OutgoingSearchRequest implements OutgoingRequestEntity
 {
-    /** Allows to make a secure pair of patients. */
-    @Transient
-    @Inject
-    @Named("restricted")
-    private PatientSimilarityViewFactory viewFactory;
-
     @Id
     @GeneratedValue
     private long id;
@@ -69,19 +63,29 @@ public class OutgoingSearchRequest implements OutgoingRequestEntity
     @Basic
     private String externalId;
 
-    @OneToMany(mappedBy = "outgoingSearchRequest")
-    private Set<HibernatePatient> results = new HashSet<HibernatePatient>();
+    //FIXME Check is right cascade type
+    @OneToMany(cascade= CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name="HP_ID")
+    public Set<HibernatePatient> results = new HashSet<HibernatePatient>();
 
     //Don't bother saving the patient object. Just save the reference. That way if the patient is updated,
     //we are not missing out on the update.
+    //Maybe there's not even a need to do that.
 
-    public List<PatientSimilarityView> getResults(Patient referencePatient)
+    public List<PatientSimilarityView> getResults(Patient referencePatient, PatientSimilarityViewFactory viewFactory)
     {
         List<PatientSimilarityView> patientSimilarityViews = new LinkedList<PatientSimilarityView>();
         for (Patient patient : results) {
             patientSimilarityViews.add(viewFactory.makeSimilarPatient(patient, referencePatient));
         }
         return patientSimilarityViews;
+    }
+
+    public void addResult(JSONObject json)
+    {
+        HibernatePatient resultPatient = new HibernatePatient();
+        resultPatient.populatePatient(json);
+        results.add(resultPatient);
     }
 
     public void setRequestExternalId(String id)

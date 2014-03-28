@@ -20,7 +20,6 @@
 package org.phenotips.remote.server.internal;
 
 import org.phenotips.data.similarity.PatientSimilarityView;
-import org.phenotips.remote.adapters.DataAdapter;
 import org.phenotips.remote.adapters.internal.OutgoingResultsAdapter;
 import org.phenotips.remote.api.IncomingRequestProcessor;
 import org.phenotips.remote.api.internal.IncomingSearchRequest;
@@ -63,8 +62,8 @@ public class IncomingRequestProcessorImpl implements IncomingRequestProcessor
     @Inject
     private Execution execution;
 
-    @Inject
-    private DataAdapter dataAdapter;
+//    @Inject
+//    private DataAdapter dataAdapter;
 
     public JSONObject processRequest(String json) throws XWikiException
     {

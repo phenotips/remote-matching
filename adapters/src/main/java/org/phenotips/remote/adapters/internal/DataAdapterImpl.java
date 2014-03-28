@@ -27,21 +27,14 @@ import org.phenotips.data.internal.PhenoTipsPatient;
 import org.phenotips.ontology.internal.solr.SolrOntologyTerm;
 import org.phenotips.remote.adapters.DataAdapter;
 
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.InstantiationStrategy;
-import org.xwiki.component.descriptor.ComponentInstantiationStrategy;
-import org.xwiki.component.phase.Initializable;
 import org.xwiki.component.phase.InitializationException;
 import org.xwiki.context.Execution;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
-import org.xwiki.stability.Unstable;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -62,12 +55,12 @@ import net.sf.json.JSONObject;
  * into an "export" and "import" packages to avoid circular dependencies TODO Strings into configuration file! This is
  * bad.
  */
-@Component
-@Unstable
-@InstantiationStrategy(ComponentInstantiationStrategy.PER_LOOKUP)
-public class DataAdapterImpl implements DataAdapter, Initializable
+//@Component
+//@Unstable
+//@InstantiationStrategy(ComponentInstantiationStrategy.PER_LOOKUP)
+public class DataAdapterImpl implements DataAdapter
 {
-    @Inject
+//    @Inject
     private Execution execution;
 
     private XWikiContext context;
@@ -82,8 +75,9 @@ public class DataAdapterImpl implements DataAdapter, Initializable
 
     private Boolean setPatientCalled = false;
 
-    public void initialize() throws InitializationException
+    public DataAdapterImpl(Execution execution) throws InitializationException
     {
+        this.execution = execution;
         context = (XWikiContext) this.execution.getContext().getProperty("xwikicontext");
         wiki = context.getWiki();
     }

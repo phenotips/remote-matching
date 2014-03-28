@@ -121,7 +121,7 @@ public class IncomingSearchRequest implements Patient, RequestEntity
 
     public String getId()
     {
-        throw new UnsupportedOperationException();
+        return "RemoteRequest" + id;
     }
 
     public String getExternalId()

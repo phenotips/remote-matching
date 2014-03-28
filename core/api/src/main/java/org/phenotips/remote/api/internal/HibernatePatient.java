@@ -30,7 +30,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -52,14 +54,20 @@ public class HibernatePatient implements Patient
     @Basic
     private String externalId;
 
-    @ManyToOne
-    @JoinColumn(name="outgoingsearchrequest_id")
-    private OutgoingSearchRequest outgoingSearchRequest;
+    @ManyToOne (fetch = FetchType.EAGER)
+    public OutgoingSearchRequest outgoingsearchrequest;
 
-    @OneToMany(mappedBy = "hibernatePatient")
-    private Set<HibernatePatientFeature> features = new HashSet<HibernatePatientFeature>();
+//    FIXME Check is right cascade type
+    @OneToMany(cascade= CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name="HF_ID")
+    public Set<HibernatePatientFeature> features = new HashSet<HibernatePatientFeature>();
 
-    public HibernatePatient(JSONObject json)
+    public HibernatePatient()
+    {
+
+    }
+
+    public void populatePatient(JSONObject json)
     {
         JSONArray jsonFeatures = (JSONArray) json.get("features");
         for (Object jsonFeatureUncast : jsonFeatures) {
@@ -109,7 +117,7 @@ public class HibernatePatient implements Patient
 
     public String getId()
     {
-        throw new UnsupportedOperationException();
+        return "RemotePatient"+id;
     }
 
     public String getExternalId()
@@ -126,11 +134,12 @@ public class HibernatePatient implements Patient
 
     public DocumentReference getReporter()
     {
-        return new DocumentReference("xwiki", "XWiki", "Admin");
+        return new DocumentReference("xwiki", "XWiki", "Undisclosed");
     }
 
     public Set<? extends Feature> getFeatures()
     {
+//        return new HashSet<Feature>();
         return features;
     }
 
