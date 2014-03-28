@@ -20,9 +20,13 @@
 package org.phenotips.remote.adapters.script;
 
 import org.phenotips.data.Patient;
+import org.phenotips.data.similarity.PatientSimilarityView;
+import org.phenotips.data.similarity.PatientSimilarityViewFactory;
 import org.phenotips.remote.RemoteMatchingClient;
 import org.phenotips.remote.adapters.DataAdapter;
+import org.phenotips.remote.adapters.internal.DataAdapterImpl;
 import org.phenotips.remote.api.RequestConfiguration;
+import org.phenotips.remote.api.internal.HibernatePatient;
 import org.phenotips.remote.api.internal.OutgoingSearchRequest;
 import org.phenotips.remote.api.internal.RequestConfigurationImpl;
 
@@ -33,6 +37,7 @@ import org.xwiki.model.reference.EntityReference;
 import org.xwiki.script.service.ScriptService;
 import org.xwiki.stability.Unstable;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -40,21 +45,24 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.store.hibernate.HibernateSessionFactory;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
- * Gives velocity access to the functions it needs to perform remote matching.
- * There is a set of functions for sending the request, and a set for retrieving the data.
+ * Gives velocity access to the functions it needs to perform remote matching. There is a set of functions for sending
+ * the request, and a set for retrieving the data.
  */
 @Unstable
 @Component
@@ -69,15 +77,16 @@ public class RemoteMatchingScriptService implements ScriptService
     private Execution execution;
 
     @Inject
-    private DataAdapter dataAdapter;
+    @Named("restricted")
+    private PatientSimilarityViewFactory viewFactory;
 
     @Inject
     private HibernateSessionFactory sessionFactory;
 
-    public boolean sendRequest(String patientId, String submitterId, String requestGuid) {
+    public boolean sendRequest(String patientId, String submitterId, String requestGuid)
+    {
         try {
-            //The dataAdapter stays the same.
-            //FIXME!!!
+            DataAdapter dataAdapter = new DataAdapterImpl(execution);
             dataAdapter.setPatient(patientId);
             dataAdapter.setSubmitter(submitterId);
             dataAdapter.setPeriodic(false);
@@ -85,14 +94,20 @@ public class RemoteMatchingScriptService implements ScriptService
             RequestConfiguration configuration = new RequestConfigurationImpl();
 
             Session session = this.sessionFactory.getSessionFactory().openSession();
-            OutgoingSearchRequest requestObject = new OutgoingSearchRequest();
 
             Transaction t = session.beginTransaction();
-            t.begin();
-            Long requestObjectId = (Long) session.save(requestObject);
-            t.commit();
+
+            OutgoingSearchRequest requestObject = new OutgoingSearchRequest();
 
             String result = RemoteMatchingClient.sendRequest(json, configuration);
+
+            JSONObject jsonResult = JSONObject.fromObject(result);
+            for (Object resultPatientUC : (JSONArray) jsonResult.get("results")) {
+                requestObject.addResult((JSONObject) resultPatientUC);
+            }
+
+            Long requestObjectId = (Long) session.save(requestObject);
+            t.commit();
 
             XWikiContext context = (XWikiContext) execution.getContext().getProperty("xwikicontext");
             XWiki wiki = context.getWiki();
@@ -106,11 +121,10 @@ public class RemoteMatchingScriptService implements ScriptService
             for (BaseObject object : objects) {
                 if (StringUtils.equalsIgnoreCase(object.getGuid(), requestGuid)) {
                     object.set("id", requestObjectId, context);
-                    //This is going away.
-                    object.set("result", result, context);
                     break;
                 }
             }
+
             wiki.saveDocument(patientDoc, context);
 
             return true;
@@ -120,7 +134,38 @@ public class RemoteMatchingScriptService implements ScriptService
         return false;
     }
 
-    public void getSimilarityResults(Patient patient) {
+    public List<PatientSimilarityView> getSimilarityResults(Patient patient) throws XWikiException
+    {
+        List<PatientSimilarityView> resultsList = new LinkedList<PatientSimilarityView>();
+        try {
+            Session session = this.sessionFactory.getSessionFactory().openSession();
+            Transaction t = session.beginTransaction();
+            t.begin();
 
+            XWikiContext context = (XWikiContext) execution.getContext().getProperty("xwikicontext");
+            XWiki wiki = context.getWiki();
+            XWikiDocument patientDoc = wiki.getDocument(patient.getDocument(), context);
+            EntityReference remoteRequestReference = new EntityReference("RemoteRequest", EntityType.DOCUMENT,
+                new EntityReference("PhenomeCentral", EntityType.SPACE));
+            List<BaseObject> requestObjects = patientDoc.getXObjects(remoteRequestReference);
+            for (BaseObject request : requestObjects) {
+                long requestId = Long.valueOf(request.getStringValue("id"));
+                OutgoingSearchRequest outgoingSearchRequest = new OutgoingSearchRequest();
+                session.load(outgoingSearchRequest, requestId);
+
+                Hibernate.initialize(outgoingSearchRequest);
+
+                for (HibernatePatient patientResult : outgoingSearchRequest.results) {
+                    Hibernate.initialize(patientResult);
+                }
+                List<PatientSimilarityView> allResults = outgoingSearchRequest.getResults(patient, viewFactory);
+                resultsList.addAll(allResults);
+            }
+
+            t.commit();
+            return resultsList;
+        } catch (Exception ex) {
+            return resultsList;
+        }
     }
 }
