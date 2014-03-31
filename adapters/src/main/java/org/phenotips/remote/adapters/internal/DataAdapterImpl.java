@@ -60,7 +60,7 @@ import net.sf.json.JSONObject;
 //@InstantiationStrategy(ComponentInstantiationStrategy.PER_LOOKUP)
 public class DataAdapterImpl implements DataAdapter
 {
-//    @Inject
+    //    @Inject
     private Execution execution;
 
     private XWikiContext context;
@@ -178,7 +178,11 @@ public class DataAdapterImpl implements DataAdapter
             JSONObject phenotypeJson = phenotype.toJSON();
             JSONObject featureJson = new JSONObject();
             featureJson.put("id", phenotypeJson.get("id"));
-            featureJson.put("observed", trueFalseToYesNo(phenotypeJson.getString("isPresent")));
+            try {
+                featureJson.put("observed", trueFalseToYesNo(phenotypeJson.getString("isPresent")));
+            } catch (Exception ex) {
+                featureJson.put("observed", phenotypeJson.getString("observed"));
+            }
             Object ageOfOnset = phenotypeJson.get("age_of_onset");
             if (ageOfOnset != null) {
                 featureJson.put("ageOfOnset", ageOfOnset.toString());

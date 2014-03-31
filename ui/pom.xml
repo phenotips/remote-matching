@@ -30,7 +30,7 @@
   <artifactId>remote-matching-ui</artifactId>
   <name>Remote Matching - UI</name>
   <packaging>xar</packaging>
-  <dependencies>
+  <!--<dependencies>
     <dependency>
       <groupId>org.phenotips</groupId>
       <artifactId>phenotips-ui</artifactId>
@@ -52,7 +52,7 @@
       <type>xar</type>
       <scope>provided</scope>
     </dependency>
-  </dependencies>
+  </dependencies>-->
   <build>
     <pluginManagement>
       <plugins>

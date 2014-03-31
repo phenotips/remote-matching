@@ -140,4 +140,9 @@ public class HibernatePatientFeature implements Feature
     {
         present = isPresent;
     }
+
+    public String getValue()
+    {
+        throw new UnsupportedOperationException();
+    }
 }

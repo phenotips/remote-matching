@@ -48,7 +48,7 @@ public class SearchRequestFeature implements Feature
     private String id;
 
     @ManyToOne
-    @JoinColumn(name="incomingsearchrequest_id")
+    @JoinColumn(name = "incomingsearchrequest_id")
     private IncomingSearchRequest incomingsearchrequest;
 
     /** 1 - true, -1 - false, 0 - NA */
@@ -91,12 +91,18 @@ public class SearchRequestFeature implements Feature
         throw new UnsupportedOperationException();
     }
 
-    public void setId(String newId) {
+    public void setId(String newId)
+    {
         this.id = newId;
     }
 
     public void setPresent(int isPresent)
     {
         present = isPresent;
+    }
+
+    public String getValue()
+    {
+        throw new UnsupportedOperationException();
     }
 }
