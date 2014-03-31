@@ -26,6 +26,7 @@ import org.phenotips.data.PatientData;
 
 import org.xwiki.model.reference.DocumentReference;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -155,6 +156,15 @@ public class HibernatePatient implements Patient
 
     public JSONObject toJSON()
     {
+        throw new UnsupportedOperationException();
+    }
+
+    public JSONObject toJSON(Collection<String> onlyFieldNames)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    public void updateFromJSON(JSONObject json) {
         throw new UnsupportedOperationException();
     }
 }

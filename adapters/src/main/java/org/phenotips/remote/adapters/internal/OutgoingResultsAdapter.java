@@ -60,6 +60,9 @@ public class OutgoingResultsAdapter
         JSONArray disorders = new JSONArray();
         JSONArray features = new JSONArray();
 
+        JSONObject similatiryJson = patient.toJSON();
+        JSONArray similarityFeaturesJson = (JSONArray) similatiryJson.get("featureMatches");
+
         //FIXME could still break
         for (Disorder disease : patient.getDisorders()) {
             JSONObject diseaseJson = disease.toJSON();
@@ -72,16 +75,37 @@ public class OutgoingResultsAdapter
         for (Feature phenotype : patient.getFeatures()) {
             JSONObject phenotypeJson = phenotype.toJSON();
             JSONObject featureJson = new JSONObject();
-
             Object id = phenotypeJson.get("id");
             if (id == null) {
                 id = phenotypeJson.get("queryId");
             }
             String idString = id.toString();
-            featureJson.put("id", id);
-            //FIXME json changed it seems
-            featureJson.put("observed", negativePositiveToYesNo(phenotypeJson.getString("type")));
-            features.add(featureJson);
+
+            /*
+            Getting category from the JSON in the featureMatches.
+            This is backwards, but there is no other way currently of doing it.
+            If the feature not in the matched features, do not send it.
+            There could be several HPO ids in the match' features
+             */
+            //FIXME. If the same categotry comes up twice, it will be added twice.
+            for (Object featureMatchUC : similarityFeaturesJson) {
+                JSONObject featureMatch = (JSONObject) featureMatchUC;
+                Boolean flagBreak = false;
+                for (Object matchFeatureId : ((JSONArray) featureMatch.get("match"))) {
+                    if (StringUtils.equalsIgnoreCase(matchFeatureId.toString(), idString)) {
+                        idString = ((JSONObject) featureMatch.get("category")).getString("id");
+                        featureJson.put("id", idString);
+                        //FIXME json changed it seems
+                        featureJson.put("observed", negativePositiveToYesNo(phenotypeJson.getString("type")));
+                        features.add(featureJson);
+                        flagBreak = true;
+                        break;
+                    }
+                }
+                if (flagBreak) {
+                    break;
+                }
+            }
         }
 
         json.put("disorders", disorders);

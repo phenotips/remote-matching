@@ -72,6 +72,9 @@ public class IncomingRequestProcessorImpl implements IncomingRequestProcessor
         XWikiDocument fixDoc =
             context.getWiki().getDocument(new DocumentReference("xwiki", "Main", "WebHome"), context);
         context.setDoc(fixDoc);
+        //Fixme. Should not be admin.
+        //Should use setUserReference(DocumentReference userReference);
+        context.setUser("xwiki:XWiki.Admin");
 
         Session session = this.sessionFactory.getSessionFactory().openSession();
 
@@ -85,7 +88,7 @@ public class IncomingRequestProcessorImpl implements IncomingRequestProcessor
         JSONObject response = new JSONObject();
         JSONArray results = new JSONArray();
 
-        List<PatientSimilarityView> similarPatients = requestObject.getResults (patientsFinder);
+        List<PatientSimilarityView> similarPatients = requestObject.getResults(patientsFinder);
         for (PatientSimilarityView patient : similarPatients) {
             OutgoingResultsAdapter resultsAdapter = new OutgoingResultsAdapter();
             resultsAdapter.setPatient(patient);

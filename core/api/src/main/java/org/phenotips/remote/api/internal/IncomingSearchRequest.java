@@ -29,6 +29,7 @@ import org.phenotips.similarity.SimilarPatientsFinder;
 
 import org.xwiki.model.reference.DocumentReference;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -157,6 +158,15 @@ public class IncomingSearchRequest implements Patient, RequestEntity
 
     public JSONObject toJSON()
     {
+        throw new UnsupportedOperationException();
+    }
+
+    public JSONObject toJSON(Collection<String> onlyFieldNames)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    public void updateFromJSON(JSONObject json) {
         throw new UnsupportedOperationException();
     }
 }

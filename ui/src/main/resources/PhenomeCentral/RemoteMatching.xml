@@ -32,8 +32,8 @@
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <creationDate>1394733772000</creationDate>
-  <date>1394743569000</date>
-  <contentUpdateDate>1394734242000</contentUpdateDate>
+  <date>1396044479000</date>
+  <contentUpdateDate>1395855745000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <defaultTemplate/>
@@ -44,7 +44,7 @@
   <hidden>false</hidden>
   <object>
     <class>
-      <name>PhenomeCentral.RemoteMatchingServiceConfiguration</name>
+      <name>XWiki.ConfigurableClass</name>
       <customClass/>
       <customMapping/>
       <defaultViewSheet/>
@@ -52,96 +52,219 @@
       <defaultWeb/>
       <nameField/>
       <validationScript/>
-      <baseUrl>
-        <customDisplay/>
-        <disabled>0</disabled>
-        <name>baseUrl</name>
-        <number>3</number>
-        <picker>0</picker>
-        <prettyName>baseUrl</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </baseUrl>
-      <humanReadableName>
-        <customDisplay/>
-        <disabled>0</disabled>
-        <name>humanReadableName</name>
-        <number>1</number>
-        <picker>0</picker>
-        <prettyName>humanReadableName</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </humanReadableName>
-      <mutuallyAccepted>
+      <advancedOnly>
         <customDisplay/>
         <defaultValue/>
         <disabled>0</disabled>
         <displayFormType>select</displayFormType>
         <displayType/>
-        <name>mutuallyAccepted</name>
+        <name>advancedOnly</name>
         <number>5</number>
-        <prettyName>mutuallyAccepted</prettyName>
+        <prettyName>advancedOnly</prettyName>
         <unmodifiable>0</unmodifiable>
         <validationMessage/>
         <validationRegExp/>
         <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
-      </mutuallyAccepted>
-      <remoteAuthToken>
+      </advancedOnly>
+      <categoryPriority>
         <customDisplay/>
         <disabled>0</disabled>
-        <name>remoteAuthToken</name>
+        <name>categoryPriority</name>
         <number>2</number>
-        <picker>0</picker>
-        <prettyName>remoteAuthToken</prettyName>
+        <numberType>integer</numberType>
+        <prettyName>categoryPriority</prettyName>
         <size>30</size>
         <unmodifiable>0</unmodifiable>
         <validationMessage/>
         <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </remoteAuthToken>
-      <responseFormat>
+        <classType>com.xpn.xwiki.objects.classes.NumberClass</classType>
+      </categoryPriority>
+      <codeToExecute>
         <customDisplay/>
         <disabled>0</disabled>
-        <name>responseFormat</name>
-        <number>4</number>
+        <editor>---</editor>
+        <name>codeToExecute</name>
+        <number>11</number>
         <picker>0</picker>
-        <prettyName>responseFormat</prettyName>
+        <prettyName>codeToExecute</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </codeToExecute>
+      <configurationClass>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>configurationClass</name>
+        <number>7</number>
+        <picker>0</picker>
+        <prettyName>configurationClass</prettyName>
         <size>30</size>
         <unmodifiable>0</unmodifiable>
         <validationMessage/>
         <validationRegExp/>
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </responseFormat>
+      </configurationClass>
+      <configureGlobally>
+        <customDisplay/>
+        <defaultValue/>
+        <disabled>0</disabled>
+        <displayFormType>checkbox</displayFormType>
+        <displayType/>
+        <name>configureGlobally</name>
+        <number>8</number>
+        <prettyName>configureGlobally</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </configureGlobally>
+      <displayInCategory>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>displayInCategory</name>
+        <number>1</number>
+        <picker>0</picker>
+        <prettyName>displayInCategory</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </displayInCategory>
+      <displayInSection>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>displayInSection</name>
+        <number>3</number>
+        <picker>0</picker>
+        <prettyName>displayInSection</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </displayInSection>
+      <heading>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>heading</name>
+        <number>6</number>
+        <picker>0</picker>
+        <prettyName>heading</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </heading>
+      <iconAttachment>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>iconAttachment</name>
+        <number>12</number>
+        <picker>0</picker>
+        <prettyName>iconAttachment</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </iconAttachment>
+      <linkPrefix>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>linkPrefix</name>
+        <number>9</number>
+        <picker>0</picker>
+        <prettyName>linkPrefix</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </linkPrefix>
+      <propertiesToShow>
+        <cache>0</cache>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <displayType>input</displayType>
+        <multiSelect>1</multiSelect>
+        <name>propertiesToShow</name>
+        <number>10</number>
+        <picker>0</picker>
+        <prettyName>propertiesToShow</prettyName>
+        <relationalStorage>1</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>20</size>
+        <sort>none</sort>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <values/>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </propertiesToShow>
+      <sectionPriority>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>sectionPriority</name>
+        <number>4</number>
+        <numberType>integer</numberType>
+        <prettyName>sectionPriority</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.NumberClass</classType>
+      </sectionPriority>
     </class>
     <name>PhenomeCentral.RemoteMatching</name>
     <number>0</number>
-    <className>PhenomeCentral.RemoteMatchingServiceConfiguration</className>
-    <guid>8e50be57-37d5-4ff5-b986-a61534eb752e</guid>
+    <className>XWiki.ConfigurableClass</className>
+    <guid>f71d41c9-9e5c-4f7a-b660-beaefc371e9b</guid>
     <property>
-      <baseUrl>http://base_url_A.com/</baseUrl>
+      <advancedOnly/>
     </property>
     <property>
-      <humanReadableName>serviceA_mutual</humanReadableName>
+      <categoryPriority>0</categoryPriority>
     </property>
     <property>
-      <mutuallyAccepted>1</mutuallyAccepted>
+      <codeToExecute>{{include reference="PhenomeCentral.RemoteMatching" /}}</codeToExecute>
     </property>
     <property>
-      <remoteAuthToken>token</remoteAuthToken>
+      <configurationClass/>
     </property>
     <property>
-      <responseFormat>json</responseFormat>
+      <configureGlobally>1</configureGlobally>
+    </property>
+    <property>
+      <displayInCategory>phenotips</displayInCategory>
+    </property>
+    <property>
+      <displayInSection>Remote Matching</displayInSection>
+    </property>
+    <property>
+      <heading>Remote Matching Server Configurations</heading>
+    </property>
+    <property>
+      <iconAttachment/>
+    </property>
+    <property>
+      <linkPrefix/>
+    </property>
+    <property>
+      <propertiesToShow/>
+    </property>
+    <property>
+      <sectionPriority>1100</sectionPriority>
     </property>
   </object>
   <object>
     <class>
-      <name>PhenomeCentral.RemoteMatchingServiceConfiguration</name>
+      <name>XWiki.StyleSheetExtension</name>
       <customClass/>
       <customMapping/>
       <defaultViewSheet/>
@@ -149,91 +272,110 @@
       <defaultWeb/>
       <nameField/>
       <validationScript/>
-      <baseUrl>
-        <customDisplay/>
+      <cache>
+        <cache>0</cache>
         <disabled>0</disabled>
-        <name>baseUrl</name>
-        <number>3</number>
-        <picker>0</picker>
-        <prettyName>baseUrl</prettyName>
-        <size>30</size>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
         <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </baseUrl>
-      <humanReadableName>
-        <customDisplay/>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
         <disabled>0</disabled>
-        <name>humanReadableName</name>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
         <number>1</number>
-        <picker>0</picker>
-        <prettyName>humanReadableName</prettyName>
+        <prettyName>Name</prettyName>
         <size>30</size>
         <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
         <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </humanReadableName>
-      <mutuallyAccepted>
-        <customDisplay/>
-        <defaultValue/>
+      </name>
+      <parse>
         <disabled>0</disabled>
         <displayFormType>select</displayFormType>
-        <displayType/>
-        <name>mutuallyAccepted</name>
-        <number>5</number>
-        <prettyName>mutuallyAccepted</prettyName>
-        <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
-      </mutuallyAccepted>
-      <remoteAuthToken>
-        <customDisplay/>
-        <disabled>0</disabled>
-        <name>remoteAuthToken</name>
-        <number>2</number>
-        <picker>0</picker>
-        <prettyName>remoteAuthToken</prettyName>
-        <size>30</size>
-        <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </remoteAuthToken>
-      <responseFormat>
-        <customDisplay/>
-        <disabled>0</disabled>
-        <name>responseFormat</name>
+        <displayType>yesno</displayType>
+        <name>parse</name>
         <number>4</number>
-        <picker>0</picker>
-        <prettyName>responseFormat</prettyName>
-        <size>30</size>
+        <prettyName>Parse content</prettyName>
         <unmodifiable>0</unmodifiable>
-        <validationMessage/>
-        <validationRegExp/>
-        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
-      </responseFormat>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage=Always on this page|onDemand=On demand|always=Always on this wiki</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
     </class>
     <name>PhenomeCentral.RemoteMatching</name>
-    <number>1</number>
-    <className>PhenomeCentral.RemoteMatchingServiceConfiguration</className>
-    <guid>5d4b50ec-b0be-4bb3-9c0d-e1d1d3103964</guid>
+    <number>0</number>
+    <className>XWiki.StyleSheetExtension</className>
+    <guid>5d5483d2-e6fc-4163-ba6d-9900e28db454</guid>
     <property>
-      <baseUrl>http://base_url_B.com</baseUrl>
+      <cache>long</cache>
     </property>
     <property>
-      <humanReadableName>serviceB_nonmutual</humanReadableName>
+      <code>#template('colorThemeInit.vm')
+
+.list-actions + .buttons {
+  float: right;
+  margin-top: -1.8em;
+}
+.action.delete {
+  background: transparent !important;
+  background-image: none !important;
+  border: 0 none !important;
+  box-shadow: none !important;
+  display: inline-block !important;
+  height: auto !important;
+  text-indent: 0 !important;
+  width: auto !important;
+}
+td input[type="text"] {
+  border-color: $theme.pageContentBackgroundColor;
+  border-radius: 4px 4px 4px 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .4) inset;
+  width: 100%;
+}
+td input[type="text"]:focus {
+  border-color: $theme.linkColor;
+}</code>
     </property>
     <property>
-      <mutuallyAccepted/>
+      <name/>
     </property>
     <property>
-      <remoteAuthToken>token</remoteAuthToken>
+      <parse>1</parse>
     </property>
     <property>
-      <responseFormat>xml</responseFormat>
+      <use>onDemand</use>
     </property>
   </object>
   <object>
@@ -307,47 +449,68 @@
     <guid>a7c27acb-19f4-4e13-9182-2579f52a70e0</guid>
     <property>
       <content>{{velocity}}
-#if ($xcontext.action == 'view' &amp;&amp; $xwiki.hasAccessLevel('view', $xcontext.user, 'PhenoTips.SimilarCases'))
-  #set ($suggestionsConfig = $xwiki.getDocument("${doc.space}.SimilarCasesConfiguration").getObject('PhenoTips.SimilarCases'))
-  #if ($suggestionsConfig &amp;&amp; "$!{suggestionsConfig.getProperty('enable').value}" == '1')
-    #set ($patient = $services.patients.getPatientById($doc.name))
-    #set ($patientAccess = $services.permissions.getPatientAccess($patient))
-    #if (!$patient.features.isEmpty() &amp;&amp; $patientAccess.isOwner() &amp;&amp;  $patientAccess.getVisibility().compareTo($services.permissions.resolveVisibility('matchable')) &gt;= 0)
+$xwiki.jsfx.use('js/remote-matching/main.js')
+
       ## Can see similar cases for this patient
-      {{html clean=false}}&lt;div data-bind="" class="clear clinical-info similarity-info chapter"&gt;{{/html}}
-      == Similar Cases available in remote databases ==
-      ==== If the checkbox is ticked the request will be periodic ===
+      ##{{html clean=false}}&lt;div data-bind="" class="clear clinical-info similarity-info chapter"&gt;{{/html}}##
+      === Remote Databases ===
       ##=======================================
       ## Get list of remote configurations. Filter by mutuallyAccepted.
       ## Then display list with checkboxes.
       ## Custom javascript will take care of sending the request, and changing the page display.
       ##=======================================
-      #set ($remoteDoc = $xwiki.getDocumentAsAuthor("PhenomeCentral.RemoteMatching"))
-      #set ($allRemotes = $remoteDoc.getObjects("PhenomeCentral.RemoteMatchingServiceConfiguration")) ##The xObject name should ideally come from a configuration
-      #set ($remotes = []) ##These are filtered
+      #set ($remoteRequestClass = "PhenomeCentral.RemoteRequest")
+      #set ($remoteDoc = $xwiki.getDocumentAsAuthor("XWiki.XWikiPreferences"))
+      #set ($allRemotes = $remoteDoc.getObjects("PhenomeCentral.RemoteMatchingServiceConfiguration"))
+      #set ($allRequests = $doc.getObjects($remoteRequestClass))
+      #set ($remotes = {}) ##These are filtered
       #foreach ($config in $allRemotes)
         #if ($config.getProperty('mutuallyAccepted').getValue() == 1)
-          #set ($discard = $remotes.add($config))
+          #set ($requests = [])
+          #set ($baseUrl = $config.get("baseUrl").toString())
+          #foreach ($r in $allRequests)
+            #if ($r.get("baseUrl").toString() == $baseUrl)
+              #set($discard = $requests.add($r))
+            #end
+          #end
+          ##====================================
+          ## If there are no existing request objects for this remote server, create an empty one.
+          ## If it is decided that several requests (and subsequent results) to the same server are compounded,
+          ## create a new object for each request.
+          ##====================================
+          #if ($requests.size() == 0)
+            #set ($newRequest = $doc.newObject($remoteRequestClass))
+            $newRequest.set("baseUrl", $baseUrl)
+            #set($discard = $requests.add($newRequest))
+          #end
+          #set ($discard = $remotes.put($config, $requests))
         #end
       #end
-      #foreach ($r in $remotes)
-         {{html clean=false}}&lt;div&gt;
-           &lt;span&gt;&lt;input type="checkbox"&gt;$r.getProperty("humanReadableName").getValue()&lt;/span&gt;
-           &lt;span class="buttonwrapper"&gt;&lt;a class="button" href="#"&gt;Send Request&lt;/a&gt;&lt;/span&gt;
+      #set ($discard = $doc.save())
+      #foreach ($remote in $remotes.keySet())
+         #set($guid = $remotes.get($remote).get(0).getGuid())
+         {{html clean=false}}&lt;div class="remoteSearch" id="$!{guid}"&gt;
+           &lt;input type="hidden" id="userName" value="$xwiki.getUser().getUser().getUser()"&gt;
+           &lt;input type="hidden" id="patientId" value="$doc.getName()"&gt;
+           &lt;input type="hidden" id="url" value="$xwiki.getURL("PhenomeCentral.RemoteMatchingSendRequest", "get")"&gt;
+           &lt;span&gt;$remote.getProperty("humanReadableName").getValue()&lt;/span&gt;
+           &lt;span class="buttonwrapper"&gt;&lt;a class="button" href="#"&gt;Look for matches&lt;/a&gt;
          &lt;/div&gt;{{/html}}
       #end
       ##=======================================
       ## [TODO]
-      ## Display the results of the searches. These will be custom objects.
+      ## Display the results of the searches.
       ##=======================================
-      {{html clean=false}}&lt;/div&gt;{{/html}}
-    #end## can see similar patients
-  #end## suggestions enabled
-#end## action == view
+      #set ($queryString = 'patient='+$doc.name)
+      ===== Matches =====
+      (% class="similarity-results-container" id="similar-remote-patients-container" %)((({{html clean=false}}&lt;input type="hidden" name="service" value="$xwiki.getURL('PhenomeCentral.RemoteResults', 'get', $queryString)"&gt;{{/html}})))##
+      ##{{html clean=false}}&lt;/div&gt;{{/html}}##
+
+
 {{/velocity}}</content>
     </property>
     <property>
-      <extensionPointId>org.phenotips.patientSheet.after</extensionPointId>
+      <extensionPointId>org.phenotips.patientSheet.similarCases</extensionPointId>
     </property>
     <property>
       <name>org.phenotips.remoteMatching</name>
@@ -359,5 +522,42 @@
       <scope>wiki</scope>
     </property>
   </object>
-  <content/>
+  <content>{{include reference="PhenoTips.TabelarDataMacros"/}}
+
+{{velocity output="false"}}
+#set ($displayDocumentName = 'PhenomeCentral.RemoteMatching')
+#set ($displayDocument = $xwiki.getDocument($displayDocumentName))
+#set ($serverConfigurationClassname = 'PhenomeCentral.RemoteMatchingServiceConfiguration')
+#set ($existingServers = $preferencesDoc.getObjects($serverConfigurationClassname))
+
+$xwiki.ssx.use($displayDocumentName) ##
+{{/velocity}}
+
+{{velocity}}
+#if ("$!{request.xaction}" == 'lastentry') 
+ #set ($entryClassName = $request.dataClassName)
+  #set ($options = {})
+  #set ($discard = $options.put('propertyName', "$!{request.propertyName}"))
+  #set ($discard = $options.put('propertyValue', "$!{request.propertyValue}"))
+  #set ($discard = $options.put('labels', "$!{request.withLabel}"))
+  #set ($discard = $options.put('mode', 'edit'))
+  #__extradata_displayLastEntry($request.dataClassName $options)
+#else
+{{html clean="false"}}
+&lt;form action="${preferencesDoc.getURL('save')}" method="post"&gt;
+&lt;div class="hidden"&gt;
+    &lt;input type="hidden" name="form_token" value="${escapetool.xml($services.csrf.token)}" /&gt;
+    &lt;input type="hidden" name="classname" value="${serverConfigurationClassname}" /&gt;
+    &lt;input type="hidden" name="xredirect" value="${doc.getURL($xcontext.action, $request.queryString)}" /&gt;
+  &lt;/div&gt;
+{{/html}}
+  #__extradata_displayTable($serverConfigurationClassname, {'counter' : false, 'labels' : false, 'mode' : 'edit', 'addedDisplaySheet' : $displayDocumentName})
+{{html clean="false"}}
+  &lt;div class="buttons"&gt;
+    &lt;input class="button" type="submit" value="Save changes" /&gt;
+  &lt;/div&gt;
+&lt;/form&gt;
+{{/html}}
+#end
+{{/velocity}}</content>
 </xwikidoc>
