@@ -13,13 +13,13 @@ How to install/use:
  This setting does not belong in this project, and should be made in the PhenoTips repo. Until the changes are made
  there, please do this manually. If clicking the lookup button causes the page to jump, and no search happens, this
  is the problem.)
- - Configure a remote server in the administration. To communicate with self, http://localhost:8080/rest/remoteMatcher/.
+ - Configure a remote server in the administration. To communicate with self, ```http://localhost:8080/rest/remoteMatcher/```.
  Any/no token will work. Check mutually accepted.
 
 Known issues/problematic code:
  - The HTTPClient needs to be upgraded. Include 4.3.3 instead/with 4.2.5. [httpcore, httpcore-nio]
  - There's a possible security hole; the REST server executes commands as Admin.
- - In the UI there's a weird bug, where sometimes a <p> is present between the list of remote servers and "Remote
+ - In the UI there's a weird bug, where sometimes a ```<p>``` is present between the list of remote servers and "Remote
  Databases" heading. Disappears on refresh.
 
 Unrelated known issues:
