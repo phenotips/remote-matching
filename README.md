@@ -25,14 +25,14 @@ Known issues/problematic code:
 Unrelated known issues:
  - common-lib has 2 versions in the WEB-INF/lib. This causes an error in PatientSheet. Delete the older.
 
-Path                     | Details
--------------------------|---------------------------------
-+```ui/```	             | XWiki .xml files.
-+```war/```	             | Javascript files.
-+```rest/```	         | Java REST server files and client files for sending requests.
--+```api/```             | Besides interfaces, contains the only script service
--+```server/```          |
--+```client/```          |
-+```adapters/```         | <p>The script service connecting the XWiki user interface to the Java backend. Static to/from JSON converters</p>
-+```wrappers/```         | <p>These are logical outcasts. They do no belong in ```adapters/```, nor in ```core/```. They are the middlemen between ```core``` and ```adapters```</p>
-+```standalone-patch```  | Does not currently work
+Path                                 | Details
+-------------------------------------|---------------------------------
+```ui/```	           |             | XWiki .xml files.
+```war/```	           |             | Javascript files.
+```rest/``` 	       |             | Java REST server files and client files for sending requests.
+                       |```api/```   | Besides interfaces, contains the only script service
+                       |```server/```|
+                       |```client/```|
+```adapters/```        |             | <p>The script service connecting the XWiki user interface to the Java backend. Static to/from JSON converters</p>
+```wrappers/```        |             | <p>These are logical outcasts. They do no belong in ```adapters/```, nor in ```core/```. They are the middlemen between ```core``` and ```adapters```</p>
+```standalone-patch``` |             | Does not currently work
