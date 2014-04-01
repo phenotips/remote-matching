@@ -1,3 +1,2 @@
 org.phenotips.remote.server.internal.MatchResource
-org.phenotips.remote.server.internal.IncomingRequestProcessorImpl
-org.phenotips.remote.server.internal.ORMRegistrationHandler
+org.phenotips.remote.server.internal.IncomingRequestProcessor

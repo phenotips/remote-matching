@@ -24,4 +24,5 @@ package org.phenotips.remote.api;
  */
 public interface Configuration
 {
+    String IncomingRequestResponseType = "inline";
 }

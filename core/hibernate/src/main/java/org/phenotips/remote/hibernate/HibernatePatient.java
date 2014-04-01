@@ -17,12 +17,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.api.internal;
+package org.phenotips.remote.hibernate;
 
 import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
-import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
+import org.phenotips.remote.api.HibernatePatientInterface;
+import org.phenotips.remote.api.internal.OutgoingSearchRequest;
 
 import org.xwiki.model.reference.DocumentReference;
 
@@ -46,7 +47,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 @Entity
-public class HibernatePatient implements Patient
+public class HibernatePatient implements HibernatePatientInterface
 {
     @Id
     @GeneratedValue
@@ -58,7 +59,6 @@ public class HibernatePatient implements Patient
     @ManyToOne (fetch = FetchType.EAGER)
     public OutgoingSearchRequest outgoingsearchrequest;
 
-//    FIXME Check is right cascade type
     @OneToMany(cascade= CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name="HF_ID")
     public Set<HibernatePatientFeature> features = new HashSet<HibernatePatientFeature>();
