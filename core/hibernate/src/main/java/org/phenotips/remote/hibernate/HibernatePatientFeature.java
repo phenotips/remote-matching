@@ -17,13 +17,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.api.internal;
+package org.phenotips.remote.hibernate;
 
 import org.phenotips.components.ComponentManagerRegistry;
-import org.phenotips.data.Feature;
 import org.phenotips.data.FeatureMetadatum;
 import org.phenotips.ontology.OntologyManager;
 import org.phenotips.ontology.OntologyTerm;
+import org.phenotips.remote.api.HibernatePatientFeatureInterface;
 
 import org.xwiki.component.manager.ComponentLookupException;
 
@@ -48,7 +48,7 @@ import net.sf.json.JSONObject;
  * Hibernate entity for storing patient features.
  */
 @Entity
-public class HibernatePatientFeature implements Feature
+public class HibernatePatientFeature implements HibernatePatientFeatureInterface
 {
     @Id
     @GeneratedValue

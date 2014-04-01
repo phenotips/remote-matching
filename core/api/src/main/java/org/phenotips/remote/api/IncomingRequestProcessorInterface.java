@@ -29,7 +29,7 @@ import net.sf.json.JSONObject;
  * TODO fix the doc
  */
 @Role
-public interface IncomingRequestProcessor
+public interface IncomingRequestProcessorInterface
 {
     JSONObject processRequest(String json) throws XWikiException;
 }

@@ -33,5 +33,6 @@ Path                     | Details
 -+```api/```             | Besides interfaces, contains the only script service
 -+```server/```          |
 -+```client/```          |
-+```adapters/```         | These will format the data and do other processing tasks
++```adapters/```         | <p>The script service connecting the XWiki user interface to the Java backend. Static to/from JSON converters</p>
++```wrappers/```         | <p>These are logical outcasts. They do no belong in ```adapters/```, nor in ```core/```. They are the middlemen between ```core``` and ```adapters```</p>
 +```standalone-patch```  | Does not currently work

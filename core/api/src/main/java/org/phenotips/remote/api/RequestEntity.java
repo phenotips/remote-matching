@@ -29,15 +29,19 @@ import java.util.List;
  */
 public interface RequestEntity
 {
+    HibernatePatientInterface getReferencePatient() throws IllegalArgumentException;
+
+    void setReferencePatient(HibernatePatientInterface patient);
+
     long getRequestId();
 
     String getResponseType();
 
-    boolean getResponseStatus();
+    Integer getResponseStatus();
 
     String getResponseTargetURL();
 
     String getSubmitterEmail();
 
-    List<PatientSimilarityView> getResults(SimilarPatientsFinder finder);
+    List<PatientSimilarityView> getResults(SimilarPatientsFinder finder) throws IllegalArgumentException;
 }

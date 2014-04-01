@@ -17,13 +17,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.server.internal;
+package org.phenotips.remote.hibernate;
 
 import org.phenotips.remote.api.internal.HibernatePatient;
-import org.phenotips.remote.api.internal.HibernatePatientFeature;
 import org.phenotips.remote.api.internal.IncomingSearchRequest;
 import org.phenotips.remote.api.internal.OutgoingSearchRequest;
-import org.phenotips.remote.api.internal.SearchRequestFeature;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.observation.EventListener;
@@ -73,7 +71,7 @@ public class ORMRegistrationHandler implements EventListener
     public void onEvent(Event event, Object source, Object data)
     {
         Configuration configuration = this.sessionFactory.getConfiguration();
-        configuration.addAnnotatedClass(SearchRequestFeature.class);
+        configuration.addAnnotatedClass(HibernateFeature.class);
         configuration.addAnnotatedClass(IncomingSearchRequest.class);
         configuration.addAnnotatedClass(HibernatePatientFeature.class);
         configuration.addAnnotatedClass(HibernatePatient.class);

@@ -21,8 +21,8 @@ package org.phenotips.remote.server.internal;
 
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.adapters.internal.OutgoingResultsAdapter;
-import org.phenotips.remote.api.IncomingRequestProcessor;
-import org.phenotips.remote.api.internal.IncomingSearchRequest;
+import org.phenotips.remote.api.IncomingRequestProcessorInterface;
+import org.phenotips.remote.api.RequestEntity;
 import org.phenotips.similarity.SimilarPatientsFinder;
 
 import org.xwiki.component.annotation.Component;
@@ -50,7 +50,7 @@ import net.sf.json.JSONObject;
  */
 @Component
 @Singleton
-public class IncomingRequestProcessorImpl implements IncomingRequestProcessor
+public class IncomingRequestProcessor implements IncomingRequestProcessorInterface
 {
     /** Handles persistence. */
     @Inject
@@ -62,9 +62,6 @@ public class IncomingRequestProcessorImpl implements IncomingRequestProcessor
     @Inject
     private Execution execution;
 
-//    @Inject
-//    private DataAdapter dataAdapter;
-
     public JSONObject processRequest(String json) throws XWikiException
     {
         XWikiContext context = (XWikiContext) execution.getContext().getProperty("xwikicontext");
@@ -72,23 +69,27 @@ public class IncomingRequestProcessorImpl implements IncomingRequestProcessor
         XWikiDocument fixDoc =
             context.getWiki().getDocument(new DocumentReference("xwiki", "Main", "WebHome"), context);
         context.setDoc(fixDoc);
-        //Fixme. Should not be admin.
+        //FIXME. Should not be admin.
         //Should use setUserReference(DocumentReference userReference);
         context.setUser("xwiki:XWiki.Admin");
 
-        Session session = this.sessionFactory.getSessionFactory().openSession();
-
-        IncomingSearchRequest requestObject = new IncomingSearchRequest(JSONObject.fromObject(json), session);
-
-        Transaction t = session.beginTransaction();
-        t.begin();
-        Long requestObjectId = (Long) session.save(requestObject);
-        t.commit();
+        RequestEntity requestObject = new IncomingSearchRequest();
+        //FIXME. Check if the request needs to be stored.
+        Long requestObjectId = storeRequest(requestObject);
 
         JSONObject response = new JSONObject();
         JSONArray results = new JSONArray();
 
-        List<PatientSimilarityView> similarPatients = requestObject.getResults(patientsFinder);
+        //Error here most likely means that the request contained malformed patient data, or none at all.
+        List<PatientSimilarityView> similarPatients = null;
+        try {
+            similarPatients = requestObject.getResults(patientsFinder);
+        } catch (IllegalArgumentException ex) {
+            JSONObject errorJson = new JSONObject();
+            errorJson.put("status", getStatus(requestObject));
+            return errorJson;
+        }
+
         for (PatientSimilarityView patient : similarPatients) {
             OutgoingResultsAdapter resultsAdapter = new OutgoingResultsAdapter();
             resultsAdapter.setPatient(patient);
@@ -100,9 +101,25 @@ public class IncomingRequestProcessorImpl implements IncomingRequestProcessor
         }
 
         response.put("queryID", requestObjectId);
-        response.put("responseType", "inline");
+        response.put("responseType", requestObject.getResponseType());
         response.put("results", results);
+        response.put("status", requestObject.getResponseStatus());
 
         return response;
+    }
+
+    private Integer getStatus(RequestEntity requestObject) { return requestObject.getResponseStatus(); }
+
+    private Long storeRequest(RequestEntity requestObject)
+    {
+        Session session = this.sessionFactory.getSessionFactory().openSession();
+
+        Transaction t = session.beginTransaction();
+        t.begin();
+        Long requestObjectId = (Long) session.save(requestObject);
+        t.commit();
+
+        session.close();
+        return requestObjectId;
     }
 }

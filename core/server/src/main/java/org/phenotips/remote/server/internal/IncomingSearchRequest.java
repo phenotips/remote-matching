@@ -17,33 +17,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.api.internal;
+package org.phenotips.remote.server.internal;
 
-import org.phenotips.data.Disorder;
-import org.phenotips.data.Feature;
-import org.phenotips.data.Patient;
-import org.phenotips.data.PatientData;
 import org.phenotips.data.similarity.PatientSimilarityView;
+import org.phenotips.remote.api.Configuration;
+import org.phenotips.remote.api.HibernatePatientInterface;
 import org.phenotips.remote.api.RequestEntity;
 import org.phenotips.similarity.SimilarPatientsFinder;
 
 import org.xwiki.model.reference.DocumentReference;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.Session;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * Class for storing an incoming request outside the main PhenoTips database for privacy reasons. It is a combination of
@@ -53,34 +43,45 @@ import net.sf.json.JSONObject;
  * @version $Id$
  */
 @Entity
-public class IncomingSearchRequest implements Patient, RequestEntity
+public class IncomingSearchRequest implements RequestEntity
 {
-    /*
-    The only functions from the Patient implementation that are needed for the search to work are the getDocument and getFeatures()
-     */
     @Id
     @GeneratedValue
     private long id;
 
-//    @Type(type = "org.phenotips.remote.api.SearchRequestFeature")
-    @OneToMany(mappedBy = "incomingsearchrequest")
-    private Set<SearchRequestFeature> features = new HashSet<SearchRequestFeature>();
+    private HibernatePatientInterface referencePatient = null;
 
-    public IncomingSearchRequest(JSONObject json, Session session)
+    private Integer httpStatus = 200;
+
+    public IncomingSearchRequest()
     {
-        JSONArray jsonFeatures = (JSONArray) json.get("features");
-        for (Object jsonFeatureUncast : jsonFeatures) {
-            JSONObject jsonFeature = (JSONObject) jsonFeatureUncast;
-            SearchRequestFeature feature = new SearchRequestFeature();
-            feature.setId(jsonFeature.getString("id"));
-            feature.setPresent(convertTextToIntBool(jsonFeature.getString("observed")));
-            features.add(feature);
-        }
+//        JSONArray jsonFeatures = (JSONArray) json.get("features");
+//        for (Object jsonFeatureUncast : jsonFeatures) {
+//            JSONObject jsonFeature = (JSONObject) jsonFeatureUncast;
+//            HibernatePatientFeature feature = new HibernatePatientFeature();
+//            feature.setId(jsonFeature.getString("id"));
+//            feature.setPresent(convertTextToIntBool(jsonFeature.getString("observed")));
+//            features.add(feature);
+//        }
     }
 
-    public List<PatientSimilarityView> getResults(SimilarPatientsFinder finder)
+    public String getResponseType() { return Configuration.IncomingRequestResponseType; }
+
+    public void setReferencePatient(HibernatePatientInterface patient) { referencePatient = patient; }
+
+    public HibernatePatientInterface getReferencePatient() throws IllegalArgumentException
     {
-        List<PatientSimilarityView> matches = finder.findSimilarPatients(this);
+        if (referencePatient == null) {
+            //FIXME. This should be custom.
+            httpStatus = 400;
+            throw new IllegalArgumentException("The reference patient for the incoming request has not been set");
+        }
+        return referencePatient;
+    }
+
+    public List<PatientSimilarityView> getResults(SimilarPatientsFinder finder) throws IllegalArgumentException
+    {
+        List<PatientSimilarityView> matches = finder.findSimilarPatients(getReferencePatient());
         return matches;
     }
 
@@ -100,15 +101,7 @@ public class IncomingSearchRequest implements Patient, RequestEntity
         throw new UnsupportedOperationException();
     }
 
-    public String getResponseType()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean getResponseStatus()
-    {
-        throw new UnsupportedOperationException();
-    }
+    public Integer getResponseStatus() { return httpStatus; }
 
     public String getResponseTargetURL()
     {
@@ -140,33 +133,5 @@ public class IncomingSearchRequest implements Patient, RequestEntity
     public DocumentReference getReporter()
     {
         return new DocumentReference("xwiki", "XWiki", "Admin");
-    }
-
-    public Set<? extends Feature> getFeatures() {
-        return features;
-    }
-
-    public Set<? extends Disorder> getDisorders()
-    {
-        return new HashSet<Disorder>();
-    }
-
-    public <T> PatientData<T> getData(String name)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public JSONObject toJSON()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public JSONObject toJSON(Collection<String> onlyFieldNames)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public void updateFromJSON(JSONObject json) {
-        throw new UnsupportedOperationException();
     }
 }
