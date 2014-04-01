@@ -25,7 +25,7 @@ Known issues/problematic code:
 Unrelated known issues:
  - common-lib has 2 versions in the WEB-INF/lib. This causes an error in PatientSheet. Delete the older.
 
-Path                                 | Details
+Path                   |             | Details
 -----------------------|-------------|---------------------------------
 ```ui/```	           |             | XWiki .xml files.
 ```war/```	           |             | Javascript files.
