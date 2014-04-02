@@ -19,9 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.remotematching</groupId>
@@ -29,87 +27,63 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
   <artifactId>remote-matching-standalone-patch</artifactId>
-  <name>Remote Matching - Patch for PhenomeCentral Standalone Distribution</name>
-  <packaging>pom</packaging>
-  <description>Distribution including a collection of jar files and directories with resource files, which can be
-    applied on top of the existing PhenomeCentral Standalone Distribution
-  </description>
-  <properties>
-    <maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
-  </properties>
-  <dependencies>
-    <!--<dependency>-->
-    <!--<groupId>${project.groupId}</groupId>-->
-    <!--<artifactId>phenomecentral-war</artifactId>-->
-    <!--<version>${project.version}</version>-->
-    <!--<type>war</type>-->
-    <!--<optional>true</optional>-->
-    <!--</dependency>-->
-    <!--<dependency>-->
-    <!--<groupId>org.phenotips</groupId>-->
-    <!--<artifactId>solr-war</artifactId>-->
-    <!--<version>${phenotips.version}</version>-->
-    <!--<type>war</type>-->
-    <!--<optional>true</optional>-->
-    <!--</dependency>-->
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>remote-matching-rest</artifactId>
-      <version>${project.version}</version>
-      <type>jar</type>
-      <optional>true</optional>
-    </dependency>
-    <!--<dependency>-->
-      <!--<groupId>${project.groupId}</groupId>-->
-      <!--<artifactId>ui</artifactId>-->
-      <!--<version>${project.version}</version>-->
-      <!--<type>zip</type>-->
-      <!--<optional>true</optional>-->
-    <!--</dependency>-->
-    <!-- Replace the Java SE logging backend with Logback, since it's very hard to disable the verbose logging otherwise. -->
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>1.0.13</version>
-      <optional>true</optional>
-    </dependency>
-  </dependencies>
+  <name>Remote Matching - Standalone Patch</name>
+
   <build>
-    <finalName>${project.artifactId}-${project.version}-${maven.build.timestamp}</finalName>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-assembly-plugin</artifactId>
-          <configuration>
-            <appendAssemblyId>false</appendAssemblyId>
-          </configuration>
-          <executions>
-            <execution>
-              <id>make-assembly</id>
-              <phase>package</phase>
-              <goals>
-                <goal>single</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-      </plugins>
-    </pluginManagement>
     <plugins>
-      <!-- Inject Hibernate's configuration for the specified database -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-remote-resources-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <configuration>
-          <descriptors>
-            <descriptor>src/assemble/application.xml</descriptor>
-          </descriptors>
-        </configuration>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-artifact</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>remote-matching-adapters</artifactId>
+                  <version>${project.version}</version>
+                  <type>jar</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>remote-matching-core-api</artifactId>
+                  <version>${project.version}</version>
+                  <type>jar</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>remote-matching-core-client</artifactId>
+                  <version>${project.version}</version>
+                  <type>jar</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>remote-matching-core-server</artifactId>
+                  <version>${project.version}</version>
+                  <type>jar</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>remote-matching-core-hibernate</artifactId>
+                  <version>${project.version}</version>
+                  <type>jar</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>remote-matching-wrappers</artifactId>
+                  <version>${project.version}</version>
+                  <type>jar</type>
+                </artifactItem>
+              </artifactItems>
+              <outputDirectory>patch</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

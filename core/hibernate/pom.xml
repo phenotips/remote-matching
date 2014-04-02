@@ -57,7 +57,7 @@
       <version>${xwiki.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.remotematching</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>remote-matching-core-api</artifactId>
       <version>${project.version}</version>
     </dependency>

@@ -21,8 +21,12 @@ package org.phenotips.remote.server.internal;
 
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.adapters.internal.OutgoingResultsAdapter;
-import org.phenotips.remote.api.IncomingRequestProcessorInterface;
-import org.phenotips.remote.api.RequestEntity;
+import org.phenotips.remote.api.RequestProcessorInterface;
+import org.phenotips.remote.hibernate.HibernatePatientInterface;
+import org.phenotips.remote.hibernate.RequestEntity;
+import org.phenotips.remote.hibernate.internal.HibernatePatient;
+import org.phenotips.remote.hibernate.internal.IncomingSearchRequest;
+import org.phenotips.remote.wrappers.internal.JSONToPatientWrapper;
 import org.phenotips.similarity.SimilarPatientsFinder;
 
 import org.xwiki.component.annotation.Component;
@@ -50,7 +54,7 @@ import net.sf.json.JSONObject;
  */
 @Component
 @Singleton
-public class IncomingRequestProcessor implements IncomingRequestProcessorInterface
+public class IncomingRequestProcessor implements RequestProcessorInterface
 {
     /** Handles persistence. */
     @Inject
@@ -61,6 +65,9 @@ public class IncomingRequestProcessor implements IncomingRequestProcessorInterfa
 
     @Inject
     private Execution execution;
+
+    /** This object is populated with information (at least status) on error */
+    private JSONObject errorJson = new JSONObject();
 
     public JSONObject processRequest(String json) throws XWikiException
     {
@@ -73,8 +80,16 @@ public class IncomingRequestProcessor implements IncomingRequestProcessorInterfa
         //Should use setUserReference(DocumentReference userReference);
         context.setUser("xwiki:XWiki.Admin");
 
+        HibernatePatientInterface hibernatePatient = null;
+        try {
+            hibernatePatient = new JSONToPatientWrapper(JSONObject.fromObject(json));
+        } catch (Exception ex) {
+            errorJson.put("status", 400);
+            return errorJson;
+        }
         RequestEntity requestObject = new IncomingSearchRequest();
-        //FIXME. Check if the request needs to be stored.
+        requestObject.setReferencePatient((HibernatePatient) hibernatePatient);
+        //FIXME. Check if the request needs to be stored. Which should be done by the #storeRequest function.
         Long requestObjectId = storeRequest(requestObject);
 
         JSONObject response = new JSONObject();
@@ -85,7 +100,6 @@ public class IncomingRequestProcessor implements IncomingRequestProcessorInterfa
         try {
             similarPatients = requestObject.getResults(patientsFinder);
         } catch (IllegalArgumentException ex) {
-            JSONObject errorJson = new JSONObject();
             errorJson.put("status", getStatus(requestObject));
             return errorJson;
         }
@@ -103,12 +117,14 @@ public class IncomingRequestProcessor implements IncomingRequestProcessorInterfa
         response.put("queryID", requestObjectId);
         response.put("responseType", requestObject.getResponseType());
         response.put("results", results);
-        response.put("status", requestObject.getResponseStatus());
+        response.put("status", getStatus(requestObject));
 
         return response;
     }
 
-    private Integer getStatus(RequestEntity requestObject) { return requestObject.getResponseStatus(); }
+    // (FIXME?) Rather redundant
+    private Integer getStatus(RequestEntity requestObject)
+    { return requestObject.getResponseStatus(); }
 
     private Long storeRequest(RequestEntity requestObject)
     {

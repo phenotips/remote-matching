@@ -17,21 +17,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.server.internal;
+package org.phenotips.remote.hibernate.internal;
 
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.Configuration;
-import org.phenotips.remote.api.HibernatePatientInterface;
-import org.phenotips.remote.api.RequestEntity;
+import org.phenotips.remote.hibernate.RequestEntity;
+import org.phenotips.remote.hibernate.HibernatePatientInterface;
 import org.phenotips.similarity.SimilarPatientsFinder;
 
 import org.xwiki.model.reference.DocumentReference;
 
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -49,25 +51,18 @@ public class IncomingSearchRequest implements RequestEntity
     @GeneratedValue
     private long id;
 
-    private HibernatePatientInterface referencePatient = null;
+    @OneToOne(mappedBy = "incomingSearchRequest", cascade = CascadeType.ALL)
+    private HibernatePatient referencePatient = null;
 
     private Integer httpStatus = 200;
 
     public IncomingSearchRequest()
-    {
-//        JSONArray jsonFeatures = (JSONArray) json.get("features");
-//        for (Object jsonFeatureUncast : jsonFeatures) {
-//            JSONObject jsonFeature = (JSONObject) jsonFeatureUncast;
-//            HibernatePatientFeature feature = new HibernatePatientFeature();
-//            feature.setId(jsonFeature.getString("id"));
-//            feature.setPresent(convertTextToIntBool(jsonFeature.getString("observed")));
-//            features.add(feature);
-//        }
-    }
+    {}
 
+    //Fixme. Type should not be set in stone.
     public String getResponseType() { return Configuration.IncomingRequestResponseType; }
 
-    public void setReferencePatient(HibernatePatientInterface patient) { referencePatient = patient; }
+    public void setReferencePatient(HibernatePatient patient) { referencePatient = patient; }
 
     public HibernatePatientInterface getReferencePatient() throws IllegalArgumentException
     {
