@@ -17,13 +17,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.hibernate;
+package org.phenotips.remote.hibernate.internal;
 
 import org.phenotips.components.ComponentManagerRegistry;
 import org.phenotips.data.FeatureMetadatum;
 import org.phenotips.ontology.OntologyManager;
 import org.phenotips.ontology.OntologyTerm;
-import org.phenotips.remote.api.HibernatePatientFeatureInterface;
+import org.phenotips.remote.hibernate.HibernatePatientFeatureInterface;
 
 import org.xwiki.component.manager.ComponentLookupException;
 
@@ -33,9 +33,9 @@ import java.util.TreeMap;
 
 import javax.persistence.Basic;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
@@ -57,8 +57,9 @@ public class HibernatePatientFeature implements HibernatePatientFeatureInterface
     @Basic
     private String id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    public HibernatePatient hibernatepatient;
+    @ManyToOne
+    @JoinColumn(name = "HP_ID")
+    public HibernatePatient hibernatePatient;
 
     /** 1 - true, -1 - false, 0 - NA */
     @Basic
@@ -136,7 +137,7 @@ public class HibernatePatientFeature implements HibernatePatientFeatureInterface
         this.id = newId;
     }
 
-    public void setPresent(int isPresent)
+    public void setPresent(Integer isPresent)
     {
         present = isPresent;
     }

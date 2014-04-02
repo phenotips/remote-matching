@@ -17,19 +17,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.api;
+package org.phenotips.remote.hibernate;
 
-import org.xwiki.component.annotation.Role;
-
-import com.xpn.xwiki.XWikiException;
-
-import net.sf.json.JSONObject;
+import org.phenotips.data.Feature;
 
 /**
- * TODO fix the doc
+ * TODO.
  */
-@Role
-public interface IncomingRequestProcessorInterface
+public interface HibernatePatientFeatureInterface extends Feature
 {
-    JSONObject processRequest(String json) throws XWikiException;
+    void setId(String id);
+
+    void setPresent(Integer present);
 }

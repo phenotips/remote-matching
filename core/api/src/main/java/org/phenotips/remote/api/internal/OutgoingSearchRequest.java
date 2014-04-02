@@ -33,15 +33,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import javax.persistence.Basic;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-
 import org.apache.commons.lang3.StringUtils;
 
 import net.sf.json.JSONObject;
@@ -53,20 +44,20 @@ import net.sf.json.JSONObject;
  *
  * @version $Id$
  */
-@Entity
+//@Entity
 public class OutgoingSearchRequest implements OutgoingRequestEntity
 {
-    @Id
-    @GeneratedValue
+//    @Id
+//    @GeneratedValue
     private long id;
 
-    @Basic
+//    @Basic
     private String externalId;
-
-    //FIXME Check is right cascade type
-    @OneToMany(cascade= CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name="HP_ID")
-    public Set<HibernatePatient> results = new HashSet<HibernatePatient>();
+//
+//    //FIXME Check is right cascade type
+//    @OneToMany(cascade= CascadeType.ALL, fetch = FetchType.EAGER)
+//    @JoinColumn(name="HP_ID")
+//    public Set<HibernatePatientInt> results = new HashSet<HibernatePatient>();
 
     //Don't bother saving the patient object. Just save the reference. That way if the patient is updated,
     //we are not missing out on the update.
@@ -75,17 +66,17 @@ public class OutgoingSearchRequest implements OutgoingRequestEntity
     public List<PatientSimilarityView> getResults(Patient referencePatient, PatientSimilarityViewFactory viewFactory)
     {
         List<PatientSimilarityView> patientSimilarityViews = new LinkedList<PatientSimilarityView>();
-        for (Patient patient : results) {
-            patientSimilarityViews.add(viewFactory.makeSimilarPatient(patient, referencePatient));
-        }
+//        for (Patient patient : results) {
+//            patientSimilarityViews.add(viewFactory.makeSimilarPatient(patient, referencePatient));
+//        }
         return patientSimilarityViews;
     }
 
     public void addResult(JSONObject json)
     {
-        HibernatePatient resultPatient = new HibernatePatient();
-        resultPatient.populatePatient(json);
-        results.add(resultPatient);
+//        HibernatePatient resultPatient = new HibernatePatient();
+//        resultPatient.populatePatient(json);
+//        results.add(resultPatient);
     }
 
     public void setRequestExternalId(String id)

@@ -1,8 +1,7 @@
 Remote Matching service
 =======================
 
-**Soon, this repository will be a beautiful little butterfly, with spotless, glossy, polished wings.
-But right its a cocoon oozing with imperfection**
+**The repository has only VERY basic functionality. It is a prototype that has been refactored for fast future development**
 
 How to install/use:
  - Build PhenomeCentral.org with PatientNetwork
@@ -33,6 +32,7 @@ Path                   |             | Details
                        |```api/```   | Besides interfaces, contains the only script service
                        |```server/```|
                        |```client/```|
+                       |```hibernate/```|
 ```adapters/```        |             | <p>The script service connecting the XWiki user interface to the Java backend. Static to/from JSON converters</p>
 ```wrappers/```        |             | <p>These are logical outcasts. They do no belong in ```adapters/```, nor in ```core/```. They are the middlemen between ```core``` and ```adapters```</p>
-```standalone-patch``` |             | Does not currently work
+```standalone-patch``` |             | This is where all the jars are copied to for convenience

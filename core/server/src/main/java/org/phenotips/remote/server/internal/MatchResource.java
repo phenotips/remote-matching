@@ -19,7 +19,7 @@
  */
 package org.phenotips.remote.server.internal;
 
-import org.phenotips.remote.api.IncomingRequestProcessorInterface;
+import org.phenotips.remote.api.RequestProcessorInterface;
 import org.phenotips.remote.server.MatchInterface;
 
 import org.xwiki.component.annotation.Component;
@@ -43,7 +43,7 @@ import net.sf.json.JSONObject;
 public class MatchResource extends XWikiResource implements MatchInterface
 {
     @Inject
-    IncomingRequestProcessorInterface requestProcessor;
+    RequestProcessorInterface requestProcessor;
 
     @Override
     public Response matchPost(String json) throws XWikiRestException, XWikiException

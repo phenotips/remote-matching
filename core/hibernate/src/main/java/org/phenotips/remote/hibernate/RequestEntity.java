@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<!--
+/*
  * See the NOTICE file distributed with this work for additional
  * information regarding copyright ownership.
  *
@@ -18,24 +16,33 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
--->
+ */
+package org.phenotips.remote.hibernate;
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.remotematching</groupId>
-    <artifactId>remote-matching-parent</artifactId>
-    <version>1.0-SNAPSHOT</version>
-  </parent>
-  <artifactId>remote-matching-core</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <name>Remote Matching - Core</name>
-  <packaging>pom</packaging>
+import org.phenotips.data.similarity.PatientSimilarityView;
+import org.phenotips.remote.hibernate.internal.HibernatePatient;
+import org.phenotips.similarity.SimilarPatientsFinder;
 
-  <modules>
-    <module>server</module>
-    <module>client</module>
-    <module>api</module>
-    <module>hibernate</module>
-  </modules>
-</project>
+import java.util.List;
+
+/**
+ * The functions essential to the servers ability to store, track, an answer search requests.
+ */
+public interface RequestEntity
+{
+    HibernatePatientInterface getReferencePatient() throws IllegalArgumentException;
+
+    void setReferencePatient(HibernatePatient patient);
+
+    long getRequestId();
+
+    String getResponseType();
+
+    Integer getResponseStatus();
+
+    String getResponseTargetURL();
+
+    String getSubmitterEmail();
+
+    List<PatientSimilarityView> getResults(SimilarPatientsFinder finder) throws IllegalArgumentException;
+}

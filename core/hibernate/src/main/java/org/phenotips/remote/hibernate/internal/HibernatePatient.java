@@ -17,13 +17,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.hibernate;
+package org.phenotips.remote.hibernate.internal;
 
 import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
 import org.phenotips.data.PatientData;
-import org.phenotips.remote.api.HibernatePatientInterface;
-import org.phenotips.remote.api.internal.OutgoingSearchRequest;
+import org.phenotips.remote.hibernate.HibernatePatientInterface;
 
 import org.xwiki.model.reference.DocumentReference;
 
@@ -37,13 +36,10 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 
-import org.apache.commons.lang3.StringUtils;
-
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 @Entity
@@ -56,11 +52,12 @@ public class HibernatePatient implements HibernatePatientInterface
     @Basic
     private String externalId;
 
-    @ManyToOne (fetch = FetchType.EAGER)
-    public OutgoingSearchRequest outgoingsearchrequest;
+//    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne
+    @PrimaryKeyJoinColumn
+    public IncomingSearchRequest incomingSearchRequest;
 
-    @OneToMany(cascade= CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name="HF_ID")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "hibernatePatient")
     public Set<HibernatePatientFeature> features = new HashSet<HibernatePatientFeature>();
 
     public HibernatePatient()
@@ -68,28 +65,7 @@ public class HibernatePatient implements HibernatePatientInterface
 
     }
 
-    public void populatePatient(JSONObject json)
-    {
-        JSONArray jsonFeatures = (JSONArray) json.get("features");
-        for (Object jsonFeatureUncast : jsonFeatures) {
-            JSONObject jsonFeature = (JSONObject) jsonFeatureUncast;
-            HibernatePatientFeature feature = new HibernatePatientFeature();
-            feature.setId(jsonFeature.getString("id"));
-            feature.setPresent(convertTextToIntBool(jsonFeature.getString("observed")));
-            features.add(feature);
-        }
-    }
-
-    private int convertTextToIntBool(String text)
-    {
-        if (StringUtils.equalsIgnoreCase(text, "yes")) {
-            return 1;
-        } else if (StringUtils.equalsIgnoreCase(text, "no")) {
-            return -1;
-        } else {
-            return 0;
-        }
-    }
+    public void addFeatures(Set<HibernatePatientFeature> featureSet) { features.addAll(featureSet); }
 
     public long getRequestId()
     {
@@ -118,7 +94,7 @@ public class HibernatePatient implements HibernatePatientInterface
 
     public String getId()
     {
-        return "RemotePatient"+id;
+        return "RemotePatient" + id;
     }
 
     public String getExternalId()
@@ -164,7 +140,8 @@ public class HibernatePatient implements HibernatePatientInterface
         throw new UnsupportedOperationException();
     }
 
-    public void updateFromJSON(JSONObject json) {
+    public void updateFromJSON(JSONObject json)
+    {
         throw new UnsupportedOperationException();
     }
 }
