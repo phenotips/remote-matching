@@ -26,7 +26,7 @@ import org.phenotips.remote.RemoteMatchingClient;
 import org.phenotips.remote.adapters.DataAdapter;
 import org.phenotips.remote.adapters.internal.DataAdapterImpl;
 import org.phenotips.remote.api.RequestConfiguration;
-import org.phenotips.remote.api.internal.OutgoingSearchRequest;
+import org.phenotips.remote.hibernate.internal.OutgoingSearchRequest;
 import org.phenotips.remote.api.internal.RequestConfigurationImpl;
 
 import org.xwiki.component.annotation.Component;
@@ -157,7 +157,8 @@ public class RemoteMatchingScriptService implements ScriptService
 //                for (HibernatePatient patientResult : outgoingSearchRequest.results) {
 //                    Hibernate.initialize(patientResult);
 //                }
-                List<PatientSimilarityView> allResults = outgoingSearchRequest.getResults(patient, viewFactory);
+                //FIXME. First need to have the reference patient when this is going to work for real.
+                List<PatientSimilarityView> allResults = outgoingSearchRequest.getResults(viewFactory);
                 resultsList.addAll(allResults);
             }
 

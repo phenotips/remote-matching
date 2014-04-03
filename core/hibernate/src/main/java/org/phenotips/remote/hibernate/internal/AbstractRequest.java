@@ -17,32 +17,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.hibernate;
+package org.phenotips.remote.hibernate.internal;
 
-import org.phenotips.data.similarity.PatientSimilarityView;
-import org.phenotips.remote.hibernate.internal.HibernatePatient;
-import org.phenotips.similarity.SimilarPatientsFinder;
+import org.phenotips.remote.hibernate.RequestInterface;
 
-import java.util.List;
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.Table;
 
 /**
- * The functions essential to the servers ability to store, track, an answer search requests.
+ * Due to hibernate limitations this abstract class needs to exist.
  */
-public interface RequestEntity
+@Entity
+@Inheritance
+@DiscriminatorColumn(name = "request_type")
+@Table(name = "remote_matching_requests")
+public abstract class AbstractRequest implements RequestInterface
 {
-    HibernatePatientInterface getReferencePatient() throws IllegalArgumentException;
-
-    void setReferencePatient(HibernatePatient patient);
-
-    long getRequestId();
-
-    String getResponseType();
-
-    Integer getResponseStatus();
-
-    String getResponseTargetURL();
-
-    String getSubmitterEmail();
-
-    List<PatientSimilarityView> getResults(SimilarPatientsFinder finder) throws IllegalArgumentException;
+    @Id
+    @GeneratedValue
+    protected long id;
 }

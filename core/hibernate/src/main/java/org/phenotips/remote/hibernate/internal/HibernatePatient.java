@@ -36,9 +36,8 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.PrimaryKeyJoinColumn;
 
 import net.sf.json.JSONObject;
 
@@ -52,10 +51,8 @@ public class HibernatePatient implements HibernatePatientInterface
     @Basic
     private String externalId;
 
-//    @OneToOne(fetch = FetchType.EAGER)
-    @OneToOne
-    @PrimaryKeyJoinColumn
-    public IncomingSearchRequest incomingSearchRequest;
+    @ManyToOne
+    public AbstractRequest requestEntity;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "hibernatePatient")
     public Set<HibernatePatientFeature> features = new HashSet<HibernatePatientFeature>();

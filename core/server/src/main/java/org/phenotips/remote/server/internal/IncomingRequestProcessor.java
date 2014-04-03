@@ -21,12 +21,13 @@ package org.phenotips.remote.server.internal;
 
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.adapters.internal.OutgoingResultsAdapter;
+import org.phenotips.remote.hibernate.IncomingSearchRequestInterface;
 import org.phenotips.remote.api.RequestProcessorInterface;
 import org.phenotips.remote.hibernate.HibernatePatientInterface;
-import org.phenotips.remote.hibernate.RequestEntity;
+import org.phenotips.remote.hibernate.RequestInterface;
 import org.phenotips.remote.hibernate.internal.HibernatePatient;
 import org.phenotips.remote.hibernate.internal.IncomingSearchRequest;
-import org.phenotips.remote.wrappers.internal.JSONToPatientWrapper;
+import org.phenotips.remote.wrappers.internal.JSONToHibernatePatientWrapper;
 import org.phenotips.similarity.SimilarPatientsFinder;
 
 import org.xwiki.component.annotation.Component;
@@ -80,14 +81,14 @@ public class IncomingRequestProcessor implements RequestProcessorInterface
         //Should use setUserReference(DocumentReference userReference);
         context.setUser("xwiki:XWiki.Admin");
 
-        HibernatePatientInterface hibernatePatient = null;
+        HibernatePatientInterface hibernatePatient;
         try {
-            hibernatePatient = new JSONToPatientWrapper(JSONObject.fromObject(json));
+            hibernatePatient = new JSONToHibernatePatientWrapper(JSONObject.fromObject(json));
         } catch (Exception ex) {
             errorJson.put("status", 400);
             return errorJson;
         }
-        RequestEntity requestObject = new IncomingSearchRequest();
+        IncomingSearchRequestInterface requestObject = new IncomingSearchRequest();
         requestObject.setReferencePatient((HibernatePatient) hibernatePatient);
         //FIXME. Check if the request needs to be stored. Which should be done by the #storeRequest function.
         Long requestObjectId = storeRequest(requestObject);
@@ -96,7 +97,7 @@ public class IncomingRequestProcessor implements RequestProcessorInterface
         JSONArray results = new JSONArray();
 
         //Error here most likely means that the request contained malformed patient data, or none at all.
-        List<PatientSimilarityView> similarPatients = null;
+        List<PatientSimilarityView> similarPatients;
         try {
             similarPatients = requestObject.getResults(patientsFinder);
         } catch (IllegalArgumentException ex) {
@@ -123,10 +124,10 @@ public class IncomingRequestProcessor implements RequestProcessorInterface
     }
 
     // (FIXME?) Rather redundant
-    private Integer getStatus(RequestEntity requestObject)
+    private Integer getStatus(RequestInterface requestObject)
     { return requestObject.getResponseStatus(); }
 
-    private Long storeRequest(RequestEntity requestObject)
+    private Long storeRequest(RequestInterface requestObject)
     {
         Session session = this.sessionFactory.getSessionFactory().openSession();
 

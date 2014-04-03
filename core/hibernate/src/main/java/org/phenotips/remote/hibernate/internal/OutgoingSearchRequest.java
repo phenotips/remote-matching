@@ -17,14 +17,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.api.internal;
+package org.phenotips.remote.hibernate.internal;
 
 import org.phenotips.data.Disorder;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.data.similarity.PatientSimilarityViewFactory;
-import org.phenotips.remote.api.OutgoingRequestEntity;
+import org.phenotips.remote.hibernate.OutgoingSearchRequestInterface;
 
 import org.xwiki.model.reference.DocumentReference;
 
@@ -33,43 +33,56 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.Basic;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+
 import org.apache.commons.lang3.StringUtils;
 
 import net.sf.json.JSONObject;
 
 /**
- * Class for storing an incoming request outside the main PhenoTips database for privacy reasons. It is a combination of
- * a Patient interface, and a Request interface. Some functions, such as getId are ambiguous, because they can apply
- * both to the patient and the request. However, this seems to be the lesser evil at this time.
- *
+ * TODO.
  * @version $Id$
  */
-//@Entity
-public class OutgoingSearchRequest implements OutgoingRequestEntity
+@Entity
+@DiscriminatorValue("outgoing")
+public class OutgoingSearchRequest extends AbstractRequest implements OutgoingSearchRequestInterface
 {
-//    @Id
-//    @GeneratedValue
-    private long id;
-
-//    @Basic
+    @Basic
     private String externalId;
-//
+
+    @Basic
+    private String referencePatientId;
+
+    @Transient
+    private Patient referencePatient;
+
 //    //FIXME Check is right cascade type
 //    @OneToMany(cascade= CascadeType.ALL, fetch = FetchType.EAGER)
 //    @JoinColumn(name="HP_ID")
 //    public Set<HibernatePatientInt> results = new HashSet<HibernatePatient>();
 
-    //Don't bother saving the patient object. Just save the reference. That way if the patient is updated,
-    //we are not missing out on the update.
-    //Maybe there's not even a need to do that.
-
-    public List<PatientSimilarityView> getResults(Patient referencePatient, PatientSimilarityViewFactory viewFactory)
+    public List<PatientSimilarityView> getResults(PatientSimilarityViewFactory viewFactory)
     {
         List<PatientSimilarityView> patientSimilarityViews = new LinkedList<PatientSimilarityView>();
 //        for (Patient patient : results) {
 //            patientSimilarityViews.add(viewFactory.makeSimilarPatient(patient, referencePatient));
 //        }
         return patientSimilarityViews;
+    }
+
+    @Override
+    public void setReferencePatient(Patient referencePatient)
+    {
+        this.referencePatient = referencePatient;
+        this.referencePatientId = referencePatient.getId();
+    }
+
+    public Patient getReferencePatient()
+    {
+        throw new UnsupportedOperationException();
     }
 
     public void addResult(JSONObject json)
@@ -110,7 +123,7 @@ public class OutgoingSearchRequest implements OutgoingRequestEntity
         throw new UnsupportedOperationException();
     }
 
-    public boolean getResponseStatus()
+    public Integer getResponseStatus()
     {
         throw new UnsupportedOperationException();
     }

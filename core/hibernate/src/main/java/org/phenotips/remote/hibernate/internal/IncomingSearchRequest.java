@@ -21,7 +21,7 @@ package org.phenotips.remote.hibernate.internal;
 
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.Configuration;
-import org.phenotips.remote.hibernate.RequestEntity;
+import org.phenotips.remote.hibernate.IncomingSearchRequestInterface;
 import org.phenotips.remote.hibernate.HibernatePatientInterface;
 import org.phenotips.similarity.SimilarPatientsFinder;
 
@@ -30,9 +30,8 @@ import org.xwiki.model.reference.DocumentReference;
 import java.util.List;
 
 import javax.persistence.CascadeType;
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.OneToOne;
 
 import org.apache.commons.lang3.StringUtils;
@@ -45,13 +44,14 @@ import org.apache.commons.lang3.StringUtils;
  * @version $Id$
  */
 @Entity
-public class IncomingSearchRequest implements RequestEntity
+@DiscriminatorValue("incoming")
+public class IncomingSearchRequest extends AbstractRequest implements IncomingSearchRequestInterface
 {
-    @Id
-    @GeneratedValue
-    private long id;
+//    @Id
+//    @GeneratedValue
+//    private long id;
 
-    @OneToOne(mappedBy = "incomingSearchRequest", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "requestEntity", cascade = CascadeType.ALL)
     private HibernatePatient referencePatient = null;
 
     private Integer httpStatus = 200;
