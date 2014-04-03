@@ -49,7 +49,7 @@ public class MatchResource extends XWikiResource implements MatchInterface
     public Response matchPost(String json) throws XWikiRestException, XWikiException
     {
         JSONObject jsonResponse = requestProcessor.processRequest(json);
-        Integer status = (Integer) jsonResponse.get("status");
+        Integer status = (Integer) jsonResponse.remove("status");
         if (status == 200) {
             return Response.ok(jsonResponse, MediaType.APPLICATION_JSON).build();
         } else {

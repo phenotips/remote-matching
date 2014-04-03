@@ -17,26 +17,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.wrappers.internal;
+package org.phenotips.remote.hibernate;
 
-import org.phenotips.remote.adapters.JSONToPatientConverter;
+import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.hibernate.internal.HibernatePatient;
-import org.phenotips.remote.hibernate.internal.HibernatePatientFeature;
+import org.phenotips.similarity.SimilarPatientsFinder;
 
-import java.util.Set;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import java.util.List;
 
 /**
- * TODO.
+ * The functions essential to the servers ability to track outgoing search requests.
  */
-public class JSONToPatientWrapper extends HibernatePatient
+public interface IncomingSearchRequestInterface extends RequestInterface
 {
-    public JSONToPatientWrapper(JSONObject json)
-    {
-        JSONArray jsonFeautures = (JSONArray) json.get("features");
-        Set<HibernatePatientFeature> features = JSONToPatientConverter.convertFeatures(jsonFeautures);
-        this.addFeatures(features);
-    }
+    public List<PatientSimilarityView> getResults(SimilarPatientsFinder viewFactory);
+
+    void setReferencePatient(HibernatePatient patient);
+
+    HibernatePatientInterface getReferencePatient() throws IllegalArgumentException;
 }

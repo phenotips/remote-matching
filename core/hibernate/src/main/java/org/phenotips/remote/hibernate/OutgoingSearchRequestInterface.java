@@ -17,14 +17,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.api;
+package org.phenotips.remote.hibernate;
+
+import org.phenotips.data.Patient;
+import org.phenotips.data.similarity.PatientSimilarityView;
+import org.phenotips.data.similarity.PatientSimilarityViewFactory;
+
+import java.util.List;
 
 /**
  * The functions essential to the servers ability to track outgoing search requests.
  */
-public interface OutgoingRequestEntity
+public interface OutgoingSearchRequestInterface extends RequestInterface
 {
-    String getRequestExternalId();
+    public List<PatientSimilarityView> getResults(PatientSimilarityViewFactory viewFactory);
 
-    void setRequestExternalId(String id);
+    void setReferencePatient(Patient patient);
+
+    Patient getReferencePatient();
 }
