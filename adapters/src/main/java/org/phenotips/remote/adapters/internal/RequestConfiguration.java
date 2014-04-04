@@ -17,26 +17,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.hibernate;
+package org.phenotips.remote.adapters.internal;
 
-import org.phenotips.data.Patient;
-import org.phenotips.data.similarity.PatientSimilarityView;
-import org.phenotips.data.similarity.PatientSimilarityViewFactory;
-
-import java.util.List;
-
-import net.sf.json.JSONObject;
+import org.phenotips.remote.api.RequestConfigurationInterface;
 
 /**
- * The functions essential to the servers ability to track outgoing search requests.
+ * TODO fix the doc
  */
-public interface OutgoingSearchRequestInterface extends RequestInterface
+public class RequestConfiguration implements RequestConfigurationInterface
 {
-    List<PatientSimilarityView> getResults(PatientSimilarityViewFactory viewFactory);
+    private String url = "http://localhost:8080/rest/remoteMatcher";
 
-    void setReferencePatient(Patient patient);
+    private String key = "THE_KEY";
 
-    Patient getReferencePatient();
-
-    void addResult(JSONObject json);
+    public String getURL()
+    {
+        return url+"/match?media=json&key="+key;
+    }
 }

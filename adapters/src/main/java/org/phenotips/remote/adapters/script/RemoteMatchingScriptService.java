@@ -23,11 +23,13 @@ import org.phenotips.data.Patient;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.data.similarity.PatientSimilarityViewFactory;
 import org.phenotips.remote.RemoteMatchingClient;
-import org.phenotips.remote.adapters.DataAdapter;
-import org.phenotips.remote.adapters.internal.DataAdapterImpl;
-import org.phenotips.remote.api.RequestConfiguration;
+import org.phenotips.remote.adapters.WrapperInterface;
+import org.phenotips.remote.adapters.wrappers.OutgoingSearchRequestToJSONWrapper;
+import org.phenotips.remote.adapters.wrappers.XWikiToOutgoingSearchRequestWrapper;
+import org.phenotips.remote.api.RequestConfigurationInterface;
+import org.phenotips.remote.adapters.internal.RequestConfiguration;
+import org.phenotips.remote.hibernate.OutgoingSearchRequestInterface;
 import org.phenotips.remote.hibernate.internal.OutgoingSearchRequest;
-import org.phenotips.remote.api.internal.RequestConfigurationImpl;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
@@ -84,19 +86,19 @@ public class RemoteMatchingScriptService implements ScriptService
 
     public boolean sendRequest(String patientId, String submitterId, String requestGuid)
     {
+        //FIXME. PatientId, submitterId should be in the requestObject.
         try {
-            DataAdapter dataAdapter = new DataAdapterImpl(execution);
-            dataAdapter.setPatient(patientId);
-            dataAdapter.setSubmitter(submitterId);
-            dataAdapter.setPeriodic(false);
-            JSONObject json = dataAdapter.toJSON();
-            RequestConfiguration configuration = new RequestConfigurationImpl();
+            RequestConfigurationInterface configuration = new RequestConfiguration();
+            WrapperInterface<OutgoingSearchRequestInterface> wikiWrapper =
+                new XWikiToOutgoingSearchRequestWrapper(execution, patientId, submitterId);
+            OutgoingSearchRequestInterface requestObject = wikiWrapper.wrap();
+
+            WrapperInterface<JSONObject> requestWrapper = new OutgoingSearchRequestToJSONWrapper(requestObject);
+            JSONObject json = requestWrapper.wrap();
 
             Session session = this.sessionFactory.getSessionFactory().openSession();
 
             Transaction t = session.beginTransaction();
-
-            OutgoingSearchRequest requestObject = new OutgoingSearchRequest();
 
             String result = RemoteMatchingClient.sendRequest(json, configuration);
 

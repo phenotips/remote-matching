@@ -34,7 +34,7 @@ import net.sf.json.JSONObject;
  * limitations, it was not possible to have both. If the code is being modified, please keep all the functions static,
  * even though they are not explicitly declared so.
  */
-public class JSONToPatientConverter
+public class JSONToHibernatePatientConverter
 {
     public static Set<HibernatePatientFeature> convertFeatures(JSONArray featuresJson)
     {

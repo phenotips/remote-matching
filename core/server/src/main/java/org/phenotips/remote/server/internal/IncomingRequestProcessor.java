@@ -27,7 +27,7 @@ import org.phenotips.remote.hibernate.HibernatePatientInterface;
 import org.phenotips.remote.hibernate.RequestInterface;
 import org.phenotips.remote.hibernate.internal.HibernatePatient;
 import org.phenotips.remote.hibernate.internal.IncomingSearchRequest;
-import org.phenotips.remote.wrappers.internal.JSONToHibernatePatientWrapper;
+import org.phenotips.remote.adapters.wrappers.JSONToHibernatePatientWrapper;
 import org.phenotips.similarity.SimilarPatientsFinder;
 
 import org.xwiki.component.annotation.Component;
