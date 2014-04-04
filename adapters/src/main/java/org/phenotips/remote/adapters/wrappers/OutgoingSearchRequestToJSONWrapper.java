@@ -17,26 +17,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.wrappers.internal;
+package org.phenotips.remote.adapters.wrappers;
 
-import org.phenotips.remote.adapters.JSONToPatientConverter;
-import org.phenotips.remote.hibernate.internal.HibernatePatient;
-import org.phenotips.remote.hibernate.internal.HibernatePatientFeature;
+import org.phenotips.remote.adapters.WrapperInterface;
+import org.phenotips.remote.hibernate.OutgoingSearchRequestInterface;
 
-import java.util.Set;
-
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
- * TODO.
+ * Unfortunately because JSONObject is final, this class, unlike all the other wrappers cannot extend the object.
+ * Therefore, breaking the existing pattern it uses {@link #wrap} method and returns JSONObject.
  */
-public class JSONToHibernatePatientWrapper extends HibernatePatient
+public class OutgoingSearchRequestToJSONWrapper implements WrapperInterface<JSONObject>
 {
-    public JSONToHibernatePatientWrapper(JSONObject json)
+    private OutgoingSearchRequestInterface request;
+
+    public OutgoingSearchRequestToJSONWrapper(OutgoingSearchRequestInterface request)
     {
-        JSONArray jsonFeautures = (JSONArray) json.get("features");
-        Set<HibernatePatientFeature> features = JSONToPatientConverter.convertFeatures(jsonFeautures);
-        this.addFeatures(features);
+        this.request = request;
+    }
+
+    public JSONObject wrap()
+    {
+        return new JSONObject();
     }
 }

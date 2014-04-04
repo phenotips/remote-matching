@@ -17,21 +17,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.api.internal;
+package org.phenotips.remote.adapters.wrappers;
 
-import org.phenotips.remote.api.RequestConfiguration;
+import org.phenotips.remote.adapters.JSONToHibernatePatientConverter;
+import org.phenotips.remote.hibernate.internal.HibernatePatient;
+import org.phenotips.remote.hibernate.internal.HibernatePatientFeature;
+
+import java.util.Set;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
- * TODO fix the doc
+ * TODO.
  */
-public class RequestConfigurationImpl implements RequestConfiguration
+public class JSONToHibernatePatientWrapper extends HibernatePatient
 {
-    private String url = "http://localhost:8080/rest/remoteMatcher";
-
-    private String key = "THE_KEY";
-
-    public String getRequestURL()
+    public JSONToHibernatePatientWrapper(JSONObject json)
     {
-        return url+"/match?media=json&key="+key;
+        JSONArray jsonFeautures = (JSONArray) json.get("features");
+        Set<HibernatePatientFeature> features = JSONToHibernatePatientConverter.convertFeatures(jsonFeautures);
+        this.addFeatures(features);
     }
 }

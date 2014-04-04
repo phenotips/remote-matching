@@ -19,7 +19,7 @@
  */
 package org.phenotips.remote;
 
-import org.phenotips.remote.api.RequestConfiguration;
+import org.phenotips.remote.api.RequestConfigurationInterface;
 
 import java.io.IOException;
 
@@ -40,14 +40,14 @@ import net.sf.json.JSONObject;
  */
 public class RemoteMatchingClient
 {
-    public static String sendRequest(JSONObject json, RequestConfiguration configuration)
+    public static String sendRequest(JSONObject json, RequestConfigurationInterface configuration)
         throws IOException
     {
         CloseableHttpClient client = HttpClients.createDefault();
 
         StringEntity jsonEntity = new StringEntity(json.toString(), ContentType.create("application/json", "UTF-8"));
 
-        HttpPost request = new HttpPost(configuration.getRequestURL());
+        HttpPost request = new HttpPost(configuration.getURL());
         request.setEntity(jsonEntity);
 
         CloseableHttpResponse httpResponse = client.execute(request);

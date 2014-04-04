@@ -24,7 +24,7 @@ package org.phenotips.remote.api;
  *
  * The object that is used by the core client (and server) to as a source of remote server/search's configuration.
  */
-public interface RequestConfiguration
+public interface RequestConfigurationInterface
 {
-    String getRequestURL();
+    String getURL();
 }
