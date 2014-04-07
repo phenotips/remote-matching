@@ -24,7 +24,7 @@ import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.data.similarity.PatientSimilarityViewFactory;
-import org.phenotips.remote.hibernate.OutgoingSearchRequestInterface;
+import org.phenotips.remote.api.OutgoingSearchRequestInterface;
 
 import org.xwiki.model.reference.DocumentReference;
 
@@ -58,6 +58,9 @@ public class OutgoingSearchRequest extends AbstractRequest implements OutgoingSe
 
     @Transient
     private Patient referencePatient;
+
+    @Basic
+    private String url;
 
 //    //FIXME Check is right cascade type
 //    @OneToMany(cascade= CascadeType.ALL, fetch = FetchType.EAGER)
@@ -118,17 +121,22 @@ public class OutgoingSearchRequest extends AbstractRequest implements OutgoingSe
         return id;
     }
 
+    public void setURL(String url)
+    {
+        this.url = url;
+    }
+
+    public String getURL()
+    {
+        return url;
+    }
+
     public String getResponseType()
     {
         throw new UnsupportedOperationException();
     }
 
     public Integer getResponseStatus()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public String getResponseTargetURL()
     {
         throw new UnsupportedOperationException();
     }

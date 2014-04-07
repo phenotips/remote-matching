@@ -19,10 +19,8 @@
  */
 package org.phenotips.remote.adapters;
 
-import org.phenotips.remote.hibernate.internal.HibernatePatientFeature;
-
-import java.util.HashSet;
-import java.util.Set;
+import org.phenotips.data.Feature;
+import org.phenotips.data.Patient;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,20 +34,23 @@ import net.sf.json.JSONObject;
  */
 public class PatientToJSONConverter
 {
-    public static Set<HibernatePatientFeature> convertFeatures(JSONArray featuresJson)
-    {
-        Set<HibernatePatientFeature> featureSet = new HashSet<HibernatePatientFeature>();
-        for (Object jsonFeatureUncast : featuresJson) {
-            JSONObject jsonFeature = (JSONObject) jsonFeatureUncast;
-            HibernatePatientFeature feature = new HibernatePatientFeature();
-            feature.setId(jsonFeature.getString("id"));
-            feature.setPresent(convertTextToIntBool(jsonFeature.getString("observed")));
-            featureSet.add(feature);
+    public static JSONArray features(Patient patient) {
+        JSONArray features = new JSONArray();
+        for (Feature phenotype : patient.getFeatures()) {
+            JSONObject phenotypeJson = phenotype.toJSON();
+            JSONObject featureJson = new JSONObject();
+            featureJson.put("id", phenotypeJson.get("id"));
+            featureJson.put("observed", phenotypeJson.getString("observed"));
+            Object ageOfOnset = phenotypeJson.get("age_of_onset");
+            if (ageOfOnset != null) {
+                featureJson.put("ageOfOnset", ageOfOnset.toString());
+            }
+            features.add(featureJson);
         }
-        return featureSet;
+        return features;
     }
 
-    private static int convertTextToIntBool(String text)
+    private static int yesNoToInt(String text)
     {
         if (StringUtils.equalsIgnoreCase(text, "yes")) {
             return 1;
@@ -57,6 +58,17 @@ public class PatientToJSONConverter
             return -1;
         } else {
             return 0;
+        }
+    }
+
+    private static String negativePositiveToYesNo(String text)
+    {
+        if (StringUtils.equalsIgnoreCase(text, "negative_phenotype")) {
+            return "no";
+        } else if (StringUtils.equalsIgnoreCase(text, "phenotype")) {
+            return "yes";
+        } else {
+            return "unknown";
         }
     }
 }

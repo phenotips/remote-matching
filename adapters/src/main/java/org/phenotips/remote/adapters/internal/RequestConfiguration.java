@@ -19,19 +19,62 @@
  */
 package org.phenotips.remote.adapters.internal;
 
+import org.phenotips.data.Patient;
+import org.phenotips.remote.adapters.XWikiAdapter;
+import org.phenotips.remote.api.OutgoingSearchRequestInterface;
 import org.phenotips.remote.api.RequestConfigurationInterface;
+import org.phenotips.remote.hibernate.internal.OutgoingSearchRequest;
+
+import org.xwiki.context.Execution;
+
+import com.xpn.xwiki.XWiki;
+import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.objects.BaseObject;
 
 /**
  * TODO fix the doc
  */
 public class RequestConfiguration implements RequestConfigurationInterface
 {
-    private String url = "http://localhost:8080/rest/remoteMatcher";
+    private String url;
 
     private String key = "THE_KEY";
+
+    private XWikiContext context;
+
+    private Patient patient;
+
+    public RequestConfiguration(BaseObject requestObject, Execution execution) throws XWikiException
+    {
+        context = (XWikiContext) execution.getContext().getProperty("xwikicontext");
+        XWiki wiki = context.getWiki();
+
+        String patientId = requestObject.getStringValue("patientId");
+        String submitterId = requestObject.getStringValue("submitterId");
+
+        patient = XWikiAdapter.getPatient(patientId, wiki, context);
+        BaseObject submitter = XWikiAdapter.getSubmitter(submitterId, wiki, context);
+        url = requestObject.getStringValue("baseUrl");
+    }
+
+    public Patient getPatient()
+    {
+        return patient;
+    }
 
     public String getURL()
     {
         return url+"/match?media=json&key="+key;
+    }
+
+    public OutgoingSearchRequestInterface createRequest()
+    {
+        OutgoingSearchRequestInterface request = new OutgoingSearchRequest();
+
+        request.setReferencePatient(getPatient());
+        request.setURL(getURL());
+
+        return request;
     }
 }

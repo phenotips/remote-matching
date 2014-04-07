@@ -17,26 +17,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.hibernate;
+package org.phenotips.remote.server;
 
-import org.phenotips.data.Patient;
-import org.phenotips.data.similarity.PatientSimilarityView;
-import org.phenotips.data.similarity.PatientSimilarityViewFactory;
+import org.xwiki.component.annotation.Role;
 
-import java.util.List;
+import com.xpn.xwiki.XWikiException;
 
 import net.sf.json.JSONObject;
 
 /**
- * The functions essential to the servers ability to track outgoing search requests.
+ * TODO fix the doc
  */
-public interface OutgoingSearchRequestInterface extends RequestInterface
+@Role
+public interface RequestProcessorInterface
 {
-    List<PatientSimilarityView> getResults(PatientSimilarityViewFactory viewFactory);
-
-    void setReferencePatient(Patient patient);
-
-    Patient getReferencePatient();
-
-    void addResult(JSONObject json);
+    JSONObject processRequest(String json) throws XWikiException;
 }

@@ -25,7 +25,6 @@ import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
 import org.phenotips.data.internal.PhenoTipsPatient;
 import org.phenotips.ontology.internal.solr.SolrOntologyTerm;
-import org.phenotips.remote.adapters.DataAdapter;
 
 import org.xwiki.component.phase.InitializationException;
 import org.xwiki.context.Execution;
@@ -58,7 +57,7 @@ import net.sf.json.JSONObject;
 //@Component
 //@Unstable
 //@InstantiationStrategy(ComponentInstantiationStrategy.PER_LOOKUP)
-public class DataAdapterImpl implements DataAdapter
+public class DataAdapterImpl
 {
     //    @Inject
     private Execution execution;

@@ -17,16 +17,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.hibernate;
-
-import org.phenotips.data.Feature;
+package org.phenotips.remote.api;
 
 /**
- * TODO.
+ * Since the original design pattern was not possible to implement, this interface is used to uphold consistency of
+ * implementation.
  */
-public interface HibernatePatientFeatureInterface extends Feature
+public interface WrapperInterface<T, O>
 {
-    void setId(String id);
-
-    void setPresent(Integer present);
+    T wrap(O object);
 }

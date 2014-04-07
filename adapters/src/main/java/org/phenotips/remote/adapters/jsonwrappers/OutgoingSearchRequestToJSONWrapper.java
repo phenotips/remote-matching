@@ -17,10 +17,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.adapters.wrappers;
+package org.phenotips.remote.adapters.jsonwrappers;
 
-import org.phenotips.remote.adapters.WrapperInterface;
-import org.phenotips.remote.hibernate.OutgoingSearchRequestInterface;
+import org.phenotips.remote.adapters.PatientToJSONConverter;
+import org.phenotips.remote.api.WrapperInterface;
+import org.phenotips.remote.api.OutgoingSearchRequestInterface;
 
 import net.sf.json.JSONObject;
 
@@ -28,17 +29,16 @@ import net.sf.json.JSONObject;
  * Unfortunately because JSONObject is final, this class, unlike all the other wrappers cannot extend the object.
  * Therefore, breaking the existing pattern it uses {@link #wrap} method and returns JSONObject.
  */
-public class OutgoingSearchRequestToJSONWrapper implements WrapperInterface<JSONObject>
+public class OutgoingSearchRequestToJSONWrapper implements WrapperInterface<JSONObject, OutgoingSearchRequestInterface>
 {
     private OutgoingSearchRequestInterface request;
 
-    public OutgoingSearchRequestToJSONWrapper(OutgoingSearchRequestInterface request)
+    public JSONObject wrap(OutgoingSearchRequestInterface request)
     {
-        this.request = request;
-    }
+        JSONObject json = new JSONObject();
 
-    public JSONObject wrap()
-    {
-        return new JSONObject();
+        json.put("features", PatientToJSONConverter.features(request.getReferencePatient()));
+
+        return json;
     }
 }

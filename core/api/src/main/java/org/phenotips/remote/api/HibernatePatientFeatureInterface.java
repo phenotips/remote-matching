@@ -17,11 +17,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.adapters.internal;
+package org.phenotips.remote.api;
+
+import org.phenotips.data.Feature;
 
 /**
- * Functions to retrieve configuration data of a remote search application/server/engine.
+ * TODO.
  */
-public class RequestAdapter
+public interface HibernatePatientFeatureInterface extends Feature
 {
+    void setId(String id);
+
+    void setPresent(Integer present);
 }
