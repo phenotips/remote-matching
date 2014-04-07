@@ -19,6 +19,8 @@
  */
 package org.phenotips.remote.api;
 
+import org.phenotips.data.Patient;
+
 /**
  * Todo fixme.
  *
@@ -27,4 +29,8 @@ package org.phenotips.remote.api;
 public interface RequestConfigurationInterface
 {
     String getURL();
+
+    Patient getPatient();
+
+    OutgoingSearchRequestInterface createRequest();
 }

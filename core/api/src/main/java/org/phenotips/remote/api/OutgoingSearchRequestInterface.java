@@ -17,26 +17,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.adapters.wrappers;
+package org.phenotips.remote.api;
 
-import org.phenotips.remote.adapters.JSONToHibernatePatientConverter;
-import org.phenotips.remote.hibernate.internal.HibernatePatient;
-import org.phenotips.remote.hibernate.internal.HibernatePatientFeature;
+import org.phenotips.data.Patient;
+import org.phenotips.data.similarity.PatientSimilarityView;
+import org.phenotips.data.similarity.PatientSimilarityViewFactory;
 
-import java.util.Set;
+import java.util.List;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
- * TODO.
+ * The functions essential to the servers ability to track outgoing search requests.
  */
-public class JSONToHibernatePatientWrapper extends HibernatePatient
+public interface OutgoingSearchRequestInterface extends RequestInterface
 {
-    public JSONToHibernatePatientWrapper(JSONObject json)
-    {
-        JSONArray jsonFeautures = (JSONArray) json.get("features");
-        Set<HibernatePatientFeature> features = JSONToHibernatePatientConverter.convertFeatures(jsonFeautures);
-        this.addFeatures(features);
-    }
+    List<PatientSimilarityView> getResults(PatientSimilarityViewFactory viewFactory);
+
+    void setReferencePatient(Patient patient);
+
+    Patient getReferencePatient();
+
+    void addResult(JSONObject json);
 }

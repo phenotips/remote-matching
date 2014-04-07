@@ -21,8 +21,8 @@ package org.phenotips.remote.hibernate.internal;
 
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.Configuration;
-import org.phenotips.remote.hibernate.IncomingSearchRequestInterface;
-import org.phenotips.remote.hibernate.HibernatePatientInterface;
+import org.phenotips.remote.api.IncomingSearchRequestInterface;
+import org.phenotips.remote.api.HibernatePatientInterface;
 import org.phenotips.similarity.SimilarPatientsFinder;
 
 import org.xwiki.model.reference.DocumentReference;
@@ -62,7 +62,7 @@ public class IncomingSearchRequest extends AbstractRequest implements IncomingSe
     //Fixme. Type should not be set in stone.
     public String getResponseType() { return Configuration.IncomingRequestResponseType; }
 
-    public void setReferencePatient(HibernatePatient patient) { referencePatient = patient; }
+    public void setReferencePatient(HibernatePatientInterface patient) { referencePatient = (HibernatePatient) patient; }
 
     public HibernatePatientInterface getReferencePatient() throws IllegalArgumentException
     {
@@ -98,7 +98,7 @@ public class IncomingSearchRequest extends AbstractRequest implements IncomingSe
 
     public Integer getResponseStatus() { return httpStatus; }
 
-    public String getResponseTargetURL()
+    public String getURL()
     {
         throw new UnsupportedOperationException();
     }

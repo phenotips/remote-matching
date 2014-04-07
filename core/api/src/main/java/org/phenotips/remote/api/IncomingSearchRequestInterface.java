@@ -19,17 +19,19 @@
  */
 package org.phenotips.remote.api;
 
-import org.xwiki.component.annotation.Role;
+import org.phenotips.data.similarity.PatientSimilarityView;
+import org.phenotips.similarity.SimilarPatientsFinder;
 
-import com.xpn.xwiki.XWikiException;
-
-import net.sf.json.JSONObject;
+import java.util.List;
 
 /**
- * TODO fix the doc
+ * The functions essential to the servers ability to track outgoing search requests.
  */
-@Role
-public interface RequestProcessorInterface
+public interface IncomingSearchRequestInterface extends RequestInterface
 {
-    JSONObject processRequest(String json) throws XWikiException;
+    public List<PatientSimilarityView> getResults(SimilarPatientsFinder viewFactory);
+
+    void setReferencePatient(HibernatePatientInterface patient);
+
+    HibernatePatientInterface getReferencePatient() throws IllegalArgumentException;
 }

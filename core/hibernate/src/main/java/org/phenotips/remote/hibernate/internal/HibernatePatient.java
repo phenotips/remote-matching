@@ -22,7 +22,8 @@ package org.phenotips.remote.hibernate.internal;
 import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
 import org.phenotips.data.PatientData;
-import org.phenotips.remote.hibernate.HibernatePatientInterface;
+import org.phenotips.remote.api.HibernatePatientFeatureInterface;
+import org.phenotips.remote.api.HibernatePatientInterface;
 
 import org.xwiki.model.reference.DocumentReference;
 
@@ -62,7 +63,12 @@ public class HibernatePatient implements HibernatePatientInterface
 
     }
 
-    public void addFeatures(Set<HibernatePatientFeature> featureSet) { features.addAll(featureSet); }
+    public void addFeatures(Set<HibernatePatientFeatureInterface> featureSet)
+    {
+        for (HibernatePatientFeatureInterface feature : featureSet) {
+            features.add((HibernatePatientFeature) feature);
+        }
+    }
 
     public long getRequestId()
     {

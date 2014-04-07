@@ -23,12 +23,11 @@ import org.phenotips.data.Patient;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.data.similarity.PatientSimilarityViewFactory;
 import org.phenotips.remote.RemoteMatchingClient;
-import org.phenotips.remote.adapters.WrapperInterface;
-import org.phenotips.remote.adapters.wrappers.OutgoingSearchRequestToJSONWrapper;
-import org.phenotips.remote.adapters.wrappers.XWikiToOutgoingSearchRequestWrapper;
-import org.phenotips.remote.api.RequestConfigurationInterface;
+import org.phenotips.remote.api.WrapperInterface;
 import org.phenotips.remote.adapters.internal.RequestConfiguration;
-import org.phenotips.remote.hibernate.OutgoingSearchRequestInterface;
+import org.phenotips.remote.adapters.jsonwrappers.OutgoingSearchRequestToJSONWrapper;
+import org.phenotips.remote.api.RequestConfigurationInterface;
+import org.phenotips.remote.api.OutgoingSearchRequestInterface;
 import org.phenotips.remote.hibernate.internal.OutgoingSearchRequest;
 
 import org.xwiki.component.annotation.Component;
@@ -45,7 +44,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -84,24 +82,20 @@ public class RemoteMatchingScriptService implements ScriptService
     @Inject
     private HibernateSessionFactory sessionFactory;
 
-    public boolean sendRequest(String patientId, String submitterId, String requestGuid)
+    public boolean sendRequest(com.xpn.xwiki.api.Object xwikiObject)
     {
         //FIXME. PatientId, submitterId should be in the requestObject.
         try {
-            RequestConfigurationInterface configuration = new RequestConfiguration();
-            WrapperInterface<OutgoingSearchRequestInterface> wikiWrapper =
-                new XWikiToOutgoingSearchRequestWrapper(execution, patientId, submitterId);
-            OutgoingSearchRequestInterface requestObject = wikiWrapper.wrap();
+            BaseObject xwikiRequestObject = xwikiObject.getXWikiObject();
+            RequestConfigurationInterface configuration = new RequestConfiguration(xwikiRequestObject, execution);
+            OutgoingSearchRequestInterface requestObject = configuration.createRequest();
 
-            WrapperInterface<JSONObject> requestWrapper = new OutgoingSearchRequestToJSONWrapper(requestObject);
-            JSONObject json = requestWrapper.wrap();
+            WrapperInterface<JSONObject, OutgoingSearchRequestInterface> requestWrapper =
+                new OutgoingSearchRequestToJSONWrapper();
+            String result = RemoteMatchingClient.sendRequest(requestObject, requestWrapper);
 
             Session session = this.sessionFactory.getSessionFactory().openSession();
-
             Transaction t = session.beginTransaction();
-
-            String result = RemoteMatchingClient.sendRequest(json, configuration);
-
             JSONObject jsonResult = JSONObject.fromObject(result);
             for (Object resultPatientUC : (JSONArray) jsonResult.get("results")) {
                 requestObject.addResult((JSONObject) resultPatientUC);
@@ -112,21 +106,16 @@ public class RemoteMatchingScriptService implements ScriptService
 
             XWikiContext context = (XWikiContext) execution.getContext().getProperty("xwikicontext");
             XWiki wiki = context.getWiki();
-            EntityReference patientReference =
-                new EntityReference(patientId, EntityType.DOCUMENT, Patient.DEFAULT_DATA_SPACE);
-
-            XWikiDocument patientDoc = wiki.getDocument(patientReference, context);
-            EntityReference remoteRequestReference = new EntityReference("RemoteRequest", EntityType.DOCUMENT,
-                new EntityReference("PhenomeCentral", EntityType.SPACE));
-            List<BaseObject> objects = patientDoc.getXObjects(remoteRequestReference);
-            for (BaseObject object : objects) {
-                if (StringUtils.equalsIgnoreCase(object.getGuid(), requestGuid)) {
-                    object.set("id", requestObjectId, context);
-                    break;
-                }
-            }
-
-            wiki.saveDocument(patientDoc, context);
+//            EntityReference patientReference =
+//                new EntityReference(patientId, EntityType.DOCUMENT, Patient.DEFAULT_DATA_SPACE);
+//
+//            XWikiDocument patientDoc = wiki.getDocument(patientReference, context);
+//            EntityReference remoteRequestReference = new EntityReference("RemoteRequest", EntityType.DOCUMENT,
+//                new EntityReference("PhenomeCentral", EntityType.SPACE));
+            xwikiRequestObject.set("hibernateId", requestObjectId, context);
+//
+//            //FIXME. Double saving?
+//            wiki.saveDocument(patientDoc, context);
 
             return true;
         } catch (Exception ex) {

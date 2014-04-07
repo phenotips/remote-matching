@@ -71,7 +71,6 @@
     <module>adapters</module>
     <module>core</module>
     <module>ui</module>
-    <module>wrappers</module>
     <module>standalone-patch</module>
   </modules>
 

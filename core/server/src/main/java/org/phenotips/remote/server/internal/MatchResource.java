@@ -19,7 +19,7 @@
  */
 package org.phenotips.remote.server.internal;
 
-import org.phenotips.remote.api.RequestProcessorInterface;
+import org.phenotips.remote.server.RequestProcessorInterface;
 import org.phenotips.remote.server.MatchInterface;
 
 import org.xwiki.component.annotation.Component;

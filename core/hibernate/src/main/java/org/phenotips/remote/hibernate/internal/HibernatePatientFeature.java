@@ -23,7 +23,7 @@ import org.phenotips.components.ComponentManagerRegistry;
 import org.phenotips.data.FeatureMetadatum;
 import org.phenotips.ontology.OntologyManager;
 import org.phenotips.ontology.OntologyTerm;
-import org.phenotips.remote.hibernate.HibernatePatientFeatureInterface;
+import org.phenotips.remote.api.HibernatePatientFeatureInterface;
 
 import org.xwiki.component.manager.ComponentLookupException;
 

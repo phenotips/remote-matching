@@ -19,6 +19,7 @@
  */
 package org.phenotips.remote.adapters;
 
+import org.phenotips.remote.api.HibernatePatientFeatureInterface;
 import org.phenotips.remote.hibernate.internal.HibernatePatientFeature;
 
 import java.util.HashSet;
@@ -36,9 +37,9 @@ import net.sf.json.JSONObject;
  */
 public class JSONToHibernatePatientConverter
 {
-    public static Set<HibernatePatientFeature> convertFeatures(JSONArray featuresJson)
+    public static Set<HibernatePatientFeatureInterface> convertFeatures(JSONArray featuresJson)
     {
-        Set<HibernatePatientFeature> featureSet = new HashSet<HibernatePatientFeature>();
+        Set<HibernatePatientFeatureInterface> featureSet = new HashSet<HibernatePatientFeatureInterface>();
         for (Object jsonFeatureUncast : featuresJson) {
             JSONObject jsonFeature = (JSONObject) jsonFeatureUncast;
             HibernatePatientFeature feature = new HibernatePatientFeature();

@@ -17,7 +17,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.hibernate;
+package org.phenotips.remote.api;
 
 /**
  * The functions essential to the servers ability to store, track, an answer search requests.
@@ -30,7 +30,9 @@ public interface RequestInterface
 
     Integer getResponseStatus();
 
-    String getResponseTargetURL();
+    void setURL(String url);
+
+    String getURL();
 
     String getSubmitterEmail();
 }

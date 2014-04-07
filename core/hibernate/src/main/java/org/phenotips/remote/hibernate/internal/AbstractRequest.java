@@ -19,7 +19,7 @@
  */
 package org.phenotips.remote.hibernate.internal;
 
-import org.phenotips.remote.hibernate.RequestInterface;
+import org.phenotips.remote.api.RequestInterface;
 
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;

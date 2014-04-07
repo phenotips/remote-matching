@@ -21,13 +21,13 @@ package org.phenotips.remote.server.internal;
 
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.adapters.internal.OutgoingResultsAdapter;
-import org.phenotips.remote.hibernate.IncomingSearchRequestInterface;
-import org.phenotips.remote.api.RequestProcessorInterface;
-import org.phenotips.remote.hibernate.HibernatePatientInterface;
-import org.phenotips.remote.hibernate.RequestInterface;
+import org.phenotips.remote.api.IncomingSearchRequestInterface;
+import org.phenotips.remote.server.RequestProcessorInterface;
+import org.phenotips.remote.api.HibernatePatientInterface;
+import org.phenotips.remote.api.RequestInterface;
 import org.phenotips.remote.hibernate.internal.HibernatePatient;
 import org.phenotips.remote.hibernate.internal.IncomingSearchRequest;
-import org.phenotips.remote.adapters.wrappers.JSONToHibernatePatientWrapper;
+import org.phenotips.remote.adapters.jsonwrappers.JSONToHibernatePatientWrapper;
 import org.phenotips.similarity.SimilarPatientsFinder;
 
 import org.xwiki.component.annotation.Component;
