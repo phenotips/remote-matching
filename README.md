@@ -24,16 +24,15 @@ Known issues/problematic code:
 Unrelated known issues:
  - common-lib has 2 versions in the WEB-INF/lib. This causes an error in PatientSheet. Delete the older.
 
-                       |Path         | Details
-----------|-----------------------|---------------------------------
-=         |```ui/```              | XWiki .xml files.
-=         |```war/```             | Javascript files.
-         |```core/```            |
-==       |```api/```             | Interfaces only.
-==       |```server/```          |
-==       |```client/```          |
-==       |```hibernate/```       |
-=         |```adapters/```        | <p>The script service connecting the XWiki user interface to the Java backend. Static to/from JSON converters</p>
-=         |```wrappers/```        | <p>These are logical outcasts. They do no belong in ```adapters/```, nor in ```core/```. They are the middlemen between ```core``` and ```adapters```, and are the class they are converting data to (e.g. JSONToHibernatePatient is a HibernatePatient).</p>
-         |```standalone-patch``` |
-==       |```patch```            | This is where all the jars are copied to for convenience.
+ | |Path                   | Details
+-|-|-----------------------|---------------------------------
++| |```ui/```              | XWiki .xml files.
++| |```war/```             | Javascript files.
++| |```core/```            |
++| |```api/```             | Interfaces only.
+ |+|```server/```          |
+ |+|```client/```          |
+ |+|```hibernate/```       |
++| |```adapters/```        | <p>The script service connecting the XWiki user interface to the Java backend. Static to/from JSON converters</p>
++| |```standalone-patch``` |
+ |+|```patch```            | This is where all the jars are copied to for convenience.

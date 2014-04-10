@@ -19,19 +19,13 @@
  */
 package org.phenotips.remote.hibernate.internal;
 
-import org.phenotips.data.Disorder;
 import org.phenotips.data.Patient;
-import org.phenotips.data.PatientData;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.data.similarity.PatientSimilarityViewFactory;
 import org.phenotips.remote.api.OutgoingSearchRequestInterface;
 
-import org.xwiki.model.reference.DocumentReference;
-
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.Basic;
 import javax.persistence.DiscriminatorValue;
@@ -44,15 +38,13 @@ import net.sf.json.JSONObject;
 
 /**
  * TODO.
+ *
  * @version $Id$
  */
 @Entity
 @DiscriminatorValue("outgoing")
 public class OutgoingSearchRequest extends AbstractRequest implements OutgoingSearchRequestInterface
 {
-    @Basic
-    private String externalId;
-
     @Basic
     private String referencePatientId;
 
@@ -83,26 +75,23 @@ public class OutgoingSearchRequest extends AbstractRequest implements OutgoingSe
         this.referencePatientId = referencePatient.getId();
     }
 
-    public Patient getReferencePatient()
+    public Patient getReferencePatient() throws NullPointerException
     {
-        throw new UnsupportedOperationException();
+        if (referencePatient != null) {
+            return referencePatient;
+        } else {
+            throw new NullPointerException(
+                "Reference patient is not set. Likely cause is this class instance being loaded from database");
+        }
     }
+
+    public String getReferencePatientId() { return referencePatientId; }
 
     public void addResult(JSONObject json)
     {
 //        HibernatePatient resultPatient = new HibernatePatient();
 //        resultPatient.populatePatient(json);
 //        results.add(resultPatient);
-    }
-
-    public void setRequestExternalId(String id)
-    {
-        externalId = id;
-    }
-
-    public String getRequestExternalId()
-    {
-        return externalId;
     }
 
     private int convertTextToIntBool(String text)
@@ -137,48 +126,6 @@ public class OutgoingSearchRequest extends AbstractRequest implements OutgoingSe
     }
 
     public Integer getResponseStatus()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public String getSubmitterEmail()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public String getId()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public String getExternalId()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public DocumentReference getDocument()
-    {
-        //FIXME this is ugly. Can't leave empty.
-        DocumentReference fakeReference = new DocumentReference("xwiki", "data", "0");
-        return fakeReference;
-    }
-
-    public DocumentReference getReporter()
-    {
-        return new DocumentReference("xwiki", "XWiki", "Admin");
-    }
-
-    public Set<? extends Disorder> getDisorders()
-    {
-        return new HashSet<Disorder>();
-    }
-
-    public <T> PatientData<T> getData(String name)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public JSONObject toJSON()
     {
         throw new UnsupportedOperationException();
     }

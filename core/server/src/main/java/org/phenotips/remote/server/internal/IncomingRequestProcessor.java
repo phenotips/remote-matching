@@ -21,13 +21,13 @@ package org.phenotips.remote.server.internal;
 
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.adapters.internal.OutgoingResultsAdapter;
-import org.phenotips.remote.api.IncomingSearchRequestInterface;
-import org.phenotips.remote.server.RequestProcessorInterface;
 import org.phenotips.remote.api.HibernatePatientInterface;
+import org.phenotips.remote.api.IncomingSearchRequestInterface;
 import org.phenotips.remote.api.RequestInterface;
+import org.phenotips.remote.api.WrapperInterface;
 import org.phenotips.remote.hibernate.internal.HibernatePatient;
 import org.phenotips.remote.hibernate.internal.IncomingSearchRequest;
-import org.phenotips.remote.adapters.jsonwrappers.JSONToHibernatePatientWrapper;
+import org.phenotips.remote.server.RequestProcessorInterface;
 import org.phenotips.similarity.SimilarPatientsFinder;
 
 import org.xwiki.component.annotation.Component;
@@ -37,6 +37,7 @@ import org.xwiki.model.reference.DocumentReference;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.hibernate.Session;
@@ -67,6 +68,10 @@ public class IncomingRequestProcessor implements RequestProcessorInterface
     @Inject
     private Execution execution;
 
+    @Inject
+    @Named("json-patient")
+    private WrapperInterface<JSONObject, HibernatePatientInterface> wrapper;
+
     /** This object is populated with information (at least status) on error */
     private JSONObject errorJson = new JSONObject();
 
@@ -83,7 +88,7 @@ public class IncomingRequestProcessor implements RequestProcessorInterface
 
         HibernatePatientInterface hibernatePatient;
         try {
-            hibernatePatient = new JSONToHibernatePatientWrapper(JSONObject.fromObject(json));
+            hibernatePatient = wrapper.wrap(JSONObject.fromObject(json));
         } catch (Exception ex) {
             errorJson.put("status", 400);
             return errorJson;

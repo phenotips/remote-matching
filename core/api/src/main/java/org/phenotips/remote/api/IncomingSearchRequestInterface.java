@@ -29,7 +29,7 @@ import java.util.List;
  */
 public interface IncomingSearchRequestInterface extends RequestInterface
 {
-    public List<PatientSimilarityView> getResults(SimilarPatientsFinder viewFactory);
+    List<PatientSimilarityView> getResults(SimilarPatientsFinder viewFactory);
 
     void setReferencePatient(HibernatePatientInterface patient);
 

@@ -19,10 +19,27 @@
  */
 package org.phenotips.remote.api;
 
+import org.xwiki.model.EntityType;
+import org.xwiki.model.reference.EntityReference;
+
 /**
  * This is where the constants and other configurations are stored for easy global access.
  */
 public interface Configuration
 {
-    String IncomingRequestResponseType = "inline";
+    String DEFAULT_INCOMING_REQUEST_RESPONSE_TYPE = "inline";
+
+    EntityReference XWIKI_SPACE = new EntityReference("XWiki", EntityType.SPACE);
+    EntityReference PHENOMECENTRAL_SPACE = new EntityReference("PhenomeCentral", EntityType.SPACE);
+
+    EntityReference USER_OBJECT_REFERENCE = new EntityReference("XWikiUsers", EntityType.DOCUMENT);
+    EntityReference REMOTE_CONFIGURATIONS_DOCUMENT_REFERENCE =
+        new EntityReference("XWikiPreferences", EntityType.DOCUMENT, XWIKI_SPACE);
+    EntityReference REMOTE_CONFIGURATION_OBJECT_REFERENCE =
+        new EntityReference("RemoteMatchingServiceConfiguration", EntityType.DOCUMENT, PHENOMECENTRAL_SPACE);
+
+    String REMOTE_KEY_FIELD = "remoteAuthToken";
+    String REMOTE_BASE_URL_FIELD = "baseURL";
+
+    String REMOTE_URL_SEARCH_EXTENSION = "/match?media=json&key=";
 }

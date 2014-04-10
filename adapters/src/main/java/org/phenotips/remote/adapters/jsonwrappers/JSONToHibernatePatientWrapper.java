@@ -21,9 +21,15 @@ package org.phenotips.remote.adapters.jsonwrappers;
 
 import org.phenotips.remote.adapters.JSONToHibernatePatientConverter;
 import org.phenotips.remote.api.HibernatePatientFeatureInterface;
+import org.phenotips.remote.api.HibernatePatientInterface;
+import org.phenotips.remote.api.WrapperInterface;
 import org.phenotips.remote.hibernate.internal.HibernatePatient;
 
+import org.xwiki.component.annotation.Component;
+
 import java.util.Set;
+
+import javax.inject.Named;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -31,12 +37,18 @@ import net.sf.json.JSONObject;
 /**
  * TODO.
  */
-public class JSONToHibernatePatientWrapper extends HibernatePatient
+@Component
+@Named("json-patient")
+public class JSONToHibernatePatientWrapper implements WrapperInterface<JSONObject, HibernatePatientInterface>
 {
-    public JSONToHibernatePatientWrapper(JSONObject json)
+    public HibernatePatientInterface wrap(JSONObject json)
     {
+        HibernatePatientInterface patient = new HibernatePatient();
+
         JSONArray jsonFeautures = (JSONArray) json.get("features");
         Set<HibernatePatientFeatureInterface> features = JSONToHibernatePatientConverter.convertFeatures(jsonFeautures);
-        this.addFeatures(features);
+        patient.addFeatures(features);
+
+        return patient;
     }
 }

@@ -19,9 +19,15 @@
  */
 package org.phenotips.remote.adapters.jsonwrappers;
 
+import org.phenotips.data.Patient;
 import org.phenotips.remote.adapters.PatientToJSONConverter;
-import org.phenotips.remote.api.WrapperInterface;
+import org.phenotips.remote.adapters.XWikiAdapter;
 import org.phenotips.remote.api.OutgoingSearchRequestInterface;
+import org.phenotips.remote.api.WrapperInterface;
+
+import com.xpn.xwiki.XWiki;
+import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.XWikiException;
 
 import net.sf.json.JSONObject;
 
@@ -29,15 +35,41 @@ import net.sf.json.JSONObject;
  * Unfortunately because JSONObject is final, this class, unlike all the other wrappers cannot extend the object.
  * Therefore, breaking the existing pattern it uses {@link #wrap} method and returns JSONObject.
  */
-public class OutgoingSearchRequestToJSONWrapper implements WrapperInterface<JSONObject, OutgoingSearchRequestInterface>
+public class OutgoingSearchRequestToJSONWrapper implements WrapperInterface<OutgoingSearchRequestInterface, JSONObject>
 {
-    private OutgoingSearchRequestInterface request;
+    XWikiContext context;
+
+    XWiki wiki;
+
+    public OutgoingSearchRequestToJSONWrapper(XWiki wiki, XWikiContext context)
+    {
+        this.wiki = wiki;
+        this.context = context;
+    }
 
     public JSONObject wrap(OutgoingSearchRequestInterface request)
     {
         JSONObject json = new JSONObject();
 
-        json.put("features", PatientToJSONConverter.features(request.getReferencePatient()));
+        Patient reference = null;
+        try {
+            reference = request.getReferencePatient();
+        } catch (NullPointerException ex) {
+            //FIXME. The second catch can lead to bugs, but it should not.
+            try {
+                reference = XWikiAdapter.getPatient(request.getReferencePatientId(), wiki, context);
+            } catch (XWikiException wEx) {
+                //Should not happen. If the id of the patient does not exist, an error should have been thrown before
+                //this code is executed.
+            }
+        }
+        if (reference == null) {
+            return json;
+        }
+        json.put("features", PatientToJSONConverter.features(reference));
+        json.put("disorders", PatientToJSONConverter.disorders(reference));
+        json.putAll(PatientToJSONConverter.globalQualifiers(reference));
+        json.put("gender", PatientToJSONConverter.gender(reference));
 
         return json;
     }

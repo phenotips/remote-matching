@@ -1,1 +1,2 @@
 org.phenotips.remote.adapters.script.RemoteMatchingScriptService
+org.phenotips.remote.adapters.jsonwrappers.JSONToHibernatePatientWrapper
