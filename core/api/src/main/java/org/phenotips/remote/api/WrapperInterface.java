@@ -19,11 +19,14 @@
  */
 package org.phenotips.remote.api;
 
+import org.xwiki.component.annotation.Role;
+
 /**
  * Since the original design pattern was not possible to implement, this interface is used to uphold consistency of
  * implementation.
  */
-public interface WrapperInterface<T, O>
+@Role
+public interface WrapperInterface<F, T>
 {
-    T wrap(O object);
+    T wrap(F object);
 }

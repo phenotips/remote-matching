@@ -21,51 +21,62 @@ package org.phenotips.remote.adapters.internal;
 
 import org.phenotips.data.Patient;
 import org.phenotips.remote.adapters.XWikiAdapter;
+import org.phenotips.remote.api.Configuration;
 import org.phenotips.remote.api.OutgoingSearchRequestInterface;
 import org.phenotips.remote.api.RequestConfigurationInterface;
 import org.phenotips.remote.hibernate.internal.OutgoingSearchRequest;
 
-import org.xwiki.context.Execution;
-
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 
 /**
  * TODO fix the doc
  */
-public class RequestConfiguration implements RequestConfigurationInterface
+public class OutgoingRequestConfigurator implements RequestConfigurationInterface
 {
-    private String url;
+    private String baseURL;
 
-    private String key = "THE_KEY";
-
-    private XWikiContext context;
+    private String key;
 
     private Patient patient;
 
-    public RequestConfiguration(BaseObject requestObject, Execution execution) throws XWikiException
-    {
-        context = (XWikiContext) execution.getContext().getProperty("xwikicontext");
-        XWiki wiki = context.getWiki();
+    private XWikiDocument patientDocument;
 
+    private String submitterName;
+
+    private String submitterEmail;
+
+    public OutgoingRequestConfigurator(BaseObject requestObject, XWiki wiki, XWikiContext context) throws XWikiException
+    {
         String patientId = requestObject.getStringValue("patientId");
         String submitterId = requestObject.getStringValue("submitterId");
-
-        patient = XWikiAdapter.getPatient(patientId, wiki, context);
         BaseObject submitter = XWikiAdapter.getSubmitter(submitterId, wiki, context);
-        url = requestObject.getStringValue("baseUrl");
+
+        patientDocument = XWikiAdapter.getPatientDoc(patientId, wiki, context);
+        patient = XWikiAdapter.getPatient(patientDocument);
+        baseURL = requestObject.getStringValue(Configuration.REMOTE_BASE_URL_FIELD);
+        key =
+            XWikiAdapter.getRemoteConfiguration(baseURL, wiki, context).getStringValue(Configuration.REMOTE_KEY_FIELD);
+        processSubmitter(submitter);
     }
 
-    public Patient getPatient()
+    private void processSubmitter(BaseObject submitter)
+    {
+        submitterName = submitter.getStringValue("first_name") + " " + submitter.getStringValue("last_name");
+        submitterEmail = submitter.getStringValue("email");
+    }
+
+    private Patient getPatient()
     {
         return patient;
     }
 
-    public String getURL()
+    private String getURL()
     {
-        return url+"/match?media=json&key="+key;
+        return baseURL + Configuration.REMOTE_URL_SEARCH_EXTENSION + key;
     }
 
     public OutgoingSearchRequestInterface createRequest()
@@ -74,7 +85,16 @@ public class RequestConfiguration implements RequestConfigurationInterface
 
         request.setReferencePatient(getPatient());
         request.setURL(getURL());
+        request.setSubmitterName(submitterName);
+        request.setSubmitterEmail(submitterEmail);
+        request.setKey(key);
 
         return request;
+    }
+
+    @Override
+    public Boolean saveRequest()
+    {
+        return null;
     }
 }

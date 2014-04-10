@@ -21,6 +21,7 @@ package org.phenotips.remote.hibernate.internal;
 
 import org.phenotips.remote.api.RequestInterface;
 
+import javax.persistence.Basic;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -29,7 +30,10 @@ import javax.persistence.Inheritance;
 import javax.persistence.Table;
 
 /**
- * Due to hibernate limitations this abstract class needs to exist.
+ * This class combines shared functions between the different search request types ({@link
+ * org.phenotips.remote.hibernate.internal.OutgoingSearchRequest},
+ * {@link org.phenotips.remote.hibernate.internal.IncomingSearchRequest}).
+ * The children of this class are made persistent by Hibernate.
  */
 @Entity
 @Inheritance
@@ -40,4 +44,64 @@ public abstract class AbstractRequest implements RequestInterface
     @Id
     @GeneratedValue
     protected long id;
+
+    @Basic
+    private String submitterName;
+
+    @Basic
+    private String submitterEmail;
+
+    @Basic
+    private String submitterInstitution;
+
+    @Basic
+    private String key;
+
+    @Override
+    public void setSubmitterName(String submitterName)
+    {
+        this.submitterName = submitterName;
+    }
+
+    @Override
+    public String getSubmitterName()
+    {
+        return submitterName;
+    }
+
+    @Override
+    public void setSubmitterEmail(String email)
+    {
+        this.submitterEmail = email;
+    }
+
+    @Override
+    public String getSubmitterEmail()
+    {
+        return submitterEmail;
+    }
+
+    @Override
+    public void setSubmitterInstitution(String institution)
+    {
+        this.submitterInstitution = institution;
+    }
+
+    @Override
+    public String getSubmitterInstitution()
+    {
+        return submitterInstitution;
+    }
+
+    @Override
+    public void setKey(String key)
+    {
+        this.key = key;
+    }
+
+    @Override
+    public String getKey()
+    {
+        return key;
+    }
 }

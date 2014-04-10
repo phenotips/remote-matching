@@ -23,8 +23,8 @@ import org.phenotips.data.Patient;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.data.similarity.PatientSimilarityViewFactory;
 import org.phenotips.remote.RemoteMatchingClient;
+import org.phenotips.remote.adapters.internal.OutgoingRequestConfigurator;
 import org.phenotips.remote.api.WrapperInterface;
-import org.phenotips.remote.adapters.internal.RequestConfiguration;
 import org.phenotips.remote.adapters.jsonwrappers.OutgoingSearchRequestToJSONWrapper;
 import org.phenotips.remote.api.RequestConfigurationInterface;
 import org.phenotips.remote.api.OutgoingSearchRequestInterface;
@@ -86,12 +86,15 @@ public class RemoteMatchingScriptService implements ScriptService
     {
         //FIXME. PatientId, submitterId should be in the requestObject.
         try {
+            XWikiContext context = getContext();
+            XWiki wiki = getWiki(context);
+
             BaseObject xwikiRequestObject = xwikiObject.getXWikiObject();
-            RequestConfigurationInterface configuration = new RequestConfiguration(xwikiRequestObject, execution);
+            RequestConfigurationInterface configuration = new OutgoingRequestConfigurator(xwikiRequestObject, wiki, context);
             OutgoingSearchRequestInterface requestObject = configuration.createRequest();
 
-            WrapperInterface<JSONObject, OutgoingSearchRequestInterface> requestWrapper =
-                new OutgoingSearchRequestToJSONWrapper();
+            WrapperInterface<OutgoingSearchRequestInterface, JSONObject> requestWrapper =
+                new OutgoingSearchRequestToJSONWrapper(wiki, context);
             String result = RemoteMatchingClient.sendRequest(requestObject, requestWrapper);
 
             Session session = this.sessionFactory.getSessionFactory().openSession();
@@ -104,8 +107,6 @@ public class RemoteMatchingScriptService implements ScriptService
             Long requestObjectId = (Long) session.save(requestObject);
             t.commit();
 
-            XWikiContext context = (XWikiContext) execution.getContext().getProperty("xwikicontext");
-            XWiki wiki = context.getWiki();
 //            EntityReference patientReference =
 //                new EntityReference(patientId, EntityType.DOCUMENT, Patient.DEFAULT_DATA_SPACE);
 //
@@ -158,5 +159,15 @@ public class RemoteMatchingScriptService implements ScriptService
         } catch (Exception ex) {
             return resultsList;
         }
+    }
+
+    private XWikiContext getContext()
+    {
+        return (XWikiContext) execution.getContext().getProperty("xwikicontext");
+    }
+
+    private XWiki getWiki(XWikiContext context)
+    {
+        return context.getWiki();
     }
 }

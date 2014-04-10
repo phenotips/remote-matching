@@ -17,36 +17,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.api;
+package org.phenotips.remote.adapters;
+
+import java.util.Map;
+
+import net.sf.json.JSONObject;
 
 /**
- * The functions essential to the servers ability to store, track, an answer search requests.
+ * TODO.
+ * Keep this static.
+ *
+ * NOT USED.
  */
-public interface RequestInterface
+public class JSONToMiscConverter
 {
-    long getRequestId();
-
-    String getResponseType();
-
-    Integer getResponseStatus();
-
-    void setURL(String url);
-
-    String getURL();
-
-    void setSubmitterName(String name);
-
-    String getSubmitterName();
-
-    void setSubmitterEmail(String email);
-
-    String getSubmitterEmail();
-
-    void setSubmitterInstitution(String institution);
-
-    String getSubmitterInstitution();
-
-    void setKey(String key);
-
-    String getKey();
+    public static Map<String, String> submitter(JSONObject json)
+    {
+        return null;
+    }
 }

@@ -21,20 +21,20 @@ package org.phenotips.remote.hibernate.internal;
 
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.Configuration;
-import org.phenotips.remote.api.IncomingSearchRequestInterface;
 import org.phenotips.remote.api.HibernatePatientInterface;
+import org.phenotips.remote.api.IncomingSearchRequestInterface;
 import org.phenotips.similarity.SimilarPatientsFinder;
 
 import org.xwiki.model.reference.DocumentReference;
 
 import java.util.List;
 
+import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.OneToOne;
-
-import org.apache.commons.lang3.StringUtils;
+import javax.persistence.Transient;
 
 /**
  * Class for storing an incoming request outside the main PhenoTips database for privacy reasons. It is a combination of
@@ -54,15 +54,23 @@ public class IncomingSearchRequest extends AbstractRequest implements IncomingSe
     @OneToOne(mappedBy = "requestEntity", cascade = CascadeType.ALL)
     private HibernatePatient referencePatient = null;
 
+    @Transient
     private Integer httpStatus = 200;
+
+    @Basic
+    private String url;
 
     public IncomingSearchRequest()
     {}
 
     //Fixme. Type should not be set in stone.
-    public String getResponseType() { return Configuration.IncomingRequestResponseType; }
+    public String getResponseType()
+    { return Configuration.DEFAULT_INCOMING_REQUEST_RESPONSE_TYPE; }
 
-    public void setReferencePatient(HibernatePatientInterface patient) { referencePatient = (HibernatePatient) patient; }
+    public void setReferencePatient(HibernatePatientInterface patient)
+    {
+        referencePatient = (HibernatePatient) patient;
+    }
 
     public HibernatePatientInterface getReferencePatient() throws IllegalArgumentException
     {
@@ -80,23 +88,17 @@ public class IncomingSearchRequest extends AbstractRequest implements IncomingSe
         return matches;
     }
 
-    private int convertTextToIntBool(String text)
-    {
-        if (StringUtils.equalsIgnoreCase(text, "yes")) {
-            return 1;
-        } else if (StringUtils.equalsIgnoreCase(text, "no")) {
-            return -1;
-        } else {
-            return 0;
-        }
-    }
-
     public long getRequestId()
     {
         throw new UnsupportedOperationException();
     }
 
     public Integer getResponseStatus() { return httpStatus; }
+
+    public void setURL(String url)
+    {
+        throw new UnsupportedOperationException();
+    }
 
     public String getURL()
     {

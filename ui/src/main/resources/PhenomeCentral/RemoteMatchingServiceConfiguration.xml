@@ -54,7 +54,7 @@
     <baseUrl>
       <customDisplay/>
       <disabled>0</disabled>
-      <name>baseUrl</name>
+      <name>baseURL</name>
       <number>3</number>
       <picker>0</picker>
       <prettyName>Base URL (include /)</prettyName>

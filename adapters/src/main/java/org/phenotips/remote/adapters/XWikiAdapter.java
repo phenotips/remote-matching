@@ -21,6 +21,7 @@ package org.phenotips.remote.adapters;
 
 import org.phenotips.data.Patient;
 import org.phenotips.data.internal.PhenoTipsPatient;
+import org.phenotips.remote.api.Configuration;
 
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
@@ -40,27 +41,41 @@ public class XWikiAdapter
     static public BaseObject getSubmitter(String userId, XWiki wiki, XWikiContext context) throws XWikiException
     {
         //TODO field names should be in a configuration
-        //Fixme does not check if the document is a user
-        String[] splitUserId = userId.split("\\.");
-        if (splitUserId.length != 2) {
-            //TODO This isn't exactly true
-            throw new XWikiException();
-        }
-        DocumentReference userReference = new DocumentReference("xwiki", splitUserId[0], splitUserId[1]);
-        EntityReference xwikiSpace = new EntityReference(splitUserId[0], EntityType.SPACE);
-        EntityReference userObjectReference = new EntityReference("XWikiUsers", EntityType.DOCUMENT,
-            xwikiSpace);
+        //Fixme. Does not check if the document is a user, but will return null if not.
+        //Fixme. [possible] Does not check if the patient belongs to the user?
+//        String[] splitUserId = userId.split("\\.");
+//        if (splitUserId.length != 2) {
+//            //TODO This isn't exactly true
+//            throw new XWikiException();
+//        }
 
-        return wiki.getDocument(userReference, context).getXObject(userObjectReference);
+        EntityReference userReference = new EntityReference(userId, EntityType.DOCUMENT);
+        return wiki.getDocument(userReference, context).getXObject(Configuration.USER_OBJECT_REFERENCE);
+    }
+
+    static public BaseObject getRemoteConfiguration(String baseURL, XWiki wiki, XWikiContext context) throws XWikiException
+    {
+        XWikiDocument configurationsDoc =
+            wiki.getDocument(Configuration.REMOTE_CONFIGURATIONS_DOCUMENT_REFERENCE, context);
+        DocumentReference classReference = new DocumentReference(Configuration.REMOTE_CONFIGURATION_OBJECT_REFERENCE);
+        return configurationsDoc.getXObject(classReference, "baseURL", baseURL);
+    }
+
+    static public Patient getPatient(XWikiDocument doc)
+    {
+        return new PhenoTipsPatient(doc);
     }
 
     static public Patient getPatient(String patientId, XWiki wiki, XWikiContext context) throws XWikiException
     {
+        return new PhenoTipsPatient(getPatientDoc(patientId, wiki, context));
+    }
+
+    static public XWikiDocument getPatientDoc(String patientId, XWiki wiki, XWikiContext context) throws XWikiException
+    {
         EntityReference patientReference =
             new EntityReference(patientId, EntityType.DOCUMENT, Patient.DEFAULT_DATA_SPACE);
 
-        XWikiDocument doc = wiki.getDocument(patientReference, context);
-
-        return new PhenoTipsPatient(doc);
+        return wiki.getDocument(patientReference, context);
     }
 }

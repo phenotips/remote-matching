@@ -42,7 +42,7 @@ import net.sf.json.JSONObject;
 public class RemoteMatchingClient
 {
     public static String sendRequest(OutgoingSearchRequestInterface request,
-        WrapperInterface<JSONObject, OutgoingSearchRequestInterface> wrapper) throws IOException
+        WrapperInterface<OutgoingSearchRequestInterface, JSONObject> wrapper) throws IOException
     {
         JSONObject json = wrapper.wrap(request);
         CloseableHttpClient client = HttpClients.createDefault();

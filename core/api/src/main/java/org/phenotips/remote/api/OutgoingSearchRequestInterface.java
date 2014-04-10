@@ -36,7 +36,9 @@ public interface OutgoingSearchRequestInterface extends RequestInterface
 
     void setReferencePatient(Patient patient);
 
-    Patient getReferencePatient();
+    Patient getReferencePatient() throws NullPointerException;
+
+    String getReferencePatientId();
 
     void addResult(JSONObject json);
 }
