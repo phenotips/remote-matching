@@ -20,6 +20,7 @@
 package org.phenotips.remote.adapters.internal;
 
 import org.phenotips.data.Patient;
+import org.phenotips.remote.adapters.JSONToMetadataConverter;
 import org.phenotips.remote.adapters.XWikiAdapter;
 import org.phenotips.remote.api.Configuration;
 import org.phenotips.remote.api.OutgoingSearchRequestInterface;
@@ -37,6 +38,8 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
+
+import net.sf.json.JSONObject;
 
 /**
  * TODO fix the doc
@@ -57,9 +60,18 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
 
     private OutgoingSearchRequestInterface request;
 
+    private BaseObject xwikiRequestObject;
+
+    private XWikiContext wikiContext;
+
+    private XWiki wiki;
+
     public OutgoingRequestHandler(BaseObject requestObject, XWiki wiki, XWikiContext context,
         DocumentReferenceResolver<String> resolver) throws XWikiException
     {
+        xwikiRequestObject = requestObject;
+        wikiContext = context;
+        this.wiki = wiki;
         String patientId = requestObject.getStringValue("patientId");
         String submitterId = requestObject.getStringValue("submitterId");
 
@@ -70,6 +82,14 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
         key =
             XWikiAdapter.getRemoteConfiguration(baseURL, wiki, context).getStringValue(Configuration.REMOTE_KEY_FIELD);
         processSubmitter(submitter);
+    }
+
+    /** Little hack for updating a request object and not having to write another function into the interface */
+    public OutgoingRequestHandler(OutgoingSearchRequestInterface existingRequest, JSONObject json)
+    {
+        existingRequest.setExternalId(JSONToMetadataConverter.externalResponseId(json));
+        existingRequest.setResponseType(JSONToMetadataConverter.responseType(json));
+        existingRequest.addResults(JSONToMetadataConverter.responseResults(json));
     }
 
     private void processSubmitter(BaseObject submitter)
@@ -106,13 +126,15 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
     }
 
     @Override
-    public Long saveRequest(Session session)
+    public Long saveRequest(Session session) throws Exception
     {
         Transaction t = session.beginTransaction();
 
         Long id;
         if (request.getRequestId() == null) {
             id = (Long) session.save(request);
+            xwikiRequestObject.set("hibernateId", id, wikiContext);
+            wiki.saveDocument(xwikiRequestObject.getOwnerDocument(), wikiContext);
         } else {
             session.saveOrUpdate(request);
             id = request.getRequestId();

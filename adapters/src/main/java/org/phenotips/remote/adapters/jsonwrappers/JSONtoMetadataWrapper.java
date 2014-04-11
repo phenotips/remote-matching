@@ -29,12 +29,15 @@ import org.xwiki.component.annotation.Component;
 
 import java.util.Map;
 
+import javax.inject.Named;
+
 import net.sf.json.JSONObject;
 
 /**
  * TODO
  */
 @Component
+@Named("json-meta")
 public class JSONtoMetadataWrapper implements WrapperInterface<JSONObject, IncomingSearchRequestInterface>
 {
     @Override
@@ -44,7 +47,7 @@ public class JSONtoMetadataWrapper implements WrapperInterface<JSONObject, Incom
 
         //FIXME. Not enough integrity checking.
         try {
-            request.setExternalId(JSONToMetadataConverter.externalId(json));
+            request.setExternalId(JSONToMetadataConverter.externalRequestId(json));
 
             request.setQueryType(JSONToMetadataConverter.queryType(json));
 

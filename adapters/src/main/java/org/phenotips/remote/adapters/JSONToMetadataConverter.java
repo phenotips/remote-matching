@@ -19,20 +19,26 @@
  */
 package org.phenotips.remote.adapters;
 
+import org.phenotips.remote.adapters.jsonwrappers.JSONToHibernatePatientWrapper;
 import org.phenotips.remote.api.Configuration;
+import org.phenotips.remote.api.HibernatePatientInterface;
+import org.phenotips.remote.api.WrapperInterface;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
  * TODO.
  * Keep this static.
  *
- * NOT USED.
+ *
  */
 public class JSONToMetadataConverter
 {
@@ -47,7 +53,11 @@ public class JSONToMetadataConverter
             {Configuration.JSON_SUBMITTER_NAME, Configuration.JSON_SUBMITTER_EMAIL, Configuration.JSON_SUBMITTER_INSTITUTION};
         Map<String, String> submitterMap = new HashMap<String, String>();
         for (String key : keys) {
-            String value = submitter.getString(key);
+            Object valueObject = submitter.get(key);
+            if (valueObject == null) {
+                continue;
+            }
+            String value = valueObject.toString();
             if (StringUtils.isNotBlank(value)) {
                 submitterMap.put(key, value);
             }
@@ -60,8 +70,32 @@ public class JSONToMetadataConverter
         return json.getString(Configuration.JSON_QUERY_TYPE);
     }
 
-    public static String externalId(JSONObject json)
+    public static String externalRequestId(JSONObject json)
     {
         return json.getString(Configuration.JSON_REQUEST_ID);
+    }
+
+    public static String externalResponseId(JSONObject json)
+    {
+        return json.getString(Configuration.JSON_RESPONSE_ID);
+    }
+
+    public static String responseType(JSONObject json)
+    {
+        return json.getString(Configuration.JSON_RESPONSE_TYPE);
+    }
+
+    public static Set<HibernatePatientInterface> responseResults(JSONObject json)
+    {
+        Set<HibernatePatientInterface> patients = new HashSet<HibernatePatientInterface>();
+        WrapperInterface<JSONObject, HibernatePatientInterface> wrapper = new JSONToHibernatePatientWrapper();
+
+        JSONArray results = json.getJSONArray(Configuration.JSON_RESULTS);
+        for (Object jsonPatient : results) {
+            HibernatePatientInterface patient = wrapper.wrap((JSONObject) jsonPatient);
+            patients.add(patient);
+        }
+
+        return patients;
     }
 }

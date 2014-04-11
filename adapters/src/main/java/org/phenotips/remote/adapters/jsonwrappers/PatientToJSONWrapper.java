@@ -17,27 +17,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.api;
+package org.phenotips.remote.adapters.jsonwrappers;
 
 import org.phenotips.data.Patient;
-import org.phenotips.data.similarity.PatientSimilarityView;
-import org.phenotips.data.similarity.PatientSimilarityViewFactory;
+import org.phenotips.remote.adapters.PatientToJSONConverter;
+import org.phenotips.remote.api.WrapperInterface;
 
-import java.util.List;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * The functions essential to the servers ability to track outgoing search requests.
+ * TODO
  */
-public interface OutgoingSearchRequestInterface extends RequestInterface
+public class PatientToJSONWrapper implements WrapperInterface<Patient, Map<String, Object>>
 {
-    List<PatientSimilarityView> getResults(PatientSimilarityViewFactory viewFactory);
+    private Boolean isPrivate;
 
-    void setReferencePatient(Patient patient);
+    public PatientToJSONWrapper(Boolean... isPrivate)
+    {
+        this.isPrivate = isPrivate.length > 0 ? isPrivate[0] : false;
+    }
 
-    Patient getReferencePatient() throws NullPointerException;
+    public Map<String, Object> wrap(Patient patient)
+    {
+        Map<String, Object> json = new HashMap<String, Object>();
 
-    String getReferencePatientId();
+        json.put("gender", PatientToJSONConverter.gender(patient));
+        json.putAll(PatientToJSONConverter.globalQualifiers(patient));
+        json.put("disorders", PatientToJSONConverter.disorders(patient));
+        json.put("features", PatientToJSONConverter.features(patient));
 
-    void addResults(Set<HibernatePatientInterface> results);
+        return json;
+    }
 }

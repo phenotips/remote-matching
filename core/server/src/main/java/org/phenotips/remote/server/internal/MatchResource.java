@@ -19,6 +19,7 @@
  */
 package org.phenotips.remote.server.internal;
 
+import org.phenotips.remote.api.Configuration;
 import org.phenotips.remote.server.RequestProcessorInterface;
 import org.phenotips.remote.server.MatchInterface;
 
@@ -48,7 +49,12 @@ public class MatchResource extends XWikiResource implements MatchInterface
     @Override
     public Response matchPost(String json) throws XWikiRestException, XWikiException
     {
-        JSONObject jsonResponse = requestProcessor.processHTTPRequest(json);
+        JSONObject jsonResponse;
+        try {
+            jsonResponse = requestProcessor.processHTTPRequest(json);
+        } catch (Exception e) {
+            return Response.status(Configuration.HTTP_SERVER_ERROR).build();
+        }
         Integer status = (Integer) jsonResponse.remove("status");
         if (status == 200) {
             return Response.ok(jsonResponse, MediaType.APPLICATION_JSON).build();

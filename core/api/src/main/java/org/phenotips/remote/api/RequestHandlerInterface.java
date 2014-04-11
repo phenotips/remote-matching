@@ -33,5 +33,5 @@ public interface RequestHandlerInterface<T extends RequestInterface>
 {
     T createRequest();
 
-    Long saveRequest(Session session);
+    Long saveRequest(Session session) throws Exception;
 }

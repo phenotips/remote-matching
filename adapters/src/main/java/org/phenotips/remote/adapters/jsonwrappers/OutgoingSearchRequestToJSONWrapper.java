@@ -20,10 +20,11 @@
 package org.phenotips.remote.adapters.jsonwrappers;
 
 import org.phenotips.data.Patient;
-import org.phenotips.remote.adapters.PatientToJSONConverter;
 import org.phenotips.remote.adapters.XWikiAdapter;
 import org.phenotips.remote.api.OutgoingSearchRequestInterface;
 import org.phenotips.remote.api.WrapperInterface;
+
+import java.util.Map;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
@@ -66,6 +67,8 @@ public class OutgoingSearchRequestToJSONWrapper implements WrapperInterface<Outg
         if (reference == null) {
             return json;
         }
+        WrapperInterface<Patient, Map<String, Object>> patientWrapper = new PatientToJSONWrapper();
+
         JSONObject submitter = new JSONObject();
         submitter.put("name", request.getSubmitterName());
         submitter.put("email", request.getSubmitterEmail());
@@ -73,11 +76,7 @@ public class OutgoingSearchRequestToJSONWrapper implements WrapperInterface<Outg
         json.put("id", request.getRequestId());
         json.put("queryType", request.getQueryType());
         json.put("submitter", submitter);
-        json.put("gender", PatientToJSONConverter.gender(reference));
-        json.putAll(PatientToJSONConverter.globalQualifiers(reference));
-        json.put("disorders", PatientToJSONConverter.disorders(reference));
-        json.put("features", PatientToJSONConverter.features(reference));
-
+        json.putAll(patientWrapper.wrap(reference));
         return json;
     }
 }
