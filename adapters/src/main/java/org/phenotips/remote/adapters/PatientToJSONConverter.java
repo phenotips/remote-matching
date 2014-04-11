@@ -25,6 +25,7 @@ import org.phenotips.data.FeatureMetadatum;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
 import org.phenotips.ontology.internal.solr.SolrOntologyTerm;
+import org.phenotips.remote.api.Configuration;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,14 +48,14 @@ public class PatientToJSONConverter
         JSONArray features = new JSONArray();
         for (Feature patientFeature : patient.getFeatures()) {
             Map<String, ? extends FeatureMetadatum> metadata = patientFeature.getMetadata();
-            String ageOfOnset = metadata.get("ageOfOnset").getId();
+            FeatureMetadatum ageOfOnset = metadata.get(Configuration.FEATURE_AGE_OF_ONSET);
 
             JSONObject featureJson = new JSONObject();
             featureJson.put("id", patientFeature.getId());
             featureJson.put("observed", booleanToYesNo(patientFeature.isPresent()));
 
             if (ageOfOnset != null) {
-                featureJson.put("age_of_onset", ageOfOnset.toString());
+                featureJson.put(Configuration.JSON_FEATURE_AGE_OF_ONSET, ageOfOnset.getId());
             }
             features.add(featureJson);
         }
@@ -132,23 +133,5 @@ public class PatientToJSONConverter
             return "yes";
         }
         return "no";
-    }
-
-    //FIXME. REMOVE.
-    public static JSONArray features_OLD(Patient patient)
-    {
-        JSONArray features = new JSONArray();
-        for (Feature phenotype : patient.getFeatures()) {
-            JSONObject phenotypeJson = phenotype.toJSON();
-            JSONObject featureJson = new JSONObject();
-            featureJson.put("id", phenotypeJson.get("id"));
-            featureJson.put("observed", phenotypeJson.getString("observed"));
-            Object ageOfOnset = phenotypeJson.get("age_of_onset");
-            if (ageOfOnset != null) {
-                featureJson.put("ageOfOnset", ageOfOnset.toString());
-            }
-            features.add(featureJson);
-        }
-        return features;
     }
 }

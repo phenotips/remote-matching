@@ -40,7 +40,6 @@ public interface MatchInterface
     /**
      * Place a search request to this server.
      *
-     * FIXME The get version is here only for testing through the browser. Delete for production.
      * TODO fix the doc.
      */
     @Consumes(MediaType.APPLICATION_JSON)

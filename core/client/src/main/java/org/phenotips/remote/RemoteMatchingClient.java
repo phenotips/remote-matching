@@ -22,8 +22,6 @@ package org.phenotips.remote;
 import org.phenotips.remote.api.OutgoingSearchRequestInterface;
 import org.phenotips.remote.api.WrapperInterface;
 
-import java.io.IOException;
-
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
@@ -42,18 +40,17 @@ import net.sf.json.JSONObject;
 public class RemoteMatchingClient
 {
     public static String sendRequest(OutgoingSearchRequestInterface request,
-        WrapperInterface<OutgoingSearchRequestInterface, JSONObject> wrapper) throws IOException
+        WrapperInterface<OutgoingSearchRequestInterface, JSONObject> wrapper) throws Exception
     {
         JSONObject json = wrapper.wrap(request);
         CloseableHttpClient client = HttpClients.createDefault();
 
         StringEntity jsonEntity = new StringEntity(json.toString(), ContentType.create("application/json", "UTF-8"));
 
-        HttpPost httpRequest = new HttpPost(request.getURL());
+        HttpPost httpRequest = new HttpPost(request.getTargetURL());
         httpRequest.setEntity(jsonEntity);
 
         CloseableHttpResponse httpResponse = client.execute(httpRequest);
-        String jsonResponse = EntityUtils.toString(httpResponse.getEntity());
-        return jsonResponse;
+        return EntityUtils.toString(httpResponse.getEntity());
     }
 }

@@ -37,8 +37,9 @@ import net.sf.json.JSONObject;
  */
 public class JSONToHibernatePatientConverter
 {
-    public static Set<HibernatePatientFeatureInterface> convertFeatures(JSONArray featuresJson)
+    public static Set<HibernatePatientFeatureInterface> convertFeatures(JSONObject json)
     {
+        JSONArray featuresJson = (JSONArray) json.get("features");
         Set<HibernatePatientFeatureInterface> featureSet = new HashSet<HibernatePatientFeatureInterface>();
         for (Object jsonFeatureUncast : featuresJson) {
             JSONObject jsonFeature = (JSONObject) jsonFeatureUncast;

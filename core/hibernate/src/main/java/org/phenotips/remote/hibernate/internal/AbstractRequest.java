@@ -43,7 +43,10 @@ public abstract class AbstractRequest implements RequestInterface
 {
     @Id
     @GeneratedValue
-    protected long id;
+    protected Long id;
+
+    @Basic
+    String externalId;
 
     @Basic
     private String submitterName;
@@ -56,6 +59,35 @@ public abstract class AbstractRequest implements RequestInterface
 
     @Basic
     private String key;
+
+    @Basic
+    private String url;
+
+    /** Could be either inline, asynchronous, or email */
+    @Basic
+    private String responseType;
+
+    /** Could be either once or periodic */
+    @Basic
+    private String queryType;
+
+    @Override
+    public Long getRequestId()
+    {
+        return id;
+    }
+
+    @Override
+    public void setTargetURL(String url)
+    {
+        this.url = url;
+    }
+
+    @Override
+    public String getTargetURL()
+    {
+        return url;
+    }
 
     @Override
     public void setSubmitterName(String submitterName)
@@ -99,9 +131,44 @@ public abstract class AbstractRequest implements RequestInterface
         this.key = key;
     }
 
-    @Override
     public String getKey()
     {
         return key;
+    }
+
+    @Override
+    public String getQueryType()
+    {
+        return queryType;
+    }
+
+    @Override
+    public void setQueryType(String queryType)
+    {
+        this.queryType = queryType;
+    }
+
+    @Override
+    public void setResponseType(String responseType)
+    {
+        this.responseType = responseType;
+    }
+
+    @Override
+    public String getResponseType()
+    {
+        return responseType;
+    }
+
+    @Override
+    public void setExternalId(String externalId)
+    {
+        this.externalId = externalId;
+    }
+
+    @Override
+    public String getExternalId()
+    {
+        return externalId;
     }
 }

@@ -1,2 +1,2 @@
 org.phenotips.remote.server.internal.MatchResource
-org.phenotips.remote.server.internal.IncomingRequestProcessor
+org.phenotips.remote.server.internal.IncomingSearchRequestProcessor

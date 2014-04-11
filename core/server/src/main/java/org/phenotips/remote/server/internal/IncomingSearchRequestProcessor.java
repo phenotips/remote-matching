@@ -21,12 +21,11 @@ package org.phenotips.remote.server.internal;
 
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.adapters.internal.OutgoingResultsAdapter;
+import org.phenotips.remote.api.Configuration;
 import org.phenotips.remote.api.HibernatePatientInterface;
 import org.phenotips.remote.api.IncomingSearchRequestInterface;
-import org.phenotips.remote.api.RequestInterface;
+import org.phenotips.remote.api.RequestHandlerInterface;
 import org.phenotips.remote.api.WrapperInterface;
-import org.phenotips.remote.hibernate.internal.HibernatePatient;
-import org.phenotips.remote.hibernate.internal.IncomingSearchRequest;
 import org.phenotips.remote.server.RequestProcessorInterface;
 import org.phenotips.similarity.SimilarPatientsFinder;
 
@@ -37,11 +36,9 @@ import org.xwiki.model.reference.DocumentReference;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.hibernate.Session;
-import org.hibernate.Transaction;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -56,7 +53,7 @@ import net.sf.json.JSONObject;
  */
 @Component
 @Singleton
-public class IncomingRequestProcessor implements RequestProcessorInterface
+public class IncomingSearchRequestProcessor implements RequestProcessorInterface
 {
     /** Handles persistence. */
     @Inject
@@ -69,34 +66,39 @@ public class IncomingRequestProcessor implements RequestProcessorInterface
     private Execution execution;
 
     @Inject
-    @Named("json-patient")
-    private WrapperInterface<JSONObject, HibernatePatientInterface> wrapper;
+    private WrapperInterface<JSONObject, HibernatePatientInterface> patientWrapper;
+
+    @Inject
+    private WrapperInterface<JSONObject, IncomingSearchRequestInterface> metaWrapper;
+
+    @Inject
+    private WrapperInterface<IncomingSearchRequestInterface, JSONObject> requestWrapper;
 
     /** This object is populated with information (at least status) on error */
     private JSONObject errorJson = new JSONObject();
 
-    public JSONObject processRequest(String json) throws XWikiException
+    public JSONObject processHTTPRequest(String stringJson) throws XWikiException
     {
         XWikiContext context = (XWikiContext) execution.getContext().getProperty("xwikicontext");
         //FIXME will break in virtual env.
         XWikiDocument fixDoc =
             context.getWiki().getDocument(new DocumentReference("xwiki", "Main", "WebHome"), context);
         context.setDoc(fixDoc);
-        //FIXME. Should not be admin.
-        //Should use setUserReference(DocumentReference userReference);
+        //FIXME. Should not be admin. Should use setUserReference(DocumentReference userReference);
         context.setUser("xwiki:XWiki.Admin");
 
-        HibernatePatientInterface hibernatePatient;
-        try {
-            hibernatePatient = wrapper.wrap(JSONObject.fromObject(json));
-        } catch (Exception ex) {
-            errorJson.put("status", 400);
-            return errorJson;
+        JSONObject json = JSONObject.fromObject(stringJson);
+        Session session = this.sessionFactory.getSessionFactory().openSession();
+
+        RequestHandlerInterface<IncomingSearchRequestInterface> requestHandler =
+            new IncomingRequestHandler(json, patientWrapper, metaWrapper);
+        IncomingSearchRequestInterface request = requestHandler.createRequest();
+        if (!request.getHTTPStatus().equals(Configuration.HTTP_OK)) {
+            return requestWrapper.wrap(request);
         }
-        IncomingSearchRequestInterface requestObject = new IncomingSearchRequest();
-        requestObject.setReferencePatient((HibernatePatient) hibernatePatient);
-        //FIXME. Check if the request needs to be stored. Which should be done by the #storeRequest function.
-        Long requestObjectId = storeRequest(requestObject);
+        //For now all request are stored. However if for inline request it is not necessary to get a unique id,
+        //that should be changed.
+        Long requestId = requestHandler.saveRequest(session);
 
         JSONObject response = new JSONObject();
         JSONArray results = new JSONArray();
@@ -104,9 +106,9 @@ public class IncomingRequestProcessor implements RequestProcessorInterface
         //Error here most likely means that the request contained malformed patient data, or none at all.
         List<PatientSimilarityView> similarPatients;
         try {
-            similarPatients = requestObject.getResults(patientsFinder);
+            similarPatients = request.getResults(patientsFinder);
         } catch (IllegalArgumentException ex) {
-            errorJson.put("status", getStatus(requestObject));
+//            errorJson.put("status", getStatus(request));
             return errorJson;
         }
 
@@ -120,28 +122,8 @@ public class IncomingRequestProcessor implements RequestProcessorInterface
             }
         }
 
-        response.put("queryID", requestObjectId);
-        response.put("responseType", requestObject.getResponseType());
         response.put("results", results);
-        response.put("status", getStatus(requestObject));
 
         return response;
-    }
-
-    // (FIXME?) Rather redundant
-    private Integer getStatus(RequestInterface requestObject)
-    { return requestObject.getResponseStatus(); }
-
-    private Long storeRequest(RequestInterface requestObject)
-    {
-        Session session = this.sessionFactory.getSessionFactory().openSession();
-
-        Transaction t = session.beginTransaction();
-        t.begin();
-        Long requestObjectId = (Long) session.save(requestObject);
-        t.commit();
-
-        session.close();
-        return requestObjectId;
     }
 }

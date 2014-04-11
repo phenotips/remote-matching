@@ -29,7 +29,6 @@ import org.xwiki.model.reference.DocumentReference;
 
 import java.util.List;
 
-import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
@@ -47,18 +46,11 @@ import javax.persistence.Transient;
 @DiscriminatorValue("incoming")
 public class IncomingSearchRequest extends AbstractRequest implements IncomingSearchRequestInterface
 {
-//    @Id
-//    @GeneratedValue
-//    private long id;
-
     @OneToOne(mappedBy = "requestEntity", cascade = CascadeType.ALL)
     private HibernatePatient referencePatient = null;
 
     @Transient
-    private Integer httpStatus = 200;
-
-    @Basic
-    private String url;
+    private Integer httpStatus = Configuration.HTTP_OK;
 
     public IncomingSearchRequest()
     {}
@@ -88,37 +80,9 @@ public class IncomingSearchRequest extends AbstractRequest implements IncomingSe
         return matches;
     }
 
-    public long getRequestId()
-    {
-        throw new UnsupportedOperationException();
-    }
+    public Integer getHttpStatus() { return httpStatus; }
 
-    public Integer getResponseStatus() { return httpStatus; }
-
-    public void setURL(String url)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public String getURL()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public String getSubmitterEmail()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public String getId()
-    {
-        return "RemoteRequest" + id;
-    }
-
-    public String getExternalId()
-    {
-        throw new UnsupportedOperationException();
-    }
+    public String getExternalId() { return "RemoteRequest" + id; }
 
     public DocumentReference getDocument()
     {
@@ -130,5 +94,16 @@ public class IncomingSearchRequest extends AbstractRequest implements IncomingSe
     public DocumentReference getReporter()
     {
         return new DocumentReference("xwiki", "XWiki", "Admin");
+    }
+
+    @Override
+    public void setHTTPStatus(Integer httpStatus)
+    {
+        this.httpStatus = httpStatus;
+    }
+
+    @Override public Integer getHTTPStatus()
+    {
+        return this.httpStatus;
     }
 }

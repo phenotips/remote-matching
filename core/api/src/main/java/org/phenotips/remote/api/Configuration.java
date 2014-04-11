@@ -28,6 +28,7 @@ import org.xwiki.model.reference.EntityReference;
 public interface Configuration
 {
     String DEFAULT_INCOMING_REQUEST_RESPONSE_TYPE = "inline";
+    String DEFAULT_OUTGOING_REQUEST_QUERY_TYPE = "once";
 
     EntityReference XWIKI_SPACE = new EntityReference("XWiki", EntityType.SPACE);
     EntityReference PHENOMECENTRAL_SPACE = new EntityReference("PhenomeCentral", EntityType.SPACE);
@@ -41,5 +42,27 @@ public interface Configuration
     String REMOTE_KEY_FIELD = "remoteAuthToken";
     String REMOTE_BASE_URL_FIELD = "baseURL";
 
-    String REMOTE_URL_SEARCH_EXTENSION = "/match?media=json&key=";
+    /** Must not contain the '/' at the beginning of the string */
+    String REMOTE_URL_SEARCH_EXTENSION = "match?media=json&key=";
+
+    //Patient
+    String FEATURE_AGE_OF_ONSET = "age_of_onset";
+
+    //JSON
+    String JSON_FEATURE_AGE_OF_ONSET = "age_of_onset";
+    String JSON_SUBMITTER = "submitter";
+    String JSON_SUBMITTER_NAME = "name";
+    String JSON_SUBMITTER_EMAIL = "email";
+    String JSON_SUBMITTER_INSTITUTION = "institution";
+    String JSON_QUERY_TYPE = "queryType";
+    String JSON_REQUEST_ID = "id";
+    String JSON_RESPONSE_ID = "queryId";
+    String JSON_RESPONSE_TYPE = "responseType";
+
+    String INTERNAL_JSON_STATUS = "status";
+
+    //HTTP
+    Integer HTTP_BAD_REQUEST = 400;
+    Integer HTTP_OK = 200;
+
 }

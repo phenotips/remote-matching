@@ -24,15 +24,28 @@ package org.phenotips.remote.api;
  */
 public interface RequestInterface
 {
-    long getRequestId();
+    Long getRequestId();
+
+    void setExternalId(String id);
+
+    String getExternalId();
+
+    /**
+     * Is not mandatory for {@link org.phenotips.remote.api.OutgoingSearchRequestInterface} as it is instantiated with
+     * the default value.
+     */
+    void setResponseType(String type);
 
     String getResponseType();
 
-    Integer getResponseStatus();
+    /**
+     * The target URL for the request. This is the final URL and must be valid without further modifications.
+     *
+     * @param url the processed URL to which a request could be sent
+     */
+    void setTargetURL(String url);
 
-    void setURL(String url);
-
-    String getURL();
+    String getTargetURL();
 
     void setSubmitterName(String name);
 
@@ -49,4 +62,8 @@ public interface RequestInterface
     void setKey(String key);
 
     String getKey();
+
+    void setQueryType(String type);
+
+    String getQueryType();
 }

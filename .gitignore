@@ -39,5 +39,6 @@ nbproject
 .sonar-ide.properties
 .clover
 *~
+*.jar
 
 /hardlinks.sh
