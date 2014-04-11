@@ -23,8 +23,14 @@ import org.phenotips.data.Patient;
 import org.phenotips.remote.adapters.XWikiAdapter;
 import org.phenotips.remote.api.Configuration;
 import org.phenotips.remote.api.OutgoingSearchRequestInterface;
-import org.phenotips.remote.api.RequestConfigurationInterface;
+import org.phenotips.remote.api.RequestHandlerInterface;
 import org.phenotips.remote.hibernate.internal.OutgoingSearchRequest;
+
+import org.xwiki.model.reference.DocumentReferenceResolver;
+
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
@@ -35,7 +41,7 @@ import com.xpn.xwiki.objects.BaseObject;
 /**
  * TODO fix the doc
  */
-public class OutgoingRequestConfigurator implements RequestConfigurationInterface
+public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingSearchRequestInterface>
 {
     private String baseURL;
 
@@ -49,15 +55,18 @@ public class OutgoingRequestConfigurator implements RequestConfigurationInterfac
 
     private String submitterEmail;
 
-    public OutgoingRequestConfigurator(BaseObject requestObject, XWiki wiki, XWikiContext context) throws XWikiException
+    private OutgoingSearchRequestInterface request;
+
+    public OutgoingRequestHandler(BaseObject requestObject, XWiki wiki, XWikiContext context,
+        DocumentReferenceResolver<String> resolver) throws XWikiException
     {
         String patientId = requestObject.getStringValue("patientId");
         String submitterId = requestObject.getStringValue("submitterId");
-        BaseObject submitter = XWikiAdapter.getSubmitter(submitterId, wiki, context);
 
+        BaseObject submitter = XWikiAdapter.getSubmitter(submitterId, wiki, context, resolver);
         patientDocument = XWikiAdapter.getPatientDoc(patientId, wiki, context);
         patient = XWikiAdapter.getPatient(patientDocument);
-        baseURL = requestObject.getStringValue(Configuration.REMOTE_BASE_URL_FIELD);
+        baseURL = requestObject.getStringValue(Configuration.REMOTE_BASE_URL_FIELD).trim();
         key =
             XWikiAdapter.getRemoteConfiguration(baseURL, wiki, context).getStringValue(Configuration.REMOTE_KEY_FIELD);
         processSubmitter(submitter);
@@ -69,22 +78,26 @@ public class OutgoingRequestConfigurator implements RequestConfigurationInterfac
         submitterEmail = submitter.getStringValue("email");
     }
 
-    private Patient getPatient()
+    private Patient getPhenoTipsPatient()
     {
         return patient;
     }
 
-    private String getURL()
+    private String configureURL()
     {
-        return baseURL + Configuration.REMOTE_URL_SEARCH_EXTENSION + key;
+        String slash = "";
+        if (!StringUtils.equals(baseURL.substring(baseURL.length() - 1), "/")) {
+            slash = "/";
+        }
+        return baseURL + slash + Configuration.REMOTE_URL_SEARCH_EXTENSION + key;
     }
 
     public OutgoingSearchRequestInterface createRequest()
     {
-        OutgoingSearchRequestInterface request = new OutgoingSearchRequest();
+        request = new OutgoingSearchRequest();
 
-        request.setReferencePatient(getPatient());
-        request.setURL(getURL());
+        request.setReferencePatient(getPhenoTipsPatient());
+        request.setTargetURL(configureURL());
         request.setSubmitterName(submitterName);
         request.setSubmitterEmail(submitterEmail);
         request.setKey(key);
@@ -93,8 +106,19 @@ public class OutgoingRequestConfigurator implements RequestConfigurationInterfac
     }
 
     @Override
-    public Boolean saveRequest()
+    public Long saveRequest(Session session)
     {
-        return null;
+        Transaction t = session.beginTransaction();
+
+        Long id;
+        if (request.getRequestId() == null) {
+            id = (Long) session.save(request);
+        } else {
+            session.saveOrUpdate(request);
+            id = request.getRequestId();
+        }
+
+        t.commit();
+        return id;
     }
 }

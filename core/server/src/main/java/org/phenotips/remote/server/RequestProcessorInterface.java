@@ -31,5 +31,5 @@ import net.sf.json.JSONObject;
 @Role
 public interface RequestProcessorInterface
 {
-    JSONObject processRequest(String json) throws XWikiException;
+    JSONObject processHTTPRequest(String json) throws XWikiException;
 }

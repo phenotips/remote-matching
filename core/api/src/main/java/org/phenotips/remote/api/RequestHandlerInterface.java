@@ -19,14 +19,19 @@
  */
 package org.phenotips.remote.api;
 
+import org.hibernate.Session;
+
 /**
  * Todo fixme.
  *
- * The object that is used by the core client (and server) to as a source of remote server/search's configuration.
+ * The object that is used by the core client (and server) to handle common operations upon a
+ * {@link org.phenotips.remote.api.RequestInterface}.
+ * Any implementation of this interface should get it's data through the constructor, and utilize the ability to have
+ * several constructors to perform different types of operations.
  */
-public interface RequestConfigurationInterface
+public interface RequestHandlerInterface<T extends RequestInterface>
 {
-    OutgoingSearchRequestInterface createRequest();
+    T createRequest();
 
-    Boolean saveRequest();
+    Long saveRequest(Session session);
 }

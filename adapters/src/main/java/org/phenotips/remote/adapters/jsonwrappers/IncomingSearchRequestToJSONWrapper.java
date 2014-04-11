@@ -19,37 +19,33 @@
  */
 package org.phenotips.remote.adapters.jsonwrappers;
 
-import org.phenotips.remote.adapters.JSONToHibernatePatientConverter;
-import org.phenotips.remote.api.HibernatePatientFeatureInterface;
-import org.phenotips.remote.api.HibernatePatientInterface;
+import org.phenotips.remote.api.Configuration;
+import org.phenotips.remote.api.IncomingSearchRequestInterface;
 import org.phenotips.remote.api.WrapperInterface;
-import org.phenotips.remote.hibernate.internal.HibernatePatient;
 
 import org.xwiki.component.annotation.Component;
-
-import java.util.Set;
-
-import javax.inject.Named;
 
 import net.sf.json.JSONObject;
 
 /**
- * TODO.
+ * Unfortunately because JSONObject is final, this class, unlike all the other wrappers cannot extend the object.
+ * Therefore, breaking the existing pattern it uses {@link #wrap} method and returns JSONObject.
  */
 @Component
-@Named("json-patient")
-public class JSONToHibernatePatientWrapper implements WrapperInterface<JSONObject, HibernatePatientInterface>
+public class IncomingSearchRequestToJSONWrapper implements WrapperInterface<IncomingSearchRequestInterface, JSONObject>
 {
-    public HibernatePatientInterface wrap(JSONObject json)
+    public JSONObject wrap(IncomingSearchRequestInterface request)
     {
-        HibernatePatientInterface patient = new HibernatePatient();
+        JSONObject json = new JSONObject();
 
-        try {
-            Set<HibernatePatientFeatureInterface> features = JSONToHibernatePatientConverter.convertFeatures(json);
-            patient.addFeatures(features);
-        } catch (Exception ex) {
-            return null;
+        Integer status = request.getHTTPStatus();
+        json.put(Configuration.INTERNAL_JSON_STATUS, status);
+        if(!status.equals(Configuration.HTTP_OK)) {
+            return json;
         }
-        return patient;
+
+        json.put(Configuration.JSON_RESPONSE_ID, request.getRequestId());
+        json.put(Configuration.JSON_RESPONSE_TYPE, request.getResponseType());
+        return json;
     }
 }

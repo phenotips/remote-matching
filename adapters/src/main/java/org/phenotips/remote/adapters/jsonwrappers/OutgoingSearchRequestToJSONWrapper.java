@@ -66,10 +66,17 @@ public class OutgoingSearchRequestToJSONWrapper implements WrapperInterface<Outg
         if (reference == null) {
             return json;
         }
-        json.put("features", PatientToJSONConverter.features(reference));
-        json.put("disorders", PatientToJSONConverter.disorders(reference));
-        json.putAll(PatientToJSONConverter.globalQualifiers(reference));
+        JSONObject submitter = new JSONObject();
+        submitter.put("name", request.getSubmitterName());
+        submitter.put("email", request.getSubmitterEmail());
+
+        json.put("id", request.getRequestId());
+        json.put("queryType", request.getQueryType());
+        json.put("submitter", submitter);
         json.put("gender", PatientToJSONConverter.gender(reference));
+        json.putAll(PatientToJSONConverter.globalQualifiers(reference));
+        json.put("disorders", PatientToJSONConverter.disorders(reference));
+        json.put("features", PatientToJSONConverter.features(reference));
 
         return json;
     }

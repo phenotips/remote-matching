@@ -34,4 +34,8 @@ public interface IncomingSearchRequestInterface extends RequestInterface
     void setReferencePatient(HibernatePatientInterface patient);
 
     HibernatePatientInterface getReferencePatient() throws IllegalArgumentException;
+
+    void setHTTPStatus(Integer httpStatus);
+
+    Integer getHTTPStatus();
 }

@@ -24,8 +24,10 @@ import org.phenotips.data.internal.PhenoTipsPatient;
 import org.phenotips.remote.api.Configuration;
 
 import org.xwiki.model.EntityType;
-import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
@@ -38,27 +40,27 @@ import com.xpn.xwiki.objects.BaseObject;
  */
 public class XWikiAdapter
 {
-    static public BaseObject getSubmitter(String userId, XWiki wiki, XWikiContext context) throws XWikiException
+    static public BaseObject getSubmitter(String userId, XWiki wiki, XWikiContext context, DocumentReferenceResolver<String> resolver) throws XWikiException
     {
-        //TODO field names should be in a configuration
         //Fixme. Does not check if the document is a user, but will return null if not.
         //Fixme. [possible] Does not check if the patient belongs to the user?
-//        String[] splitUserId = userId.split("\\.");
-//        if (splitUserId.length != 2) {
-//            //TODO This isn't exactly true
-//            throw new XWikiException();
-//        }
 
-        EntityReference userReference = new EntityReference(userId, EntityType.DOCUMENT);
+        EntityReference userReference = resolver.resolve(userId);
         return wiki.getDocument(userReference, context).getXObject(Configuration.USER_OBJECT_REFERENCE);
     }
 
-    static public BaseObject getRemoteConfiguration(String baseURL, XWiki wiki, XWikiContext context) throws XWikiException
+    static public BaseObject getRemoteConfiguration(String baseURL, XWiki wiki, XWikiContext context)
+        throws XWikiException
     {
         XWikiDocument configurationsDoc =
             wiki.getDocument(Configuration.REMOTE_CONFIGURATIONS_DOCUMENT_REFERENCE, context);
-        DocumentReference classReference = new DocumentReference(Configuration.REMOTE_CONFIGURATION_OBJECT_REFERENCE);
-        return configurationsDoc.getXObject(classReference, "baseURL", baseURL);
+        for (BaseObject remote : configurationsDoc.getXObjects(Configuration.REMOTE_CONFIGURATION_OBJECT_REFERENCE)) {
+            if (StringUtils.equalsIgnoreCase(remote.getStringValue(Configuration.REMOTE_BASE_URL_FIELD), baseURL)) {
+                return remote;
+            }
+        }
+        //FIXME. Not exactly true.
+        throw new XWikiException();
     }
 
     static public Patient getPatient(XWikiDocument doc)
