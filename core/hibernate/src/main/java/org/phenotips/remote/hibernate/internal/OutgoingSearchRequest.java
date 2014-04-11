@@ -23,19 +23,24 @@ import org.phenotips.data.Patient;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.data.similarity.PatientSimilarityViewFactory;
 import org.phenotips.remote.api.Configuration;
+import org.phenotips.remote.api.HibernatePatientInterface;
 import org.phenotips.remote.api.OutgoingSearchRequestInterface;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 
 import org.apache.commons.lang3.StringUtils;
-
-import net.sf.json.JSONObject;
 
 /**
  * TODO.
@@ -52,20 +57,22 @@ public class OutgoingSearchRequest extends AbstractRequest implements OutgoingSe
     @Transient
     private Patient referencePatient;
 
-    @Basic
-    private String queryType = Configuration.DEFAULT_OUTGOING_REQUEST_QUERY_TYPE;
+    //FIXME Check is right cascade type
+    @OneToMany(cascade= CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name="HP_ID")
+    public Set<HibernatePatient> results = new HashSet<HibernatePatient>();
 
-//    //FIXME Check is right cascade type
-//    @OneToMany(cascade= CascadeType.ALL, fetch = FetchType.EAGER)
-//    @JoinColumn(name="HP_ID")
-//    public Set<HibernatePatientInt> results = new HashSet<HibernatePatient>();
+    public OutgoingSearchRequest()
+    {
+        setQueryType(Configuration.DEFAULT_OUTGOING_REQUEST_QUERY_TYPE);
+    }
 
     public List<PatientSimilarityView> getResults(PatientSimilarityViewFactory viewFactory)
     {
         List<PatientSimilarityView> patientSimilarityViews = new LinkedList<PatientSimilarityView>();
-//        for (Patient patient : results) {
-//            patientSimilarityViews.add(viewFactory.makeSimilarPatient(patient, referencePatient));
-//        }
+        for (Patient patient : results) {
+            patientSimilarityViews.add(viewFactory.makeSimilarPatient(patient, getReferencePatient()));
+        }
         return patientSimilarityViews;
     }
 
@@ -88,11 +95,11 @@ public class OutgoingSearchRequest extends AbstractRequest implements OutgoingSe
 
     public String getReferencePatientId() { return referencePatientId; }
 
-    public void addResult(JSONObject json)
+    public void addResults(Set<HibernatePatientInterface> results)
     {
-//        HibernatePatient resultPatient = new HibernatePatient();
-//        resultPatient.populatePatient(json);
-//        results.add(resultPatient);
+        for (HibernatePatientInterface patient: results) {
+            this.results.add((HibernatePatient) patient);
+        }
     }
 
     private int convertTextToIntBool(String text)
@@ -114,10 +121,5 @@ public class OutgoingSearchRequest extends AbstractRequest implements OutgoingSe
     public Integer getResponseStatus()
     {
         throw new UnsupportedOperationException();
-    }
-
-    public String getQueryType()
-    {
-        return queryType;
     }
 }

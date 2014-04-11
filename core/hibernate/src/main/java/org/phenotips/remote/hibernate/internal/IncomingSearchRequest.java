@@ -36,7 +36,8 @@ import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
 /**
- * Class for storing an incoming request outside the main PhenoTips database for privacy reasons. It is a combination of
+ * Class for storing an incoming request outside the main PhenoTips database for privacy reasons. It is a combination
+ * of
  * a Patient interface, and a Request interface. Some functions, such as getId are ambiguous, because they can apply
  * both to the patient and the request. However, this seems to be the lesser evil at this time.
  *
@@ -68,7 +69,7 @@ public class IncomingSearchRequest extends AbstractRequest implements IncomingSe
     {
         if (referencePatient == null) {
             //FIXME. This should be custom.
-            httpStatus = 400;
+            httpStatus = Configuration.HTTP_BAD_REQUEST;
             throw new IllegalArgumentException("The reference patient for the incoming request has not been set");
         }
         return referencePatient;
@@ -76,8 +77,12 @@ public class IncomingSearchRequest extends AbstractRequest implements IncomingSe
 
     public List<PatientSimilarityView> getResults(SimilarPatientsFinder finder) throws IllegalArgumentException
     {
-        List<PatientSimilarityView> matches = finder.findSimilarPatients(getReferencePatient());
-        return matches;
+        try {
+            return finder.findSimilarPatients(getReferencePatient());
+        } catch (IllegalArgumentException ex) {
+            httpStatus = Configuration.HTTP_BAD_REQUEST;
+            return null;
+        }
     }
 
     public Integer getHttpStatus() { return httpStatus; }

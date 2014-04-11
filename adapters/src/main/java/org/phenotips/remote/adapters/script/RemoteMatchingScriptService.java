@@ -24,10 +24,10 @@ import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.data.similarity.PatientSimilarityViewFactory;
 import org.phenotips.remote.RemoteMatchingClient;
 import org.phenotips.remote.adapters.internal.OutgoingRequestHandler;
-import org.phenotips.remote.api.RequestHandlerInterface;
-import org.phenotips.remote.api.WrapperInterface;
 import org.phenotips.remote.adapters.jsonwrappers.OutgoingSearchRequestToJSONWrapper;
 import org.phenotips.remote.api.OutgoingSearchRequestInterface;
+import org.phenotips.remote.api.RequestHandlerInterface;
+import org.phenotips.remote.api.WrapperInterface;
 import org.phenotips.remote.hibernate.internal.OutgoingSearchRequest;
 
 import org.xwiki.component.annotation.Component;
@@ -57,7 +57,6 @@ import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.store.hibernate.HibernateSessionFactory;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -76,8 +75,8 @@ public class RemoteMatchingScriptService implements ScriptService
     @Inject
     private Execution execution;
 
-    //@Inject
-//    @Named("restricted")
+    @Inject
+    @Named("restricted")
     private PatientSimilarityViewFactory viewFactory;
 
     @Inject
@@ -97,31 +96,20 @@ public class RemoteMatchingScriptService implements ScriptService
             BaseObject xwikiRequestObject = xwikiObject.getXWikiObject();
             RequestHandlerInterface<OutgoingSearchRequestInterface> requestHandler =
                 new OutgoingRequestHandler(xwikiRequestObject, wiki, context, resolver);
-            OutgoingSearchRequestInterface requestObject = requestHandler.createRequest();
+            OutgoingSearchRequestInterface request = requestHandler.createRequest();
 
             Session session = this.sessionFactory.getSessionFactory().openSession();
-            Long requestObjectId = requestHandler.saveRequest(session);
+            requestHandler.saveRequest(session);
 
 
             WrapperInterface<OutgoingSearchRequestInterface, JSONObject> requestWrapper =
                 new OutgoingSearchRequestToJSONWrapper(wiki, context);
-            String result = RemoteMatchingClient.sendRequest(requestObject, requestWrapper);
+            String result = RemoteMatchingClient.sendRequest(request, requestWrapper);
 
-            JSONObject jsonResult = JSONObject.fromObject(result);
-            for (Object resultPatientUC : (JSONArray) jsonResult.get("results")) {
-                requestObject.addResult((JSONObject) resultPatientUC);
-            }
+            JSONObject json = JSONObject.fromObject(result);
+            new OutgoingRequestHandler(request, json);
 
-
-//            EntityReference patientReference =
-//                new EntityReference(patientId, EntityType.DOCUMENT, Patient.DEFAULT_DATA_SPACE);
-//
-//            XWikiDocument patientDoc = wiki.getDocument(patientReference, context);
-//            EntityReference remoteRequestReference = new EntityReference("RemoteRequest", EntityType.DOCUMENT,
-//                new EntityReference("PhenomeCentral", EntityType.SPACE));
-            xwikiRequestObject.set("hibernateId", requestObjectId, context);
-//
-//            //FIXME. Double saving?
+            //FIXME. Double saving?
 //            wiki.saveDocument(patientDoc, context);
 
             return true;

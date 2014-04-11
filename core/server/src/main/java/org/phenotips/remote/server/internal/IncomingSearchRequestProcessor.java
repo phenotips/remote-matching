@@ -19,33 +19,27 @@
  */
 package org.phenotips.remote.server.internal;
 
-import org.phenotips.data.similarity.PatientSimilarityView;
-import org.phenotips.remote.adapters.internal.OutgoingResultsAdapter;
 import org.phenotips.remote.api.Configuration;
 import org.phenotips.remote.api.HibernatePatientInterface;
 import org.phenotips.remote.api.IncomingSearchRequestInterface;
 import org.phenotips.remote.api.RequestHandlerInterface;
 import org.phenotips.remote.api.WrapperInterface;
 import org.phenotips.remote.server.RequestProcessorInterface;
-import org.phenotips.similarity.SimilarPatientsFinder;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
 import org.xwiki.model.reference.DocumentReference;
 
-import java.util.List;
-
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.hibernate.Session;
 
 import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.store.hibernate.HibernateSessionFactory;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -60,24 +54,21 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
     private HibernateSessionFactory sessionFactory;
 
     @Inject
-    private SimilarPatientsFinder patientsFinder;
-
-    @Inject
     private Execution execution;
 
     @Inject
+    @Named("json-patient")
     private WrapperInterface<JSONObject, HibernatePatientInterface> patientWrapper;
 
     @Inject
+    @Named("json-meta")
     private WrapperInterface<JSONObject, IncomingSearchRequestInterface> metaWrapper;
 
     @Inject
+    @Named("incoming-json")
     private WrapperInterface<IncomingSearchRequestInterface, JSONObject> requestWrapper;
 
-    /** This object is populated with information (at least status) on error */
-    private JSONObject errorJson = new JSONObject();
-
-    public JSONObject processHTTPRequest(String stringJson) throws XWikiException
+    public JSONObject processHTTPRequest(String stringJson) throws Exception
     {
         XWikiContext context = (XWikiContext) execution.getContext().getProperty("xwikicontext");
         //FIXME will break in virtual env.
@@ -98,32 +89,8 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
         }
         //For now all request are stored. However if for inline request it is not necessary to get a unique id,
         //that should be changed.
-        Long requestId = requestHandler.saveRequest(session);
+        requestHandler.saveRequest(session);
 
-        JSONObject response = new JSONObject();
-        JSONArray results = new JSONArray();
-
-        //Error here most likely means that the request contained malformed patient data, or none at all.
-        List<PatientSimilarityView> similarPatients;
-        try {
-            similarPatients = request.getResults(patientsFinder);
-        } catch (IllegalArgumentException ex) {
-//            errorJson.put("status", getStatus(request));
-            return errorJson;
-        }
-
-        for (PatientSimilarityView patient : similarPatients) {
-            OutgoingResultsAdapter resultsAdapter = new OutgoingResultsAdapter();
-            resultsAdapter.setPatient(patient);
-            try {
-                results.add(resultsAdapter.patientJSON());
-            } catch (Exception ex) {
-                //Should not happen
-            }
-        }
-
-        response.put("results", results);
-
-        return response;
+        return requestWrapper.wrap(request);
     }
 }

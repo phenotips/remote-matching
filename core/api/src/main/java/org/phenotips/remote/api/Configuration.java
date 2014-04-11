@@ -58,11 +58,13 @@ public interface Configuration
     String JSON_REQUEST_ID = "id";
     String JSON_RESPONSE_ID = "queryId";
     String JSON_RESPONSE_TYPE = "responseType";
+    String JSON_RESULTS = "results";
 
     String INTERNAL_JSON_STATUS = "status";
 
     //HTTP
     Integer HTTP_BAD_REQUEST = 400;
     Integer HTTP_OK = 200;
+    Integer HTTP_SERVER_ERROR = 500;
 
 }

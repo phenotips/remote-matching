@@ -49,7 +49,7 @@ public class RemoteMatchingClient
 
         HttpPost httpRequest = new HttpPost(request.getTargetURL());
         httpRequest.setEntity(jsonEntity);
-
+        //FIXME. Check status, return null.
         CloseableHttpResponse httpResponse = client.execute(httpRequest);
         return EntityUtils.toString(httpResponse.getEntity());
     }
