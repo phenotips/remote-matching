@@ -20,21 +20,20 @@
 package org.phenotips.remote.adapters.script;
 
 import org.phenotips.data.Patient;
+import org.phenotips.data.PatientRepository;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.data.similarity.PatientSimilarityViewFactory;
 import org.phenotips.remote.RemoteMatchingClient;
 import org.phenotips.remote.adapters.internal.OutgoingRequestHandler;
 import org.phenotips.remote.adapters.jsonwrappers.OutgoingSearchRequestToJSONWrapper;
+import org.phenotips.remote.api.Configuration;
 import org.phenotips.remote.api.OutgoingSearchRequestInterface;
 import org.phenotips.remote.api.RequestHandlerInterface;
 import org.phenotips.remote.api.WrapperInterface;
-import org.phenotips.remote.hibernate.internal.OutgoingSearchRequest;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
-import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReferenceResolver;
-import org.xwiki.model.reference.EntityReference;
 import org.xwiki.script.service.ScriptService;
 import org.xwiki.stability.Unstable;
 
@@ -45,9 +44,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.hibernate.Hibernate;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWiki;
@@ -86,9 +84,12 @@ public class RemoteMatchingScriptService implements ScriptService
     @Named("current")
     private DocumentReferenceResolver<String> resolver;
 
+    /** Wrapped trusted API, doing the actual work. */
+    @Inject
+    private PatientRepository internalPatientService;
+
     public boolean sendRequest(com.xpn.xwiki.api.Object xwikiObject)
     {
-        //FIXME. PatientId, submitterId should be in the requestObject.
         try {
             XWikiContext context = getContext();
             XWiki wiki = getWiki(context);
@@ -101,16 +102,13 @@ public class RemoteMatchingScriptService implements ScriptService
             Session session = this.sessionFactory.getSessionFactory().openSession();
             requestHandler.saveRequest(session);
 
-
             WrapperInterface<OutgoingSearchRequestInterface, JSONObject> requestWrapper =
                 new OutgoingSearchRequestToJSONWrapper(wiki, context);
             String result = RemoteMatchingClient.sendRequest(request, requestWrapper);
 
             JSONObject json = JSONObject.fromObject(result);
-            new OutgoingRequestHandler(request, json);
-
-            //FIXME. Double saving?
-//            wiki.saveDocument(patientDoc, context);
+            requestHandler = new OutgoingRequestHandler(request, json);
+            requestHandler.saveRequest(session);
 
             return true;
         } catch (Exception ex) {
@@ -122,33 +120,26 @@ public class RemoteMatchingScriptService implements ScriptService
     public List<PatientSimilarityView> getSimilarityResults(Patient patient) throws XWikiException
     {
         List<PatientSimilarityView> resultsList = new LinkedList<PatientSimilarityView>();
+
+        Session session = this.sessionFactory.getSessionFactory().openSession();
+        RequestHandlerInterface<OutgoingSearchRequestInterface> requestHandler = new OutgoingRequestHandler(session);
+
         try {
-            Session session = this.sessionFactory.getSessionFactory().openSession();
-            Transaction t = session.beginTransaction();
-            t.begin();
-
-            XWikiContext context = (XWikiContext) execution.getContext().getProperty("xwikicontext");
-            XWiki wiki = context.getWiki();
+            XWikiContext context = getContext();
+            XWiki wiki = getWiki(context);
             XWikiDocument patientDoc = wiki.getDocument(patient.getDocument(), context);
-            EntityReference remoteRequestReference = new EntityReference("RemoteRequest", EntityType.DOCUMENT,
-                new EntityReference("PhenomeCentral", EntityType.SPACE));
-            List<BaseObject> requestObjects = patientDoc.getXObjects(remoteRequestReference);
-            for (BaseObject request : requestObjects) {
-                long requestId = Long.valueOf(request.getStringValue("id"));
-                OutgoingSearchRequest outgoingSearchRequest = new OutgoingSearchRequest();
-                session.load(outgoingSearchRequest, requestId);
+            List<BaseObject> requestObjects = patientDoc.getXObjects(Configuration.REMOTE_REQUEST_REFERENCE);
+            for (BaseObject requestObject : requestObjects) {
+                String requestIdString = requestObject.getStringValue(Configuration.REMOTE_HIBERNATE_ID);
+                if (StringUtils.isBlank(requestIdString)) {
+                    return resultsList;
+                }
+                OutgoingSearchRequestInterface request =
+                    requestHandler.loadRequest(Long.valueOf(requestIdString), internalPatientService);
 
-                Hibernate.initialize(outgoingSearchRequest);
-
-//                for (HibernatePatient patientResult : outgoingSearchRequest.results) {
-//                    Hibernate.initialize(patientResult);
-//                }
-                //FIXME. First need to have the reference patient when this is going to work for real.
-                List<PatientSimilarityView> allResults = outgoingSearchRequest.getResults(viewFactory);
+                List<PatientSimilarityView> allResults = request.getResults(viewFactory);
                 resultsList.addAll(allResults);
             }
-
-            t.commit();
             return resultsList;
         } catch (Exception ex) {
             return resultsList;

@@ -32,7 +32,7 @@
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <creationDate>1394733772000</creationDate>
-  <date>1396044479000</date>
+  <date>1397162244000</date>
   <contentUpdateDate>1395855745000</contentUpdateDate>
   <version>1.1</version>
   <title/>
@@ -460,19 +460,23 @@ $xwiki.jsfx.use('js/remote-matching/main.js')
       ## Custom javascript will take care of sending the request, and changing the page display.
       ##=======================================
       #set ($remoteRequestClass = "PhenomeCentral.RemoteRequest")
-      #set ($remoteDoc = $xwiki.getDocumentAsAuthor("XWiki.XWikiPreferences"))
-      #set ($allRemotes = $remoteDoc.getObjects("PhenomeCentral.RemoteMatchingServiceConfiguration"))
+      #set ($preferenceDoc = $xwiki.getDocumentAsAuthor("XWiki.XWikiPreferences"))
+      #set ($allRemotes = $preferenceDoc.getObjects("PhenomeCentral.RemoteMatchingServiceConfiguration"))
       #set ($allRequests = $doc.getObjects($remoteRequestClass))
       #set ($remotes = {}) ##These are filtered
       #foreach ($config in $allRemotes)
+        $config
         #if ($config.getProperty('mutuallyAccepted').getValue() == 1)
+          $config.get("baseURL").toString()
           #set ($requests = [])
-          #set ($baseUrl = $config.get("baseUrl").toString())
+          #set ($baseURL = $config.get("baseURL").toString())
           #foreach ($r in $allRequests)
-            #if ($r.get("baseUrl").toString() == $baseUrl)
+            $r.get("baseURL").toString()
+            #if ($r.get("baseURL").toString() == $baseURL)
               #set($discard = $requests.add($r))
             #end
           #end
+          $requests
           ##====================================
           ## If there are no existing request objects for this remote server, create an empty one.
           ## If it is decided that several requests (and subsequent results) to the same server are compounded,
@@ -480,7 +484,8 @@ $xwiki.jsfx.use('js/remote-matching/main.js')
           ##====================================
           #if ($requests.size() == 0)
             #set ($newRequest = $doc.newObject($remoteRequestClass))
-            $newRequest.set("baseUrl", $baseUrl)
+            $newRequest.set("baseURL", $baseURL)
+            $newRequest.set("id", $newRequest.getGuid())
             #set($discard = $requests.add($newRequest))
           #end
           #set ($discard = $remotes.put($config, $requests))
@@ -488,9 +493,10 @@ $xwiki.jsfx.use('js/remote-matching/main.js')
       #end
       #set ($discard = $doc.save())
       #foreach ($remote in $remotes.keySet())
+         ## This will also need to be changed in case there are more than one request ##
          #set($guid = $remotes.get($remote).get(0).getGuid())
          {{html clean=false}}&lt;div class="remoteSearch" id="$!{guid}"&gt;
-           &lt;input type="hidden" id="userName" value="$xwiki.getUser().getUser().getUser()"&gt;
+           &lt;input type="hidden" id="userId" value="$xwiki.getUser().getUser().getUser()"&gt;
            &lt;input type="hidden" id="patientId" value="$doc.getName()"&gt;
            &lt;input type="hidden" id="url" value="$xwiki.getURL("PhenomeCentral.RemoteMatchingSendRequest", "get")"&gt;
            &lt;span&gt;$remote.getProperty("humanReadableName").getValue()&lt;/span&gt;

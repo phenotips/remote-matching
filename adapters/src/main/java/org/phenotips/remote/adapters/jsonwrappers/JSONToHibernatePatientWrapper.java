@@ -20,6 +20,7 @@
 package org.phenotips.remote.adapters.jsonwrappers;
 
 import org.phenotips.remote.adapters.JSONToHibernatePatientConverter;
+import org.phenotips.remote.api.HibernatePatientDisorderInterface;
 import org.phenotips.remote.api.HibernatePatientFeatureInterface;
 import org.phenotips.remote.api.HibernatePatientInterface;
 import org.phenotips.remote.api.WrapperInterface;
@@ -46,7 +47,9 @@ public class JSONToHibernatePatientWrapper implements WrapperInterface<JSONObjec
 
         try {
             Set<HibernatePatientFeatureInterface> features = JSONToHibernatePatientConverter.convertFeatures(json);
+            Set<HibernatePatientDisorderInterface> disorders = JSONToHibernatePatientConverter.convertDisorders(json);
             patient.addFeatures(features);
+            patient.addDisorders(disorders);
         } catch (Exception ex) {
             return null;
         }

@@ -37,7 +37,6 @@ import javax.inject.Singleton;
 import org.hibernate.Session;
 
 import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.store.hibernate.HibernateSessionFactory;
 
 import net.sf.json.JSONObject;
@@ -71,12 +70,11 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
     public JSONObject processHTTPRequest(String stringJson) throws Exception
     {
         XWikiContext context = (XWikiContext) execution.getContext().getProperty("xwikicontext");
-        //FIXME will break in virtual env.
-        XWikiDocument fixDoc =
-            context.getWiki().getDocument(new DocumentReference("xwiki", "Main", "WebHome"), context);
-        context.setDoc(fixDoc);
-        //FIXME. Should not be admin. Should use setUserReference(DocumentReference userReference);
-        context.setUser("xwiki:XWiki.Admin");
+        //FIXME
+//        context.setUserReference(
+//            new DocumentReference(context.getMainXWiki(), Configuration.REST_DEFAULT_USER_SPACE,
+//                Configuration.REST_DEFAULT_USER_NAME));
+        context.setUserReference(new DocumentReference(context.getMainXWiki(), "XWiki", "Admin"));
 
         JSONObject json = JSONObject.fromObject(stringJson);
         Session session = this.sessionFactory.getSessionFactory().openSession();

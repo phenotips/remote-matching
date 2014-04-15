@@ -19,18 +19,14 @@
  */
 package org.phenotips.remote.api;
 
-import org.phenotips.data.Patient;
-
-import java.util.Set;
+import org.phenotips.data.Disorder;
 
 /**
  * TODO.
  */
-public interface HibernatePatientInterface extends Patient
+public interface HibernatePatientDisorderInterface extends Disorder
 {
-    void addFeatures(Set<HibernatePatientFeatureInterface> features);
+    void setId(String id);
 
-    void addDisorders(Set<HibernatePatientDisorderInterface> disorders);
-
-    void setParent(RequestInterface request);
+    void setParent(HibernatePatientInterface patient);
 }

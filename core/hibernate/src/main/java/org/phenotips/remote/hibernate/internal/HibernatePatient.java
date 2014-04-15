@@ -22,8 +22,10 @@ package org.phenotips.remote.hibernate.internal;
 import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
 import org.phenotips.data.PatientData;
+import org.phenotips.remote.api.HibernatePatientDisorderInterface;
 import org.phenotips.remote.api.HibernatePatientFeatureInterface;
 import org.phenotips.remote.api.HibernatePatientInterface;
+import org.phenotips.remote.api.RequestInterface;
 
 import org.xwiki.model.reference.DocumentReference;
 
@@ -32,13 +34,16 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Basic;
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 
 import net.sf.json.JSONObject;
 
@@ -52,11 +57,17 @@ public class HibernatePatient implements HibernatePatientInterface
     @Basic
     private String externalId;
 
-    @ManyToOne
-    public AbstractRequest requestEntity;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "requestentity_id", nullable = false)
+    public AbstractRequest requestentity;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "hibernatePatient")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "hibernatepatient")
+    @Cascade({CascadeType.ALL})
     public Set<HibernatePatientFeature> features = new HashSet<HibernatePatientFeature>();
+
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "hibernatepatient")
+    @Cascade({CascadeType.ALL})
+    public Set<HibernatePatientDisorder> disorders = new HashSet<HibernatePatientDisorder>();
 
     public HibernatePatient()
     {
@@ -66,33 +77,17 @@ public class HibernatePatient implements HibernatePatientInterface
     public void addFeatures(Set<HibernatePatientFeatureInterface> featureSet)
     {
         for (HibernatePatientFeatureInterface feature : featureSet) {
+            feature.setParent(this);
             features.add((HibernatePatientFeature) feature);
         }
     }
 
-    public long getRequestId()
+    public void addDisorders(Set<HibernatePatientDisorderInterface> disorderSet)
     {
-        return id;
-    }
-
-    public String getResponseType()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean getResponseStatus()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public String getResponseTargetURL()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    public String getSubmitterEmail()
-    {
-        throw new UnsupportedOperationException();
+        for (HibernatePatientDisorderInterface disorder : disorderSet) {
+            disorder.setParent(this);
+            disorders.add((HibernatePatientDisorder) disorder);
+        }
     }
 
     public String getId()
@@ -103,6 +98,12 @@ public class HibernatePatient implements HibernatePatientInterface
     public String getExternalId()
     {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setParent(RequestInterface request)
+    {
+        requestentity = (AbstractRequest) request;
     }
 
     public DocumentReference getDocument()

@@ -22,7 +22,6 @@ package org.phenotips.remote.hibernate.internal;
 import org.phenotips.data.Patient;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.data.similarity.PatientSimilarityViewFactory;
-import org.phenotips.remote.api.Configuration;
 import org.phenotips.remote.api.HibernatePatientInterface;
 import org.phenotips.remote.api.OutgoingSearchRequestInterface;
 
@@ -32,15 +31,15 @@ import java.util.List;
 import java.util.Set;
 
 import javax.persistence.Basic;
-import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 
 /**
  * TODO.
@@ -57,14 +56,14 @@ public class OutgoingSearchRequest extends AbstractRequest implements OutgoingSe
     @Transient
     private Patient referencePatient;
 
-    //FIXME Check is right cascade type
-    @OneToMany(cascade= CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name="HP_ID")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "requestentity")
+    @Cascade({CascadeType.ALL})
+//    @JoinColumn(name="RESULT_HP_ID")
     public Set<HibernatePatient> results = new HashSet<HibernatePatient>();
 
     public OutgoingSearchRequest()
     {
-        setQueryType(Configuration.DEFAULT_OUTGOING_REQUEST_QUERY_TYPE);
+
     }
 
     public List<PatientSimilarityView> getResults(PatientSimilarityViewFactory viewFactory)
@@ -98,6 +97,7 @@ public class OutgoingSearchRequest extends AbstractRequest implements OutgoingSe
     public void addResults(Set<HibernatePatientInterface> results)
     {
         for (HibernatePatientInterface patient: results) {
+            patient.setParent(this);
             this.results.add((HibernatePatient) patient);
         }
     }

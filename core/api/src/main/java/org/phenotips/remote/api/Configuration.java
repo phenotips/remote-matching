@@ -38,12 +38,22 @@ public interface Configuration
         new EntityReference("XWikiPreferences", EntityType.DOCUMENT, XWIKI_SPACE);
     EntityReference REMOTE_CONFIGURATION_OBJECT_REFERENCE =
         new EntityReference("RemoteMatchingServiceConfiguration", EntityType.DOCUMENT, PHENOMECENTRAL_SPACE);
+    EntityReference REMOTE_REQUEST_REFERENCE = new EntityReference("RemoteRequest", EntityType.DOCUMENT,
+        new EntityReference("PhenomeCentral", EntityType.SPACE));
 
-    String REMOTE_KEY_FIELD = "remoteAuthToken";
-    String REMOTE_BASE_URL_FIELD = "baseURL";
+    /** Document which can be relied upon to exist at all times. Needed for the REST server to work */
+    EntityReference ABSOLUTE_DOCUMENT_REFERENCE =
+        new EntityReference("XWikiPreferences", EntityType.DOCUMENT, XWIKI_SPACE);
+    String REST_DEFAULT_USER_SPACE = "PhenomeCentral";
+    String REST_DEFAULT_USER_NAME = "DefaultRemoteUser";
 
     /** Must not contain the '/' at the beginning of the string */
     String REMOTE_URL_SEARCH_EXTENSION = "match?media=json&key=";
+
+    //XWiki remote request
+    String REMOTE_KEY_FIELD = "remoteAuthToken";
+    String REMOTE_BASE_URL_FIELD = "baseURL";
+    String REMOTE_HIBERNATE_ID = "hibernateId";
 
     //Patient
     String FEATURE_AGE_OF_ONSET = "age_of_onset";
@@ -59,12 +69,16 @@ public interface Configuration
     String JSON_RESPONSE_ID = "queryId";
     String JSON_RESPONSE_TYPE = "responseType";
     String JSON_RESULTS = "results";
+    String JSON_DISORDERS = "disorders";
 
     String INTERNAL_JSON_STATUS = "status";
 
     //HTTP
     Integer HTTP_BAD_REQUEST = 400;
+    Integer HTTP_UNAUTHORIZED = 401;
     Integer HTTP_OK = 200;
     Integer HTTP_SERVER_ERROR = 500;
 
+    //REST
+    String URL_KEY_PARAMETER = "key";
 }

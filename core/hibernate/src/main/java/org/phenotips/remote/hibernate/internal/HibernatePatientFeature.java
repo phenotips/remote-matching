@@ -24,6 +24,7 @@ import org.phenotips.data.FeatureMetadatum;
 import org.phenotips.ontology.OntologyManager;
 import org.phenotips.ontology.OntologyTerm;
 import org.phenotips.remote.api.HibernatePatientFeatureInterface;
+import org.phenotips.remote.api.HibernatePatientInterface;
 
 import org.xwiki.component.manager.ComponentLookupException;
 
@@ -33,6 +34,7 @@ import java.util.TreeMap;
 
 import javax.persistence.Basic;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -46,6 +48,8 @@ import net.sf.json.JSONObject;
 
 /**
  * Hibernate entity for storing patient features.
+ *
+ * FIXME. Must extends the AbstractPhenoTipsOntologyProperty
  */
 @Entity
 public class HibernatePatientFeature implements HibernatePatientFeatureInterface
@@ -57,9 +61,9 @@ public class HibernatePatientFeature implements HibernatePatientFeatureInterface
     @Basic
     private String id;
 
-    @ManyToOne
-    @JoinColumn(name = "HP_ID")
-    public HibernatePatient hibernatePatient;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "hibernatepatient_id", nullable = false)
+    public HibernatePatient hibernatepatient;
 
     /** 1 - true, -1 - false, 0 - NA */
     @Basic
@@ -70,6 +74,12 @@ public class HibernatePatientFeature implements HibernatePatientFeatureInterface
 
     @Transient
     private Map<String, FeatureMetadatum> metadata = new TreeMap<String, FeatureMetadatum>();
+
+    @Override
+    public void setParent(HibernatePatientInterface patient)
+    {
+        hibernatepatient = (HibernatePatient) patient;
+    }
 
     public String getId()
     {
