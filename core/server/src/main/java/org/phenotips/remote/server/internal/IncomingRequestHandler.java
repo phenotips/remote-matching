@@ -19,6 +19,7 @@
  */
 package org.phenotips.remote.server.internal;
 
+import org.phenotips.data.PatientRepository;
 import org.phenotips.remote.api.Configuration;
 import org.phenotips.remote.api.HibernatePatientInterface;
 import org.phenotips.remote.api.IncomingSearchRequestInterface;
@@ -84,5 +85,10 @@ public class IncomingRequestHandler implements RequestHandlerInterface<IncomingS
         t.commit();
 
         return id;
+    }
+
+    @Override
+    public IncomingSearchRequestInterface loadRequest(Long id, PatientRepository internal) {
+        throw new UnsupportedOperationException();
     }
 }

@@ -19,7 +19,10 @@
  */
 package org.phenotips.remote.adapters;
 
+import org.phenotips.remote.api.Configuration;
+import org.phenotips.remote.api.HibernatePatientDisorderInterface;
 import org.phenotips.remote.api.HibernatePatientFeatureInterface;
+import org.phenotips.remote.hibernate.internal.HibernatePatientDisorder;
 import org.phenotips.remote.hibernate.internal.HibernatePatientFeature;
 
 import java.util.HashSet;
@@ -43,12 +46,25 @@ public class JSONToHibernatePatientConverter
         Set<HibernatePatientFeatureInterface> featureSet = new HashSet<HibernatePatientFeatureInterface>();
         for (Object jsonFeatureUncast : featuresJson) {
             JSONObject jsonFeature = (JSONObject) jsonFeatureUncast;
-            HibernatePatientFeature feature = new HibernatePatientFeature();
+            HibernatePatientFeatureInterface feature = new HibernatePatientFeature();
             feature.setId(jsonFeature.getString("id"));
             feature.setPresent(convertTextToIntBool(jsonFeature.getString("observed")));
             featureSet.add(feature);
         }
         return featureSet;
+    }
+
+    public static Set<HibernatePatientDisorderInterface> convertDisorders(JSONObject json)
+    {
+        JSONArray disorderJson = (JSONArray) json.get(Configuration.JSON_DISORDERS);
+        Set<HibernatePatientDisorderInterface> disorderSet = new HashSet<HibernatePatientDisorderInterface>();
+        for (Object idUncast : disorderJson) {
+            String id = (String) idUncast;
+            HibernatePatientDisorderInterface disorder = new HibernatePatientDisorder();
+            disorder.setId(id);
+            disorderSet.add(disorder);
+        }
+        return disorderSet;
     }
 
     private static int convertTextToIntBool(String text)

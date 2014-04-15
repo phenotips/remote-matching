@@ -19,6 +19,8 @@
  */
 package org.phenotips.remote.api;
 
+import org.phenotips.data.PatientRepository;
+
 import org.hibernate.Session;
 
 /**
@@ -34,4 +36,6 @@ public interface RequestHandlerInterface<T extends RequestInterface>
     T createRequest();
 
     Long saveRequest(Session session) throws Exception;
+
+    T loadRequest(Long id, PatientRepository patientService);
 }

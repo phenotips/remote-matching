@@ -39,9 +39,9 @@ var RemoteMatching = (function (RemoteMatching)
             var parent = $(event.target).parents("div.remoteSearch");
             var requestGuid = parent.attr("id");
             var patientId = parent.children("input#patientId").val();
-            var user = parent.children("input#userName").val();
+            var user = parent.children("input#userId").val();
             var url = parent.children("input#url").val();
-            outgoingRequest.simpleAjaxCall(url, {"patientId": patientId, "user": user, "guid": requestGuid},
+            outgoingRequest.simpleAjaxCall(url, {"patientId": patientId, "userId": user, "guid": requestGuid},
                 parent.children("span#requestStatus"));
             return false;
         });

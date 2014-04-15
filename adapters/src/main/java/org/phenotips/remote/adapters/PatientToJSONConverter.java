@@ -62,11 +62,50 @@ public class PatientToJSONConverter
         return features;
     }
 
+    public static JSONArray nonPersonalFeatures(Patient patient)
+    {
+        JSONArray features = new JSONArray();
+        JSONArray similarityFeaturesJson = (JSONArray) patient.toJSON().get("featureMatches");
+
+        for (Feature patientFeature : patient.getFeatures()) {
+            JSONObject featureJson = new JSONObject();
+
+            String id = patientFeature.getId();
+            Map<String, ? extends FeatureMetadatum> metadata = patientFeature.getMetadata();
+            FeatureMetadatum ageOfOnset = metadata.get(Configuration.FEATURE_AGE_OF_ONSET);
+
+            for (Object featureMatchUC : similarityFeaturesJson) {
+                JSONObject featureMatch = (JSONObject) featureMatchUC;
+                Boolean flagBreak = false;
+                for (Object matchFeatureId : ((JSONArray) featureMatch.get("match"))) {
+                    if (StringUtils.equalsIgnoreCase(matchFeatureId.toString(), id)) {
+                        id = ((JSONObject) featureMatch.get("category")).getString("id");
+
+                        featureJson.put("id", id);
+                        //FIXME json changed it seems
+                        featureJson.put("observed", booleanToYesNo(patientFeature.isPresent()));
+                        if (ageOfOnset != null) {
+                            featureJson.put(Configuration.JSON_FEATURE_AGE_OF_ONSET, ageOfOnset.getId());
+                        }
+
+                        features.add(featureJson);
+                        flagBreak = true;
+                        break;
+                    }
+                }
+                if (flagBreak) {
+                    break;
+                }
+            }
+        }
+        return features;
+    }
+
     public static JSONArray disorders(Patient patient)
     {
         JSONArray disorders = new JSONArray();
         for (Disorder disease : patient.getDisorders()) {
-            disorders.add(disease.toJSON().get("id"));
+            disorders.add(disease.getId());
         }
         return disorders;
     }
@@ -103,28 +142,6 @@ public class PatientToJSONConverter
             }
         }
         return globalQualifiers;
-    }
-
-    private static int yesNoToInt(String text)
-    {
-        if (StringUtils.equalsIgnoreCase(text, "yes")) {
-            return 1;
-        } else if (StringUtils.equalsIgnoreCase(text, "no")) {
-            return -1;
-        } else {
-            return 0;
-        }
-    }
-
-    private static String negativePositiveToYesNo(String text)
-    {
-        if (StringUtils.equalsIgnoreCase(text, "negative_phenotype")) {
-            return "no";
-        } else if (StringUtils.equalsIgnoreCase(text, "phenotype")) {
-            return "yes";
-        } else {
-            return "unknown";
-        }
     }
 
     private static String booleanToYesNo(Boolean bool)

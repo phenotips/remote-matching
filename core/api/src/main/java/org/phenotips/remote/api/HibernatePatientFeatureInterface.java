@@ -29,4 +29,6 @@ public interface HibernatePatientFeatureInterface extends Feature
     void setId(String id);
 
     void setPresent(Integer present);
+
+    void setParent(HibernatePatientInterface patient);
 }

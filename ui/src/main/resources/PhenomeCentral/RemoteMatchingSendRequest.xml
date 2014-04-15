@@ -32,8 +32,8 @@
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
   <creationDate>1395699444000</creationDate>
-  <date>1395951154000</date>
-  <contentUpdateDate>1395781617000</contentUpdateDate>
+  <date>1397161340000</date>
+  <contentUpdateDate>1397161340000</contentUpdateDate>
   <version>1.1</version>
   <title>RemoteMatchingSendRequest</title>
   <defaultTemplate/>
@@ -46,9 +46,26 @@
 ## set response type
 #set ($patientId = $request.get("patientId"))
 #set ($requestGuid = $request.get("guid"))
-#set ($user = $request.get("user"))
+#set ($userId = $request.get("userId"))
+#set ($patientDoc = $xwiki.getDocument("data", $patientId))
+#set ($requestObjects = $patientDoc.getObjects("PhenomeCentral.RemoteRequest"))
+#foreach ($obj in $requestObjects)
+  $obj.getGuid()
+  #if ($obj.getGuid() == $requestGuid)
+    #set($requestObject = $obj)
+  #end
+#end
+============
 $requestGuid
-$services.remoteMatching.sendRequest($patientId, $user, $requestGuid)
+$requestObject
+$userId
+
+$requestObject.set("patientId", $patientId)
+$requestObject.set("submitterId", $userId)
+$patientDoc.save()
+
+$services.remoteMatching
+$services.remoteMatching.sendRequest($requestObject)
 {{/velocity}}
 </content>
 </xwikidoc>

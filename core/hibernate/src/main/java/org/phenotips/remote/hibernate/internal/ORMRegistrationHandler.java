@@ -70,6 +70,7 @@ public class ORMRegistrationHandler implements EventListener
         configuration.addAnnotatedClass(IncomingSearchRequest.class);
         configuration.addAnnotatedClass(OutgoingSearchRequest.class);
         configuration.addAnnotatedClass(HibernatePatientFeature.class);
+        configuration.addAnnotatedClass(HibernatePatientDisorder.class);
         configuration.addAnnotatedClass(HibernatePatient.class);
     }
 }

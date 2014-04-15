@@ -21,8 +21,6 @@ package org.phenotips.remote.server;
 
 import org.xwiki.component.annotation.Role;
 
-import com.xpn.xwiki.XWikiException;
-
 import net.sf.json.JSONObject;
 
 /**

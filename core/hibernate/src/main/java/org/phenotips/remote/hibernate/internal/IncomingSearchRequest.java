@@ -47,7 +47,7 @@ import javax.persistence.Transient;
 @DiscriminatorValue("incoming")
 public class IncomingSearchRequest extends AbstractRequest implements IncomingSearchRequestInterface
 {
-    @OneToOne(mappedBy = "requestEntity", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "requestentity", cascade = CascadeType.ALL)
     private HibernatePatient referencePatient = null;
 
     @Transient

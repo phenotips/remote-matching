@@ -20,6 +20,7 @@
 package org.phenotips.remote.adapters.internal;
 
 import org.phenotips.data.Patient;
+import org.phenotips.data.PatientRepository;
 import org.phenotips.remote.adapters.JSONToMetadataConverter;
 import org.phenotips.remote.adapters.XWikiAdapter;
 import org.phenotips.remote.api.Configuration;
@@ -66,6 +67,8 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
 
     private XWiki wiki;
 
+    private Session session;
+
     public OutgoingRequestHandler(BaseObject requestObject, XWiki wiki, XWikiContext context,
         DocumentReferenceResolver<String> resolver) throws XWikiException
     {
@@ -87,9 +90,15 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
     /** Little hack for updating a request object and not having to write another function into the interface */
     public OutgoingRequestHandler(OutgoingSearchRequestInterface existingRequest, JSONObject json)
     {
+        request = existingRequest;
         existingRequest.setExternalId(JSONToMetadataConverter.externalResponseId(json));
         existingRequest.setResponseType(JSONToMetadataConverter.responseType(json));
         existingRequest.addResults(JSONToMetadataConverter.responseResults(json));
+    }
+
+    public OutgoingRequestHandler(Session session)
+    {
+        this.session = session;
     }
 
     private void processSubmitter(BaseObject submitter)
@@ -121,6 +130,7 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
         request.setSubmitterName(submitterName);
         request.setSubmitterEmail(submitterEmail);
         request.setKey(key);
+        request.setQueryType(Configuration.DEFAULT_OUTGOING_REQUEST_QUERY_TYPE);
 
         return request;
     }
@@ -133,7 +143,7 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
         Long id;
         if (request.getRequestId() == null) {
             id = (Long) session.save(request);
-            xwikiRequestObject.set("hibernateId", id, wikiContext);
+            xwikiRequestObject.set(Configuration.REMOTE_HIBERNATE_ID, id, wikiContext);
             wiki.saveDocument(xwikiRequestObject.getOwnerDocument(), wikiContext);
         } else {
             session.saveOrUpdate(request);
@@ -142,5 +152,17 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
 
         t.commit();
         return id;
+    }
+
+    @Override
+    public OutgoingSearchRequestInterface loadRequest(Long id, PatientRepository internalService)
+    {
+        Transaction t = session.beginTransaction();
+        OutgoingSearchRequestInterface request = new OutgoingSearchRequest();
+        session.load(request, id);
+        t.commit();
+
+        request.setReferencePatient(internalService.getPatientById(request.getReferencePatientId()));
+        return request;
     }
 }
