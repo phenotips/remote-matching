@@ -19,7 +19,7 @@ Known issues/problematic code:
 Unrelated known issues:
  - commons-lang3 has 2 versions in the WEB-INF/lib. This causes an error in PatientSheet. Delete the older.
 
-=|=|Path                   | Details
+D|D|Path                   | Details
 -|-|-----------------------|---------------------------------
 D| |```core/```            |
  |D|```api/```             | Interfaces only.
