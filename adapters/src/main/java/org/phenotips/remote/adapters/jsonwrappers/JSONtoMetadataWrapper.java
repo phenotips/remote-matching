@@ -59,6 +59,12 @@ public class JSONtoMetadataWrapper implements WrapperInterface<JSONObject, Incom
             request.setHTTPStatus(Configuration.HTTP_BAD_REQUEST);
         }
 
+        try {
+            request.setResponseType(JSONToMetadataConverter.responseType(json));
+        } catch (Exception ex) {
+            // Do nothing
+        }
+
         return request;
     }
 }

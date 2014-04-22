@@ -58,6 +58,12 @@ public class HibernatePatientDisorder extends AbstractPhenoTipsOntologyProperty
     }
 
     @Override
+    public String getId()
+    {
+        return this.id;
+    }
+
+    @Override
     public void setParent(HibernatePatientInterface patient)
     {
         hibernatepatient = (HibernatePatient) patient;

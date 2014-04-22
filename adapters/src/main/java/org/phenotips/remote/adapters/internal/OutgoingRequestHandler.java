@@ -41,6 +41,7 @@ import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 
 import net.sf.json.JSONObject;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * TODO fix the doc
@@ -130,7 +131,7 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
         request.setSubmitterName(submitterName);
         request.setSubmitterEmail(submitterEmail);
         request.setKey(key);
-        request.setQueryType(Configuration.DEFAULT_OUTGOING_REQUEST_QUERY_TYPE);
+        request.setQueryType(Configuration.DEFAULT_REQUEST_QUERY_TYPE);
 
         return request;
     }
@@ -164,5 +165,11 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
 
         request.setReferencePatient(internalService.getPatientById(request.getReferencePatientId()));
         return request;
+    }
+
+    @Override
+    public void email()
+    {
+        throw new NotImplementedException();
     }
 }

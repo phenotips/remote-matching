@@ -27,6 +27,8 @@ import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
 
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.xpn.xwiki.XWiki;
@@ -40,7 +42,8 @@ import com.xpn.xwiki.objects.BaseObject;
  */
 public class XWikiAdapter
 {
-    static public BaseObject getSubmitter(String userId, XWiki wiki, XWikiContext context, DocumentReferenceResolver<String> resolver) throws XWikiException
+    static public BaseObject getSubmitter(String userId, XWiki wiki, XWikiContext context,
+        DocumentReferenceResolver<String> resolver) throws XWikiException
     {
         //Fixme. Does not check if the document is a user, but will return null if not.
         //Fixme. [possible] Does not check if the patient belongs to the user?
@@ -79,5 +82,23 @@ public class XWikiAdapter
             new EntityReference(patientId, EntityType.DOCUMENT, Patient.DEFAULT_DATA_SPACE);
 
         return wiki.getDocument(patientReference, context);
+    }
+
+    static public BaseObject getRemoteConfigurationByKey(String key, XWiki wiki, XWikiContext context)
+        throws XWikiException
+    {
+        XWikiDocument configurationsDocument =
+            wiki.getDocument(Configuration.REMOTE_CONFIGURATIONS_DOCUMENT_REFERENCE, context);
+        List<BaseObject> remotes =
+            configurationsDocument.getXObjects(Configuration.REMOTE_CONFIGURATION_OBJECT_REFERENCE);
+
+        for (BaseObject remote : remotes) {
+            String testKey = remote.getStringValue(Configuration.REMOTE_KEY_FIELD);
+            if (StringUtils.equalsIgnoreCase(testKey, key)) {
+                return remote;
+            }
+        }
+        //FIXME. Once again, not exactly true.
+        throw new XWikiException();
     }
 }

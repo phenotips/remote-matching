@@ -56,10 +56,6 @@ public class IncomingSearchRequest extends AbstractRequest implements IncomingSe
     public IncomingSearchRequest()
     {}
 
-    //Fixme. Type should not be set in stone.
-    public String getResponseType()
-    { return Configuration.DEFAULT_INCOMING_REQUEST_RESPONSE_TYPE; }
-
     public void setReferencePatient(HibernatePatientInterface patient)
     {
         referencePatient = (HibernatePatient) patient;

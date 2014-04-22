@@ -26,6 +26,7 @@ import org.phenotips.remote.api.IncomingSearchRequestInterface;
 import org.phenotips.remote.api.RequestHandlerInterface;
 import org.phenotips.remote.api.WrapperInterface;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -44,12 +45,15 @@ public class IncomingRequestHandler implements RequestHandlerInterface<IncomingS
 
     WrapperInterface<JSONObject, IncomingSearchRequestInterface> metaWrapper;
 
+    String configuredResponseType;
+
     public IncomingRequestHandler(JSONObject json, WrapperInterface<JSONObject, HibernatePatientInterface> patientWrapper,
-        WrapperInterface<JSONObject, IncomingSearchRequestInterface> metaWrapper)
+        WrapperInterface<JSONObject, IncomingSearchRequestInterface> metaWrapper, String responseFormat)
     {
         this.json = json;
         this.patientWrapper = patientWrapper;
         this.metaWrapper = metaWrapper;
+        this.configuredResponseType = responseFormat;
     }
 
     @Override
@@ -58,6 +62,11 @@ public class IncomingRequestHandler implements RequestHandlerInterface<IncomingS
         request = metaWrapper.wrap(json);
         if (!request.getHTTPStatus().equals(Configuration.HTTP_OK)) {
             return request;
+        }
+
+        //If the original request contains a response type, do not change it.
+        if (StringUtils.isBlank(request.getResponseType())) {
+            request.setResponseType(configuredResponseType);
         }
 
         HibernatePatientInterface hibernatePatient = patientWrapper.wrap(JSONObject.fromObject(json));
@@ -90,5 +99,11 @@ public class IncomingRequestHandler implements RequestHandlerInterface<IncomingS
     @Override
     public IncomingSearchRequestInterface loadRequest(Long id, PatientRepository internal) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void email()
+    {
+
     }
 }

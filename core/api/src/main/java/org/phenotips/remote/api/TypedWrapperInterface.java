@@ -19,25 +19,14 @@
  */
 package org.phenotips.remote.api;
 
-import org.phenotips.data.PatientRepository;
-
-import org.hibernate.Session;
+import org.xwiki.component.annotation.Role;
 
 /**
- * Todo fixme.
- *
- * The object that is used by the core client (and server) to handle common operations upon a
- * {@link org.phenotips.remote.api.RequestInterface}.
- * Any implementation of this interface should get it's data through the constructor, and utilize the ability to have
- * several constructors to perform different types of operations.
+ * Since the original design pattern was not possible to implement, this interface is used to uphold consistency of
+ * implementation.
  */
-public interface RequestHandlerInterface<T extends RequestInterface>
+@Role
+public interface TypedWrapperInterface<F, T> extends WrapperInterface<F, T>
 {
-    T createRequest();
-
-    Long saveRequest(Session session) throws Exception;
-
-    T loadRequest(Long id, PatientRepository patientService);
-
-    void email();
+    T inlineWrap(F object, String responseType);
 }

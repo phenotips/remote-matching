@@ -37,8 +37,6 @@ import net.sf.json.JSONObject;
 /**
  * TODO.
  * Keep this static.
- *
- *
  */
 public class JSONToMetadataConverter
 {
@@ -50,7 +48,8 @@ public class JSONToMetadataConverter
         }
 
         String[] keys =
-            {Configuration.JSON_SUBMITTER_NAME, Configuration.JSON_SUBMITTER_EMAIL, Configuration.JSON_SUBMITTER_INSTITUTION};
+            {Configuration.JSON_SUBMITTER_NAME, Configuration.JSON_SUBMITTER_EMAIL,
+                Configuration.JSON_SUBMITTER_INSTITUTION};
         Map<String, String> submitterMap = new HashMap<String, String>();
         for (String key : keys) {
             Object valueObject = submitter.get(key);
@@ -67,7 +66,11 @@ public class JSONToMetadataConverter
 
     public static String queryType(JSONObject json)
     {
-        return json.getString(Configuration.JSON_QUERY_TYPE);
+        try {
+            return json.getString(Configuration.JSON_QUERY_TYPE);
+        } catch (Exception ex) {
+            return Configuration.DEFAULT_REQUEST_QUERY_TYPE;
+        }
     }
 
     public static String externalRequestId(JSONObject json)

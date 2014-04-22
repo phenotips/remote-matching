@@ -27,24 +27,18 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.rest.XWikiResource;
 import org.xwiki.rest.XWikiRestException;
 
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.objects.BaseObject;
 
 import net.sf.json.JSONObject;
 
@@ -66,62 +60,21 @@ public class MatchResource extends XWikiResource implements MatchInterface
         XWikiContext context = this.getXWikiContext();
         HttpServletRequest httpRequest = context.getRequest().getHttpServletRequest();
 
-        Boolean isAuthorized;
-        try {
-            isAuthorized = validateRequest(httpRequest, context);
-        } catch (XWikiException ex) {
-            return Response.status(Configuration.HTTP_SERVER_ERROR).build();
-        } catch (MalformedURLException ex) {
-            return Response.status(Configuration.HTTP_SERVER_ERROR).build();
-        } catch (UnknownHostException ex) {
-            return Response.status(Configuration.HTTP_BAD_REQUEST).build();
-        }
-        if (!isAuthorized) {
-            return Response.status(Configuration.HTTP_UNAUTHORIZED).build();
-        }
-
         try {
             setCurrentContextDocument(context);
-            jsonResponse = requestProcessor.processHTTPRequest(json);
+
+            //Using futures to queue tasks and to retrieve results.
+            ExecutorService queue = Executors.newSingleThreadExecutor();
+            jsonResponse = requestProcessor.processHTTPRequest(json, queue, httpRequest);
         } catch (Exception e) {
             return Response.status(Configuration.HTTP_SERVER_ERROR).build();
         }
         Integer status = (Integer) jsonResponse.remove("status");
-        if (status == 200) {
+        if (status.equals(Configuration.HTTP_OK)) {
             return Response.ok(jsonResponse, MediaType.APPLICATION_JSON).build();
         } else {
             return Response.status(status).build();
         }
-    }
-
-    private boolean validateRequest(HttpServletRequest httpRequest, XWikiContext context)
-        throws XWikiException, UnknownHostException, MalformedURLException
-    {
-        //Slightly inefficient, as it is also called in setCurrentContextDocument
-        XWiki wiki = context.getWiki();
-        String key = httpRequest.getParameter(Configuration.URL_KEY_PARAMETER);
-
-        XWikiDocument configurationsDocument =
-            wiki.getDocument(Configuration.REMOTE_CONFIGURATIONS_DOCUMENT_REFERENCE, context);
-        List<BaseObject> remotes =
-            configurationsDocument.getXObjects(Configuration.REMOTE_CONFIGURATION_OBJECT_REFERENCE);
-
-        for (BaseObject remote : remotes) {
-            String testKey = remote.getStringValue(Configuration.REMOTE_KEY_FIELD);
-            if (StringUtils.equalsIgnoreCase(testKey, key)) {
-                String baseURL = remote.getStringValue(Configuration.REMOTE_BASE_URL_FIELD);
-                return validateIP(baseURL, httpRequest.getRemoteAddr());
-            }
-        }
-        return false;
-    }
-
-    private boolean validateIP(String baseURL, String ip) throws UnknownHostException, MalformedURLException
-    {
-        URL url = new URL(baseURL);
-        InetAddress address = InetAddress.getByName(url.getHost());
-        String resolvedIP = address.getHostAddress();
-        return StringUtils.equalsIgnoreCase(resolvedIP, ip);
     }
 
     private void setCurrentContextDocument(XWikiContext context) throws XWikiException

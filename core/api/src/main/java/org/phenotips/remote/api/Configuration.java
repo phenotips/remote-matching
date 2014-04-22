@@ -27,9 +27,6 @@ import org.xwiki.model.reference.EntityReference;
  */
 public interface Configuration
 {
-    String DEFAULT_INCOMING_REQUEST_RESPONSE_TYPE = "inline";
-    String DEFAULT_OUTGOING_REQUEST_QUERY_TYPE = "once";
-
     EntityReference XWIKI_SPACE = new EntityReference("XWiki", EntityType.SPACE);
     EntityReference PHENOMECENTRAL_SPACE = new EntityReference("PhenomeCentral", EntityType.SPACE);
 
@@ -50,10 +47,11 @@ public interface Configuration
     /** Must not contain the '/' at the beginning of the string */
     String REMOTE_URL_SEARCH_EXTENSION = "match?media=json&key=";
 
-    //XWiki remote request
+    //XWiki remote request/config
     String REMOTE_KEY_FIELD = "remoteAuthToken";
     String REMOTE_BASE_URL_FIELD = "baseURL";
     String REMOTE_HIBERNATE_ID = "hibernateId";
+    String REMOTE_RESPONSE_FORMAT = "responseFormat";
 
     //Patient
     String FEATURE_AGE_OF_ONSET = "age_of_onset";
@@ -70,6 +68,13 @@ public interface Configuration
     String JSON_RESPONSE_TYPE = "responseType";
     String JSON_RESULTS = "results";
     String JSON_DISORDERS = "disorders";
+
+    String REQUEST_RESPONSE_TYPE_SYNCHRONOUS = "inline";
+    String REQUEST_RESPONSE_TYPE_ASYCHRONOUS = "asynchronous";
+    String REQUEST_RESPONSE_TYPE_EMAIL = "email";
+
+    String DEFAULT_REQUEST_QUERY_TYPE = "once";
+    String DEFAULT_INCOMING_REQUEST_RESPONSE_TYPE = REQUEST_RESPONSE_TYPE_SYNCHRONOUS;
 
     String INTERNAL_JSON_STATUS = "status";
 

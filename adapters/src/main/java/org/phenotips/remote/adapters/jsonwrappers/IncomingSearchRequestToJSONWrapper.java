@@ -23,6 +23,7 @@ import org.phenotips.data.Patient;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.Configuration;
 import org.phenotips.remote.api.IncomingSearchRequestInterface;
+import org.phenotips.remote.api.TypedWrapperInterface;
 import org.phenotips.remote.api.WrapperInterface;
 import org.phenotips.similarity.SimilarPatientsFinder;
 
@@ -43,7 +44,7 @@ import net.sf.json.JSONObject;
  */
 @Component
 @Named("incoming-json")
-public class IncomingSearchRequestToJSONWrapper implements WrapperInterface<IncomingSearchRequestInterface, JSONObject>
+public class IncomingSearchRequestToJSONWrapper implements TypedWrapperInterface<IncomingSearchRequestInterface, JSONObject>
 {
     @Inject
     private SimilarPatientsFinder patientsFinder;
@@ -51,10 +52,17 @@ public class IncomingSearchRequestToJSONWrapper implements WrapperInterface<Inco
     public JSONObject wrap(IncomingSearchRequestInterface request)
     {
         JSONObject json = new JSONObject();
+        Integer status = request.getHTTPStatus();
+        json.put(Configuration.INTERNAL_JSON_STATUS, status);
+        return json;
+    }
+
+    public JSONObject inlineWrap(IncomingSearchRequestInterface request, String responseType)
+    {
+        JSONObject json = wrap(request);
         JSONArray results = new JSONArray();
 
         Integer status = request.getHTTPStatus();
-        json.put(Configuration.INTERNAL_JSON_STATUS, status);
         if(!status.equals(Configuration.HTTP_OK)) {
             return json;
         }

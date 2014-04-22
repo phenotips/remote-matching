@@ -17,10 +17,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.server;
+package org.phenotips.remote.server.internal;
 
-import org.xwiki.component.annotation.Role;
+import org.phenotips.remote.server.RequestProcessorInterface;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,13 +30,27 @@ import com.xpn.xwiki.objects.BaseObject;
 
 import net.sf.json.JSONObject;
 
-/**
- * TODO fix the doc
- */
-@Role
-public interface RequestProcessorInterface
+public class ProcessingQueueTask implements Callable<JSONObject>
 {
-    JSONObject processHTTPRequest(String json, ExecutorService queue, HttpServletRequest httpRequest) throws Exception;
+    String stringJson;
 
-    JSONObject internalProcessing(String json, ExecutorService queue, BaseObject configurationObject) throws Exception;
+    ExecutorService queue;
+
+    RequestProcessorInterface requestProcessor;
+
+    BaseObject configurationObject;
+
+    public ProcessingQueueTask(String _stringJson, ExecutorService _queue, HttpServletRequest _httpRequest,
+        RequestProcessorInterface _requestProcessor, BaseObject _configurationObject)
+    {
+        stringJson = _stringJson;
+        queue = _queue;
+        requestProcessor = _requestProcessor;
+        configurationObject = _configurationObject;
+    }
+
+    @Override public JSONObject call() throws Exception
+    {
+        return requestProcessor.internalProcessing(stringJson, queue, configurationObject);
+    }
 }
