@@ -23,6 +23,10 @@ import org.phenotips.data.PatientRepository;
 
 import org.hibernate.Session;
 
+import com.xpn.xwiki.XWikiContext;
+
+import net.sf.json.JSONObject;
+
 /**
  * Todo fixme.
  *
@@ -39,5 +43,5 @@ public interface RequestHandlerInterface<T extends RequestInterface>
 
     T loadRequest(Long id, PatientRepository patientService);
 
-    void email();
+    Boolean mail(XWikiContext context, MultiTaskWrapperInterface<IncomingSearchRequestInterface, JSONObject> wrapper);
 }

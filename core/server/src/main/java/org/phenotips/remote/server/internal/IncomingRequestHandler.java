@@ -24,11 +24,20 @@ import org.phenotips.remote.api.Configuration;
 import org.phenotips.remote.api.HibernatePatientInterface;
 import org.phenotips.remote.api.IncomingSearchRequestInterface;
 import org.phenotips.remote.api.RequestHandlerInterface;
+import org.phenotips.remote.api.MultiTaskWrapperInterface;
 import org.phenotips.remote.api.WrapperInterface;
+
+import java.io.UnsupportedEncodingException;
+
+import javax.mail.MessagingException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+
+import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.plugin.mailsender.Mail;
+import com.xpn.xwiki.plugin.mailsender.MailSenderPlugin;
 
 import net.sf.json.JSONObject;
 
@@ -47,7 +56,8 @@ public class IncomingRequestHandler implements RequestHandlerInterface<IncomingS
 
     String configuredResponseType;
 
-    public IncomingRequestHandler(JSONObject json, WrapperInterface<JSONObject, HibernatePatientInterface> patientWrapper,
+    public IncomingRequestHandler(JSONObject json,
+        WrapperInterface<JSONObject, HibernatePatientInterface> patientWrapper,
         WrapperInterface<JSONObject, IncomingSearchRequestInterface> metaWrapper, String responseFormat)
     {
         this.json = json;
@@ -97,13 +107,25 @@ public class IncomingRequestHandler implements RequestHandlerInterface<IncomingS
     }
 
     @Override
-    public IncomingSearchRequestInterface loadRequest(Long id, PatientRepository internal) {
+    public IncomingSearchRequestInterface loadRequest(Long id, PatientRepository internal)
+    {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void email()
+    public Boolean mail(XWikiContext context,
+        MultiTaskWrapperInterface<IncomingSearchRequestInterface, JSONObject> wrapper)
     {
-
+        try {
+            MailSenderPlugin mailSender =
+                (MailSenderPlugin) context.getWiki().getPlugin(Configuration.MAIL_SENDER, context);
+            //The mail object should be constructed in the wrapper.
+            Mail mail = new Mail(Configuration.EMAIL_FROM_ADDRESS, request.getSubmitterEmail(), null, null,
+                Configuration.EMAIL_SUBJECT, "", wrapper.mailWrap(request));
+            mailSender.sendMail(mail, context);
+        } catch (MessagingException | UnsupportedEncodingException ex) {
+            return false;
+        }
+        return true;
     }
 }

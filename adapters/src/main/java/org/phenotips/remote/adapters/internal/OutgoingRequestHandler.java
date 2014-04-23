@@ -24,6 +24,8 @@ import org.phenotips.data.PatientRepository;
 import org.phenotips.remote.adapters.JSONToMetadataConverter;
 import org.phenotips.remote.adapters.XWikiAdapter;
 import org.phenotips.remote.api.Configuration;
+import org.phenotips.remote.api.IncomingSearchRequestInterface;
+import org.phenotips.remote.api.MultiTaskWrapperInterface;
 import org.phenotips.remote.api.OutgoingSearchRequestInterface;
 import org.phenotips.remote.api.RequestHandlerInterface;
 import org.phenotips.remote.hibernate.internal.OutgoingSearchRequest;
@@ -168,7 +170,7 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
     }
 
     @Override
-    public void email()
+    public Boolean mail(XWikiContext context, MultiTaskWrapperInterface<IncomingSearchRequestInterface, JSONObject> wrapper)
     {
         throw new NotImplementedException();
     }

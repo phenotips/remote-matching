@@ -20,6 +20,7 @@
 package org.phenotips.remote.server;
 
 import org.xwiki.component.annotation.Role;
+import org.xwiki.context.ExecutionContext;
 
 import java.util.concurrent.ExecutorService;
 
@@ -37,5 +38,5 @@ public interface RequestProcessorInterface
 {
     JSONObject processHTTPRequest(String json, ExecutorService queue, HttpServletRequest httpRequest) throws Exception;
 
-    JSONObject internalProcessing(String json, ExecutorService queue, BaseObject configurationObject) throws Exception;
+    JSONObject internalProcessing(String json, ExecutorService queue, BaseObject configurationObject, ExecutionContext executionContext) throws Exception;
 }

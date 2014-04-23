@@ -24,8 +24,9 @@ import org.phenotips.remote.server.RequestProcessorInterface;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
-import javax.servlet.http.HttpServletRequest;
+import org.xwiki.context.ExecutionContext;
 
+import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.objects.BaseObject;
 
 import net.sf.json.JSONObject;
@@ -40,17 +41,20 @@ public class ProcessingQueueTask implements Callable<JSONObject>
 
     BaseObject configurationObject;
 
-    public ProcessingQueueTask(String _stringJson, ExecutorService _queue, HttpServletRequest _httpRequest,
-        RequestProcessorInterface _requestProcessor, BaseObject _configurationObject)
+    ExecutionContext executionContext;
+
+    public ProcessingQueueTask(String _stringJson, ExecutorService _queue,
+        RequestProcessorInterface _requestProcessor, BaseObject _configurationObject, ExecutionContext _executionContext)
     {
         stringJson = _stringJson;
         queue = _queue;
         requestProcessor = _requestProcessor;
         configurationObject = _configurationObject;
+        executionContext = _executionContext;
     }
 
     @Override public JSONObject call() throws Exception
     {
-        return requestProcessor.internalProcessing(stringJson, queue, configurationObject);
+        return requestProcessor.internalProcessing(stringJson, queue, configurationObject, executionContext);
     }
 }

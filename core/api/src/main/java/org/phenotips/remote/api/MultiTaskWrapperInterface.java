@@ -26,7 +26,9 @@ import org.xwiki.component.annotation.Role;
  * implementation.
  */
 @Role
-public interface TypedWrapperInterface<F, T> extends WrapperInterface<F, T>
+public interface MultiTaskWrapperInterface<F, T> extends WrapperInterface<F, T>
 {
-    T inlineWrap(F object, String responseType);
+    T inlineWrap(F object);
+
+    String mailWrap(F object);
 }

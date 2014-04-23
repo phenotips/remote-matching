@@ -38,6 +38,12 @@ public interface Configuration
     EntityReference REMOTE_REQUEST_REFERENCE = new EntityReference("RemoteRequest", EntityType.DOCUMENT,
         new EntityReference("PhenomeCentral", EntityType.SPACE));
 
+    String MAIL_SENDER = "mailsender";
+    //TODO. This should be changed to the actual address.
+    String EMAIL_FROM_ADDRESS = "antonkats@gmail.com";
+    //TODO. Make the subject include the name of the current installation.
+    String EMAIL_SUBJECT = "PhenomeCentral has found matches to your request";
+
     /** Document which can be relied upon to exist at all times. Needed for the REST server to work */
     EntityReference ABSOLUTE_DOCUMENT_REFERENCE =
         new EntityReference("XWikiPreferences", EntityType.DOCUMENT, XWIKI_SPACE);

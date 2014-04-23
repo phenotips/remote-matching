@@ -23,13 +23,14 @@ import org.phenotips.remote.adapters.XWikiAdapter;
 import org.phenotips.remote.api.Configuration;
 import org.phenotips.remote.api.HibernatePatientInterface;
 import org.phenotips.remote.api.IncomingSearchRequestInterface;
+import org.phenotips.remote.api.MultiTaskWrapperInterface;
 import org.phenotips.remote.api.RequestHandlerInterface;
-import org.phenotips.remote.api.TypedWrapperInterface;
 import org.phenotips.remote.api.WrapperInterface;
 import org.phenotips.remote.server.RequestProcessorInterface;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
+import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.reference.DocumentReference;
 
 import java.net.InetAddress;
@@ -52,8 +53,6 @@ import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xpn.xwiki.plugin.mailsender.MailSender;
-import com.xpn.xwiki.plugin.mailsender.MailSenderPlugin;
 import com.xpn.xwiki.store.hibernate.HibernateSessionFactory;
 
 import net.sf.json.JSONObject;
@@ -82,7 +81,7 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
 
     @Inject
     @Named("incoming-json")
-    private TypedWrapperInterface<IncomingSearchRequestInterface, JSONObject> requestWrapper;
+    private MultiTaskWrapperInterface<IncomingSearchRequestInterface, JSONObject> requestWrapper;
 
     public JSONObject processHTTPRequest(String stringJson, ExecutorService queue, HttpServletRequest httpRequest)
         throws Exception
@@ -107,10 +106,11 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
 //                Configuration.REST_DEFAULT_USER_NAME));
         context.setUserReference(new DocumentReference(context.getMainXWiki(), "XWiki", "Admin"));
 
-        //XWiki cannot find the context through (XWiki) Execution when called inside (Java) Executor.
-        Callable<JSONObject> task = new ProcessingQueueTask(stringJson, queue, httpRequest, this, configurationObject);
+//        XWiki cannot find the context through (XWiki) Execution when called inside (Java) Executor.
+        Callable<JSONObject> task = new ProcessingQueueTask(stringJson, queue, this, configurationObject, execution.getContext());
         Future<JSONObject> responseFuture = queue.submit(task);
         return responseFuture.get();
+//        return internalProcessing(stringJson, queue, configurationObject, context);
     }
 
     private BaseObject getConfigurationObject(XWikiContext context, HttpServletRequest httpRequest)
@@ -149,8 +149,10 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
         return StringUtils.equalsIgnoreCase(resolvedIP, ip);
     }
 
-    public JSONObject internalProcessing(String stringJson, ExecutorService queue, BaseObject configurationObject) throws Exception
+    public JSONObject internalProcessing(String stringJson, ExecutorService queue, BaseObject configurationObject, ExecutionContext executionContext) throws Exception
     {
+        execution.setContext(executionContext);
+        XWikiContext context = (XWikiContext) executionContext.getProperty("xwikicontext");
         JSONObject json = JSONObject.fromObject(stringJson);
         Session session = this.sessionFactory.getSessionFactory().openSession();
 
@@ -164,11 +166,10 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
 
         String type = request.getResponseType();
         if (StringUtils.equalsIgnoreCase(type, Configuration.REQUEST_RESPONSE_TYPE_SYNCHRONOUS)) {
-            return requestWrapper.inlineWrap(request, Configuration.REQUEST_RESPONSE_TYPE_SYNCHRONOUS);
+            return requestWrapper.inlineWrap(request);
         } else if (StringUtils.equalsIgnoreCase(type, Configuration.REQUEST_RESPONSE_TYPE_EMAIL)) {
             //FIXME. This is logically inconsistent.
-            MailSenderPlugin mailSender = (MailSenderPlugin) xwiki.getPlugin(MAIL_SENDER, context);
-
+            requestHandler.mail(context, requestWrapper);
         }
 
         /*

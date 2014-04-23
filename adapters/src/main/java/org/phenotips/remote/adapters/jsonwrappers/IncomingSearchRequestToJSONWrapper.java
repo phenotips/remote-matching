@@ -23,7 +23,7 @@ import org.phenotips.data.Patient;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.Configuration;
 import org.phenotips.remote.api.IncomingSearchRequestInterface;
-import org.phenotips.remote.api.TypedWrapperInterface;
+import org.phenotips.remote.api.MultiTaskWrapperInterface;
 import org.phenotips.remote.api.WrapperInterface;
 import org.phenotips.similarity.SimilarPatientsFinder;
 
@@ -44,7 +44,7 @@ import net.sf.json.JSONObject;
  */
 @Component
 @Named("incoming-json")
-public class IncomingSearchRequestToJSONWrapper implements TypedWrapperInterface<IncomingSearchRequestInterface, JSONObject>
+public class IncomingSearchRequestToJSONWrapper implements MultiTaskWrapperInterface<IncomingSearchRequestInterface, JSONObject>
 {
     @Inject
     private SimilarPatientsFinder patientsFinder;
@@ -57,7 +57,7 @@ public class IncomingSearchRequestToJSONWrapper implements TypedWrapperInterface
         return json;
     }
 
-    public JSONObject inlineWrap(IncomingSearchRequestInterface request, String responseType)
+    public JSONObject inlineWrap(IncomingSearchRequestInterface request)
     {
         JSONObject json = wrap(request);
         JSONArray results = new JSONArray();
@@ -88,5 +88,11 @@ public class IncomingSearchRequestToJSONWrapper implements TypedWrapperInterface
         json.put(Configuration.JSON_RESULTS, results);
 
         return json;
+    }
+
+    public String mailWrap(IncomingSearchRequestInterface request)
+    {
+        //FIXME. Write the mail format.
+        return inlineWrap(request).toString();
     }
 }
