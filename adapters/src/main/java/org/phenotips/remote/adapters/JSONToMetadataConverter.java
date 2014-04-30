@@ -80,7 +80,8 @@ public class JSONToMetadataConverter
 
     public static String externalResponseId(JSONObject json)
     {
-        return json.getString(Configuration.JSON_RESPONSE_ID);
+        Object id = json.get(Configuration.JSON_RESPONSE_ID);
+        return id == null ? "" : id.toString();
     }
 
     public static String responseType(JSONObject json)

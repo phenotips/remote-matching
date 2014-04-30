@@ -35,7 +35,7 @@ Unrelated known issues:
 ||=```server/```<br>
 ||=```client/```           For interactions with HTTP client<br>
 ||=```hibernate/```        Hibernate entities. Important to keep them all together.<br>
-= ```adapters/```         <p>Contains static converters (classes containing only static methods) and wrappers around those classes for convenience</p><br>
+= ```adapters/```         Contains static converters (classes containing only static methods) and wrappers around those classes for convenience<br>
 = ```standalone-patch```<br>
 ||=```patch```             This is where all the jars are copied to for convenience.<br>
 = ```war/```              Javascript files.<br>

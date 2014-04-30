@@ -37,7 +37,10 @@ import net.sf.json.JSONObject;
  */
 public interface RequestHandlerInterface<T extends RequestInterface>
 {
-    T createRequest();
+    /**
+     * @return either a new request, or the one that is already attached to this handler
+     */
+    T getRequest();
 
     Long saveRequest(Session session) throws Exception;
 

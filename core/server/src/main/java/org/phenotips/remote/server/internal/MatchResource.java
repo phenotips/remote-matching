@@ -71,7 +71,7 @@ public class MatchResource extends XWikiResource implements MatchInterface
         }
         Integer status = (Integer) jsonResponse.remove("status");
         if (status.equals(Configuration.HTTP_OK)) {
-            return Response.ok(jsonResponse, MediaType.APPLICATION_JSON).build();
+            return Response.ok(jsonResponse.toString(), MediaType.APPLICATION_JSON).build();
         } else {
             return Response.status(status).build();
         }

@@ -42,6 +42,7 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 
+import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -94,9 +95,17 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
     public OutgoingRequestHandler(OutgoingSearchRequestInterface existingRequest, JSONObject json)
     {
         request = existingRequest;
-        existingRequest.setExternalId(JSONToMetadataConverter.externalResponseId(json));
-        existingRequest.setResponseType(JSONToMetadataConverter.responseType(json));
-        existingRequest.addResults(JSONToMetadataConverter.responseResults(json));
+        try {
+            existingRequest.setExternalId(JSONToMetadataConverter.externalResponseId(json));
+            existingRequest.setResponseType(JSONToMetadataConverter.responseType(json));
+            if (StringUtils
+                .equals(existingRequest.getResponseType(), Configuration.REQUEST_RESPONSE_TYPE_SYNCHRONOUS))
+            {
+                existingRequest.addResults(JSONToMetadataConverter.responseResults(json));
+            }
+        } catch (JSONException ex) {
+            //Do nothing
+        }
     }
 
     public OutgoingRequestHandler(Session session)
@@ -124,8 +133,11 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
         return baseURL + slash + Configuration.REMOTE_URL_SEARCH_EXTENSION + key;
     }
 
-    public OutgoingSearchRequestInterface createRequest()
+    public OutgoingSearchRequestInterface getRequest()
     {
+        if (request != null) {
+            return request;
+        }
         request = new OutgoingSearchRequest();
 
         request.setReferencePatient(getPhenoTipsPatient());
@@ -170,7 +182,8 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
     }
 
     @Override
-    public Boolean mail(XWikiContext context, MultiTaskWrapperInterface<IncomingSearchRequestInterface, JSONObject> wrapper)
+    public Boolean mail(XWikiContext context,
+        MultiTaskWrapperInterface<IncomingSearchRequestInterface, JSONObject> wrapper)
     {
         throw new NotImplementedException();
     }

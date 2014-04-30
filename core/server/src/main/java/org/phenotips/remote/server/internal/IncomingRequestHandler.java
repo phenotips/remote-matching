@@ -46,15 +46,15 @@ import net.sf.json.JSONObject;
  */
 public class IncomingRequestHandler implements RequestHandlerInterface<IncomingSearchRequestInterface>
 {
-    IncomingSearchRequestInterface request;
+    private IncomingSearchRequestInterface request = null;
 
-    JSONObject json;
+    private JSONObject json;
 
-    WrapperInterface<JSONObject, HibernatePatientInterface> patientWrapper;
+    private WrapperInterface<JSONObject, HibernatePatientInterface> patientWrapper;
 
-    WrapperInterface<JSONObject, IncomingSearchRequestInterface> metaWrapper;
+    private WrapperInterface<JSONObject, IncomingSearchRequestInterface> metaWrapper;
 
-    String configuredResponseType;
+    private String configuredResponseType;
 
     public IncomingRequestHandler(JSONObject json,
         WrapperInterface<JSONObject, HibernatePatientInterface> patientWrapper,
@@ -67,8 +67,12 @@ public class IncomingRequestHandler implements RequestHandlerInterface<IncomingS
     }
 
     @Override
-    public IncomingSearchRequestInterface createRequest()
+    public IncomingSearchRequestInterface getRequest()
     {
+        if (request != null) {
+            return request;
+        }
+
         request = metaWrapper.wrap(json);
         if (!request.getHTTPStatus().equals(Configuration.HTTP_OK)) {
             return request;

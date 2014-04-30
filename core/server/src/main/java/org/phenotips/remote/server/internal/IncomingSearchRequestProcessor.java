@@ -27,6 +27,8 @@ import org.phenotips.remote.api.MultiTaskWrapperInterface;
 import org.phenotips.remote.api.RequestHandlerInterface;
 import org.phenotips.remote.api.WrapperInterface;
 import org.phenotips.remote.server.RequestProcessorInterface;
+import org.phenotips.remote.server.internal.queuetasks.QueueTaskEmail;
+import org.phenotips.remote.server.internal.queuetasks.QueueTaskInternalProcessing;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
@@ -107,7 +109,8 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
         context.setUserReference(new DocumentReference(context.getMainXWiki(), "XWiki", "Admin"));
 
 //        XWiki cannot find the context through (XWiki) Execution when called inside (Java) Executor.
-        Callable<JSONObject> task = new ProcessingQueueTask(stringJson, queue, this, configurationObject, execution.getContext());
+        Callable<JSONObject> task =
+            new QueueTaskInternalProcessing(stringJson, queue, this, configurationObject, execution.getContext());
         Future<JSONObject> responseFuture = queue.submit(task);
         return responseFuture.get();
 //        return internalProcessing(stringJson, queue, configurationObject, context);
@@ -124,9 +127,7 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
     private Integer validateRequest(HttpServletRequest httpRequest, XWikiContext context,
         BaseObject configurationObject) throws XWikiException, UnknownHostException, MalformedURLException
     {
-        Boolean isAuthorized = false;
-        JSONObject authorizationJSON = new JSONObject();
-
+        Boolean isAuthorized;
         String baseURL = configurationObject.getStringValue(Configuration.REMOTE_BASE_URL_FIELD);
         try {
             isAuthorized = validateIP(baseURL, httpRequest.getRemoteAddr());
@@ -149,7 +150,8 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
         return StringUtils.equalsIgnoreCase(resolvedIP, ip);
     }
 
-    public JSONObject internalProcessing(String stringJson, ExecutorService queue, BaseObject configurationObject, ExecutionContext executionContext) throws Exception
+    public JSONObject internalProcessing(String stringJson, ExecutorService queue, BaseObject configurationObject,
+        ExecutionContext executionContext) throws Exception
     {
         execution.setContext(executionContext);
         XWikiContext context = (XWikiContext) executionContext.getProperty("xwikicontext");
@@ -159,7 +161,7 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
         String format = configurationObject.getStringValue(Configuration.REMOTE_RESPONSE_FORMAT);
         RequestHandlerInterface<IncomingSearchRequestInterface> requestHandler =
             new IncomingRequestHandler(json, patientWrapper, metaWrapper, format);
-        IncomingSearchRequestInterface request = requestHandler.createRequest();
+        IncomingSearchRequestInterface request = requestHandler.getRequest();
         if (!request.getHTTPStatus().equals(Configuration.HTTP_OK)) {
             return requestWrapper.wrap(request);
         }
@@ -168,8 +170,10 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
         if (StringUtils.equalsIgnoreCase(type, Configuration.REQUEST_RESPONSE_TYPE_SYNCHRONOUS)) {
             return requestWrapper.inlineWrap(request);
         } else if (StringUtils.equalsIgnoreCase(type, Configuration.REQUEST_RESPONSE_TYPE_EMAIL)) {
-            //FIXME. This is logically inconsistent.
-            requestHandler.mail(context, requestWrapper);
+            Runnable task =
+                new QueueTaskEmail(requestHandler, requestWrapper, execution.getContext());
+            queue.submit(task);
+            return requestWrapper.wrap(request);
         }
 
         /*

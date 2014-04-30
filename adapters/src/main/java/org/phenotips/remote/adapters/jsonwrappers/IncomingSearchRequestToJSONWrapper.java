@@ -53,7 +53,11 @@ public class IncomingSearchRequestToJSONWrapper implements MultiTaskWrapperInter
     {
         JSONObject json = new JSONObject();
         Integer status = request.getHTTPStatus();
+        Long id = request.getRequestId();
+
         json.put(Configuration.INTERNAL_JSON_STATUS, status);
+        json.put(Configuration.JSON_RESPONSE_TYPE, request.getResponseType());
+        json.put(Configuration.JSON_RESPONSE_ID, id == null ? new JSONObject(true) : id);
         return json;
     }
 
@@ -84,7 +88,6 @@ public class IncomingSearchRequestToJSONWrapper implements MultiTaskWrapperInter
         }
 
         json.put(Configuration.JSON_RESPONSE_ID, request.getRequestId());
-        json.put(Configuration.JSON_RESPONSE_TYPE, request.getResponseType());
         json.put(Configuration.JSON_RESULTS, results);
 
         return json;

@@ -113,10 +113,7 @@ public class OutgoingSearchRequest extends AbstractRequest implements OutgoingSe
         }
     }
 
-    public String getResponseType()
-    {
-        throw new UnsupportedOperationException();
-    }
+
 
     public Integer getResponseStatus()
     {

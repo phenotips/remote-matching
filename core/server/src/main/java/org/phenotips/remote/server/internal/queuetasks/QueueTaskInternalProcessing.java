@@ -17,34 +17,34 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.server.internal;
+package org.phenotips.remote.server.internal.queuetasks;
 
 import org.phenotips.remote.server.RequestProcessorInterface;
+
+import org.xwiki.context.ExecutionContext;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
-import org.xwiki.context.ExecutionContext;
-
-import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.objects.BaseObject;
 
 import net.sf.json.JSONObject;
 
-public class ProcessingQueueTask implements Callable<JSONObject>
+public class QueueTaskInternalProcessing implements Callable<JSONObject>
 {
-    String stringJson;
+    private String stringJson;
 
-    ExecutorService queue;
+    private ExecutorService queue;
 
-    RequestProcessorInterface requestProcessor;
+    private RequestProcessorInterface requestProcessor;
 
-    BaseObject configurationObject;
+    private BaseObject configurationObject;
 
-    ExecutionContext executionContext;
+    private ExecutionContext executionContext;
 
-    public ProcessingQueueTask(String _stringJson, ExecutorService _queue,
-        RequestProcessorInterface _requestProcessor, BaseObject _configurationObject, ExecutionContext _executionContext)
+    public QueueTaskInternalProcessing(String _stringJson, ExecutorService _queue,
+        RequestProcessorInterface _requestProcessor, BaseObject _configurationObject,
+        ExecutionContext _executionContext)
     {
         stringJson = _stringJson;
         queue = _queue;
