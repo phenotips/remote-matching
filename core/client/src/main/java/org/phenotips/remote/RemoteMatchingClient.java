@@ -19,7 +19,11 @@
  */
 package org.phenotips.remote;
 
+import org.phenotips.remote.api.Configuration;
+import org.phenotips.remote.api.IncomingSearchRequestInterface;
+import org.phenotips.remote.api.MultiTypeWrapperInterface;
 import org.phenotips.remote.api.OutgoingSearchRequestInterface;
+import org.phenotips.remote.api.RequestInterface;
 import org.phenotips.remote.api.WrapperInterface;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -30,6 +34,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
+import net.sf.json.JSON;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -43,14 +49,32 @@ public class RemoteMatchingClient
         WrapperInterface<OutgoingSearchRequestInterface, JSONObject> wrapper) throws Exception
     {
         JSONObject json = wrapper.wrap(request);
+        CloseableHttpResponse httpResponse = RemoteMatchingClient.send(request, json);
+        httpResponse.close();
+        if (!((Integer) httpResponse.getStatusLine().getStatusCode()).equals(Configuration.HTTP_OK)) {
+            throw new Exception("The request did not return OK status");
+        }
+        return EntityUtils.toString(httpResponse.getEntity());
+    }
+
+    //FIXME. Should re-try on fail.
+    public static void sendAsyncAnswer(IncomingSearchRequestInterface request,
+        MultiTypeWrapperInterface<IncomingSearchRequestInterface, JSONObject> wrapper) throws Exception
+    {
+        JSONArray json = wrapper.asyncWrap(request);
+
+        //FIXME. Check status, return null.
+        RemoteMatchingClient.send(request, json).close();
+    }
+
+    public static CloseableHttpResponse send(RequestInterface request, JSON json) throws Exception
+    {
         CloseableHttpClient client = HttpClients.createDefault();
 
         StringEntity jsonEntity = new StringEntity(json.toString(), ContentType.create("application/json", "UTF-8"));
 
         HttpPost httpRequest = new HttpPost(request.getTargetURL());
         httpRequest.setEntity(jsonEntity);
-        //FIXME. Check status, return null.
-        CloseableHttpResponse httpResponse = client.execute(httpRequest);
-        return EntityUtils.toString(httpResponse.getEntity());
+        return client.execute(httpRequest);
     }
 }

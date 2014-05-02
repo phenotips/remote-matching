@@ -61,8 +61,6 @@ public interface RequestInterface
 
     void setKey(String key);
 
-    String getKey();
-
     void setQueryType(String type);
 
     String getQueryType();

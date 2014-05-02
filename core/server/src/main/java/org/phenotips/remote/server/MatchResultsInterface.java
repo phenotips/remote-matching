@@ -17,18 +17,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.api;
+package org.phenotips.remote.server;
 
-import org.xwiki.component.annotation.Role;
+import org.phenotips.remote.api.Configuration;
+
+import org.xwiki.rest.XWikiRestException;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import com.xpn.xwiki.XWikiException;
 
 /**
- * Since the original design pattern was not possible to implement, this interface is used to uphold consistency of
- * implementation.
+ * Interface for the /matchResults endpoint. This is where an asynchronous answer from a remote search server would be
+ * received.
+ *
+ * @version $Id: 2a40da554444794e3dadbee73dbce9828151e281 $
  */
-@Role
-public interface MultiTaskWrapperInterface<F, T> extends WrapperInterface<F, T>
+@Path("/remoteMatcher/" + Configuration.REMOTE_URL_ASYNCHRONOUS_RESULTS_ENDPOINT)
+public interface MatchResultsInterface
 {
-    T inlineWrap(F object);
-
-    String mailWrap(F object);
+    /**
+     * Place a search request to this server.
+     *
+     * TODO fix the doc.
+     */
+    @Consumes(MediaType.APPLICATION_JSON)
+    @POST Response matchResultsPost(String json)
+        throws XWikiRestException, XWikiException;
 }
+

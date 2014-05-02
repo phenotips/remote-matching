@@ -46,5 +46,5 @@ public interface RequestHandlerInterface<T extends RequestInterface>
 
     T loadRequest(Long id, PatientRepository patientService);
 
-    Boolean mail(XWikiContext context, MultiTaskWrapperInterface<IncomingSearchRequestInterface, JSONObject> wrapper);
+    Boolean mail(XWikiContext context, MultiTypeWrapperInterface<IncomingSearchRequestInterface, JSONObject> wrapper);
 }

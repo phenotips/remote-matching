@@ -23,10 +23,11 @@ import org.phenotips.remote.adapters.XWikiAdapter;
 import org.phenotips.remote.api.Configuration;
 import org.phenotips.remote.api.HibernatePatientInterface;
 import org.phenotips.remote.api.IncomingSearchRequestInterface;
-import org.phenotips.remote.api.MultiTaskWrapperInterface;
+import org.phenotips.remote.api.MultiTypeWrapperInterface;
 import org.phenotips.remote.api.RequestHandlerInterface;
 import org.phenotips.remote.api.WrapperInterface;
 import org.phenotips.remote.server.RequestProcessorInterface;
+import org.phenotips.remote.server.internal.queuetasks.QueueTaskAsyncAnswer;
 import org.phenotips.remote.server.internal.queuetasks.QueueTaskEmail;
 import org.phenotips.remote.server.internal.queuetasks.QueueTaskInternalProcessing;
 
@@ -83,7 +84,7 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
 
     @Inject
     @Named("incoming-json")
-    private MultiTaskWrapperInterface<IncomingSearchRequestInterface, JSONObject> requestWrapper;
+    private MultiTypeWrapperInterface<IncomingSearchRequestInterface, JSONObject> requestWrapper;
 
     public JSONObject processHTTPRequest(String stringJson, ExecutorService queue, HttpServletRequest httpRequest)
         throws Exception
@@ -91,8 +92,8 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
         XWikiContext context = (XWikiContext) execution.getContext().getProperty("xwikicontext");
 
         /*
-        First things first. Is the request authorized? If not, should not be able to continue at all. This is the
-        first, and only line of defence.
+        Is the request authorized? If not, should not be able to continue at all.
+        This is the first, and only line of defence.
         */
         BaseObject configurationObject = getConfigurationObject(context, httpRequest);
         Integer authorizationStatus = validateRequest(httpRequest, context, configurationObject);
@@ -108,12 +109,11 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
 //                Configuration.REST_DEFAULT_USER_NAME));
         context.setUserReference(new DocumentReference(context.getMainXWiki(), "XWiki", "Admin"));
 
-//        XWiki cannot find the context through (XWiki) Execution when called inside (Java) Executor.
+        //XWiki cannot find the context through (XWiki) Execution when called inside (Java) Executor.
         Callable<JSONObject> task =
             new QueueTaskInternalProcessing(stringJson, queue, this, configurationObject, execution.getContext());
         Future<JSONObject> responseFuture = queue.submit(task);
         return responseFuture.get();
-//        return internalProcessing(stringJson, queue, configurationObject, context);
     }
 
     private BaseObject getConfigurationObject(XWikiContext context, HttpServletRequest httpRequest)
@@ -158,9 +158,8 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
         JSONObject json = JSONObject.fromObject(stringJson);
         Session session = this.sessionFactory.getSessionFactory().openSession();
 
-        String format = configurationObject.getStringValue(Configuration.REMOTE_RESPONSE_FORMAT);
         RequestHandlerInterface<IncomingSearchRequestInterface> requestHandler =
-            new IncomingRequestHandler(json, patientWrapper, metaWrapper, format);
+            new IncomingRequestHandler(json, patientWrapper, metaWrapper, configurationObject);
         IncomingSearchRequestInterface request = requestHandler.getRequest();
         if (!request.getHTTPStatus().equals(Configuration.HTTP_OK)) {
             return requestWrapper.wrap(request);
@@ -173,14 +172,15 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
             Runnable task =
                 new QueueTaskEmail(requestHandler, requestWrapper, execution.getContext());
             queue.submit(task);
-            return requestWrapper.wrap(request);
+        } else if (StringUtils.equalsIgnoreCase(type, Configuration.REQUEST_RESPONSE_TYPE_ASYCHRONOUS)) {
+            Runnable task = new QueueTaskAsyncAnswer(requestHandler, requestWrapper);
+            queue.submit(task);
         }
 
         /*
-        TODO. For now all request are stored. However if for inline request it is not necessary to get a unique id,
-        that should be changed. However, in case of periodic requests, the request should also be saved.
+        TODO. In case of periodic requests, the request should be saved.
         */
-        requestHandler.saveRequest(session);
+//        requestHandler.saveRequest(session);
 
         return requestWrapper.wrap(request);
     }

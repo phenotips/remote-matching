@@ -17,35 +17,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.server;
+package org.phenotips.remote.api;
 
-import org.phenotips.remote.api.Configuration;
+import org.xwiki.component.annotation.Role;
 
-import org.xwiki.rest.XWikiRestException;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import com.xpn.xwiki.XWikiException;
+import net.sf.json.JSONArray;
 
 /**
- * Interface for the /match endpoint. This is where a remote request would send the request to.
- *
- * @version $Id: 2a40da554444794e3dadbee73dbce9828151e281 $
+ * Since the original design pattern was not possible to implement, this interface is used to uphold consistency of
+ * implementation.
  */
-@Path("/remoteMatcher/" + Configuration.REMOTE_URL_SEARCH_ENDPOINT)
-public interface MatchInterface
+@Role
+public interface MultiTypeWrapperInterface<F, T> extends WrapperInterface<F, T>
 {
-    /**
-     * Place a search request to this server.
-     *
-     * TODO fix the doc.
-     */
-    @Consumes(MediaType.APPLICATION_JSON)
-    @POST Response matchPost(String json)
-        throws XWikiRestException, XWikiException;
-}
+    T inlineWrap(F object);
 
+    String mailWrap(F object);
+
+    JSONArray asyncWrap(F object);
+}

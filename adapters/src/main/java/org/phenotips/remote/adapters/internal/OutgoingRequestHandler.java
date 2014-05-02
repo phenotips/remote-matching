@@ -25,7 +25,7 @@ import org.phenotips.remote.adapters.JSONToMetadataConverter;
 import org.phenotips.remote.adapters.XWikiAdapter;
 import org.phenotips.remote.api.Configuration;
 import org.phenotips.remote.api.IncomingSearchRequestInterface;
-import org.phenotips.remote.api.MultiTaskWrapperInterface;
+import org.phenotips.remote.api.MultiTypeWrapperInterface;
 import org.phenotips.remote.api.OutgoingSearchRequestInterface;
 import org.phenotips.remote.api.RequestHandlerInterface;
 import org.phenotips.remote.hibernate.internal.OutgoingSearchRequest;
@@ -124,15 +124,6 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
         return patient;
     }
 
-    private String configureURL()
-    {
-        String slash = "";
-        if (!StringUtils.equals(baseURL.substring(baseURL.length() - 1), "/")) {
-            slash = "/";
-        }
-        return baseURL + slash + Configuration.REMOTE_URL_SEARCH_EXTENSION + key;
-    }
-
     public OutgoingSearchRequestInterface getRequest()
     {
         if (request != null) {
@@ -141,10 +132,10 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
         request = new OutgoingSearchRequest();
 
         request.setReferencePatient(getPhenoTipsPatient());
-        request.setTargetURL(configureURL());
+        request.setKey(key);
+        request.setTargetURL(baseURL);
         request.setSubmitterName(submitterName);
         request.setSubmitterEmail(submitterEmail);
-        request.setKey(key);
         request.setQueryType(Configuration.DEFAULT_REQUEST_QUERY_TYPE);
 
         return request;
@@ -183,7 +174,7 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
 
     @Override
     public Boolean mail(XWikiContext context,
-        MultiTaskWrapperInterface<IncomingSearchRequestInterface, JSONObject> wrapper)
+        MultiTypeWrapperInterface<IncomingSearchRequestInterface, JSONObject> wrapper)
     {
         throw new NotImplementedException();
     }

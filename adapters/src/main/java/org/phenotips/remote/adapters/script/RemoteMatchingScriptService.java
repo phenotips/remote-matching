@@ -104,7 +104,12 @@ public class RemoteMatchingScriptService implements ScriptService
 
             WrapperInterface<OutgoingSearchRequestInterface, JSONObject> requestWrapper =
                 new OutgoingSearchRequestToJSONWrapper(wiki, context);
-            String result = RemoteMatchingClient.sendRequest(request, requestWrapper);
+            String result;
+            try {
+                result = RemoteMatchingClient.sendRequest(request, requestWrapper);
+            } catch (Exception ex) {
+                return false;
+            }
 
             JSONObject json = JSONObject.fromObject(result);
             requestHandler = new OutgoingRequestHandler(request, json);

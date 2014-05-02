@@ -29,6 +29,8 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.Table;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * This class combines shared functions between the different search request types ({@link
  * org.phenotips.remote.hibernate.internal.OutgoingSearchRequest},
@@ -78,10 +80,20 @@ public abstract class AbstractRequest implements RequestInterface
     }
 
     @Override
-    public void setTargetURL(String url)
+    public void setTargetURL(String baseURL)
     {
-        this.url = url;
+        String slash = "";
+        if (!StringUtils.equals(baseURL.substring(baseURL.length() - 1), "/")) {
+            slash = "/";
+        }
+        try {
+            this.url = baseURL + slash + getURLSuffix();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
+    protected abstract String getURLSuffix() throws Exception;
 
     @Override
     public String getTargetURL()
@@ -131,7 +143,7 @@ public abstract class AbstractRequest implements RequestInterface
         this.key = key;
     }
 
-    public String getKey()
+    protected String getKey()
     {
         return key;
     }

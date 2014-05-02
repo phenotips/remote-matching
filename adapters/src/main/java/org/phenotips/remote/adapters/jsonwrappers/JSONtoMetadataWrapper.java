@@ -45,6 +45,12 @@ public class JSONtoMetadataWrapper implements WrapperInterface<JSONObject, Incom
     {
         IncomingSearchRequestInterface request = new IncomingSearchRequest();
 
+        try {
+            request.setResponseType(JSONToMetadataConverter.responseType(json));
+        } catch (Exception ex) {
+            // Do nothing
+        }
+
         //FIXME. Not enough integrity checking.
         try {
             request.setExternalId(JSONToMetadataConverter.externalRequestId(json));
@@ -52,17 +58,11 @@ public class JSONtoMetadataWrapper implements WrapperInterface<JSONObject, Incom
             request.setQueryType(JSONToMetadataConverter.queryType(json));
 
             Map<String, String> submitterMap = JSONToMetadataConverter.submitter(json);
-            request.setSubmitterInstitution(submitterMap.get(Configuration.JSON_SUBMITTER_INSTITUTION));
-            request.setSubmitterName(submitterMap.get(Configuration.JSON_SUBMITTER_NAME));
             request.setSubmitterEmail(submitterMap.get(Configuration.JSON_SUBMITTER_EMAIL));
+            request.setSubmitterName(submitterMap.get(Configuration.JSON_SUBMITTER_NAME));
+            request.setSubmitterInstitution(submitterMap.get(Configuration.JSON_SUBMITTER_INSTITUTION));
         } catch (Exception ex) {
             request.setHTTPStatus(Configuration.HTTP_BAD_REQUEST);
-        }
-
-        try {
-            request.setResponseType(JSONToMetadataConverter.responseType(json));
-        } catch (Exception ex) {
-            // Do nothing
         }
 
         return request;

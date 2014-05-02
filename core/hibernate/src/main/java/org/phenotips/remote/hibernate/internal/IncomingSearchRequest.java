@@ -35,6 +35,8 @@ import javax.persistence.Entity;
 import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Class for storing an incoming request outside the main PhenoTips database for privacy reasons. It is a combination
  * of
@@ -55,6 +57,15 @@ public class IncomingSearchRequest extends AbstractRequest implements IncomingSe
 
     public IncomingSearchRequest()
     {}
+
+    @Override
+    protected String getURLSuffix() throws Exception
+    {
+        if (StringUtils.equals(this.getResponseType(), Configuration.REQUEST_RESPONSE_TYPE_ASYCHRONOUS)) {
+            return Configuration.REMOTE_URL_ASYNCHRONOUS_RESULTS_ENDPOINT;
+        }
+        return "";
+    }
 
     public void setReferencePatient(HibernatePatientInterface patient)
     {
@@ -83,7 +94,8 @@ public class IncomingSearchRequest extends AbstractRequest implements IncomingSe
 
     public Integer getHttpStatus() { return httpStatus; }
 
-    public String getExternalId() { return "RemoteRequest" + id; }
+//    public String getExternalId() { return "RemoteRequest" + id; }
+    public String getExternalId() { return id == null ? super.getExternalId() : id.toString(); }
 
     public DocumentReference getDocument()
     {

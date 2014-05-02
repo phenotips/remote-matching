@@ -23,8 +23,8 @@ import org.phenotips.data.PatientRepository;
 import org.phenotips.remote.api.Configuration;
 import org.phenotips.remote.api.HibernatePatientInterface;
 import org.phenotips.remote.api.IncomingSearchRequestInterface;
+import org.phenotips.remote.api.MultiTypeWrapperInterface;
 import org.phenotips.remote.api.RequestHandlerInterface;
-import org.phenotips.remote.api.MultiTaskWrapperInterface;
 import org.phenotips.remote.api.WrapperInterface;
 
 import java.io.UnsupportedEncodingException;
@@ -36,6 +36,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.plugin.mailsender.Mail;
 import com.xpn.xwiki.plugin.mailsender.MailSenderPlugin;
 
@@ -56,14 +57,17 @@ public class IncomingRequestHandler implements RequestHandlerInterface<IncomingS
 
     private String configuredResponseType;
 
+    private String baseURL;
+
     public IncomingRequestHandler(JSONObject json,
         WrapperInterface<JSONObject, HibernatePatientInterface> patientWrapper,
-        WrapperInterface<JSONObject, IncomingSearchRequestInterface> metaWrapper, String responseFormat)
+        WrapperInterface<JSONObject, IncomingSearchRequestInterface> metaWrapper, BaseObject xwikiConfigurationObject)
     {
         this.json = json;
         this.patientWrapper = patientWrapper;
         this.metaWrapper = metaWrapper;
-        this.configuredResponseType = responseFormat;
+        this.configuredResponseType = xwikiConfigurationObject.getStringValue(Configuration.REMOTE_RESPONSE_FORMAT);
+        this.baseURL = xwikiConfigurationObject.getStringValue(Configuration.REMOTE_BASE_URL_FIELD).trim();
     }
 
     @Override
@@ -81,6 +85,20 @@ public class IncomingRequestHandler implements RequestHandlerInterface<IncomingS
         //If the original request contains a response type, do not change it.
         if (StringUtils.isBlank(request.getResponseType())) {
             request.setResponseType(configuredResponseType);
+        }
+        /**
+         * URL must always be set after! the response type is. Although it is a design hole,
+         * at the same time it can never fully be mitigated, even if the the process which determines the final url
+         * is given to the getTargetURL function.
+         * On second thought it's a FIXME
+         */
+        request.setTargetURL(baseURL);
+
+        if (StringUtils.equals(request.getResponseType(), Configuration.REQUEST_RESPONSE_TYPE_EMAIL) &&
+            StringUtils.isBlank(request.getSubmitterEmail()))
+        {
+            request.setHTTPStatus(Configuration.HTTP_BAD_REQUEST);
+            return request;
         }
 
         HibernatePatientInterface hibernatePatient = patientWrapper.wrap(JSONObject.fromObject(json));
@@ -118,7 +136,7 @@ public class IncomingRequestHandler implements RequestHandlerInterface<IncomingS
 
     @Override
     public Boolean mail(XWikiContext context,
-        MultiTaskWrapperInterface<IncomingSearchRequestInterface, JSONObject> wrapper)
+        MultiTypeWrapperInterface<IncomingSearchRequestInterface, JSONObject> wrapper)
     {
         try {
             MailSenderPlugin mailSender =

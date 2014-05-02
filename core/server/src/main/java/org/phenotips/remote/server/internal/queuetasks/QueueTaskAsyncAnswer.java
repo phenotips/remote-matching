@@ -19,50 +19,34 @@
  */
 package org.phenotips.remote.server.internal.queuetasks;
 
+import org.phenotips.remote.RemoteMatchingClient;
 import org.phenotips.remote.api.IncomingSearchRequestInterface;
 import org.phenotips.remote.api.MultiTypeWrapperInterface;
 import org.phenotips.remote.api.RequestHandlerInterface;
 
-import org.xwiki.component.embed.EmbeddableComponentManager;
-import org.xwiki.component.manager.ComponentLookupException;
-import org.xwiki.context.Execution;
-import org.xwiki.context.ExecutionContext;
-
-import com.xpn.xwiki.XWikiContext;
-
 import net.sf.json.JSONObject;
 
-public class QueueTaskEmail implements Runnable
+public class QueueTaskAsyncAnswer implements Runnable
 {
     private RequestHandlerInterface<IncomingSearchRequestInterface> requestHandler;
 
     private MultiTypeWrapperInterface<IncomingSearchRequestInterface, JSONObject> requestWrapper;
 
-    private ExecutionContext executionContext;
 
-    public QueueTaskEmail(RequestHandlerInterface<IncomingSearchRequestInterface> _requestHandler,
-        MultiTypeWrapperInterface<IncomingSearchRequestInterface, JSONObject> _requestWrapper,
-        ExecutionContext _executionContext)
+    public QueueTaskAsyncAnswer(RequestHandlerInterface<IncomingSearchRequestInterface> _requestHandler,
+        MultiTypeWrapperInterface<IncomingSearchRequestInterface, JSONObject> _requestWrapper)
     {
         requestHandler = _requestHandler;
         requestWrapper = _requestWrapper;
-        executionContext = _executionContext;
     }
 
     @Override
     public void run()
     {
         try {
-            EmbeddableComponentManager componentManager = new EmbeddableComponentManager();
-            componentManager.initialize(this.getClass().getClassLoader());
-            Execution execution = componentManager.getInstance(Execution.class);
-            execution.setContext(executionContext);
-            XWikiContext context = (XWikiContext) executionContext.getProperty("xwikicontext");
-
-            requestHandler.mail(context, requestWrapper);
-            componentManager.dispose();
-        } catch (ComponentLookupException ex) {
-            //There is nothing that can be done.
+            RemoteMatchingClient.sendAsyncAnswer(requestHandler.getRequest(), requestWrapper);
+        } catch (Exception ex) {
+            //Do nothing
         }
     }
 }

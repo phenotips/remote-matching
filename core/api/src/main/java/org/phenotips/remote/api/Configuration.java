@@ -51,7 +51,10 @@ public interface Configuration
     String REST_DEFAULT_USER_NAME = "DefaultRemoteUser";
 
     /** Must not contain the '/' at the beginning of the string */
-    String REMOTE_URL_SEARCH_EXTENSION = "match?media=json&key=";
+    //FIXME remove media=json
+    String REMOTE_URL_SEARCH_ENDPOINT = "match";
+    String REMOTE_URL_ASYNCHRONOUS_RESULTS_ENDPOINT = "matchResults";
+    String REMOTE_URL_SEARCH_EXTENSION = REMOTE_URL_SEARCH_ENDPOINT + "?media=json&key=";
 
     //XWiki remote request/config
     String REMOTE_KEY_FIELD = "remoteAuthToken";

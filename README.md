@@ -26,6 +26,7 @@ How to install/use:
 Known issues/problematic code:
  - There's a security hole; the REST server executes XWiki commands as Admin.
  - The disorders are not shown in the UI, because there is a problem with retrieving disorder id.
+ - The asynchronous request results are stored properly **iff** the id sent in the originating request is returned in the response
 
 Unrelated known issues:
  - commons-lang3 has 2 versions in the WEB-INF/lib. This causes an error in PatientSheet. Delete the older.

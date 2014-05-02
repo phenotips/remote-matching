@@ -22,6 +22,7 @@ package org.phenotips.remote.hibernate.internal;
 import org.phenotips.data.Patient;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.data.similarity.PatientSimilarityViewFactory;
+import org.phenotips.remote.api.Configuration;
 import org.phenotips.remote.api.HibernatePatientInterface;
 import org.phenotips.remote.api.OutgoingSearchRequestInterface;
 
@@ -64,6 +65,14 @@ public class OutgoingSearchRequest extends AbstractRequest implements OutgoingSe
     public OutgoingSearchRequest()
     {
 
+    }
+
+    @Override protected String getURLSuffix() throws Exception
+    {
+        if (getKey() == null) {
+            throw new Exception("No key is set");
+        }
+        return Configuration.REMOTE_URL_SEARCH_EXTENSION + getKey();
     }
 
     public List<PatientSimilarityView> getResults(PatientSimilarityViewFactory viewFactory)

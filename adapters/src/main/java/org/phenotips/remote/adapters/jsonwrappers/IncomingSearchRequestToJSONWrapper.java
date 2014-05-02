@@ -23,7 +23,7 @@ import org.phenotips.data.Patient;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.Configuration;
 import org.phenotips.remote.api.IncomingSearchRequestInterface;
-import org.phenotips.remote.api.MultiTaskWrapperInterface;
+import org.phenotips.remote.api.MultiTypeWrapperInterface;
 import org.phenotips.remote.api.WrapperInterface;
 import org.phenotips.similarity.SimilarPatientsFinder;
 
@@ -44,7 +44,7 @@ import net.sf.json.JSONObject;
  */
 @Component
 @Named("incoming-json")
-public class IncomingSearchRequestToJSONWrapper implements MultiTaskWrapperInterface<IncomingSearchRequestInterface, JSONObject>
+public class IncomingSearchRequestToJSONWrapper implements MultiTypeWrapperInterface<IncomingSearchRequestInterface, JSONObject>
 {
     @Inject
     private SimilarPatientsFinder patientsFinder;
@@ -52,31 +52,61 @@ public class IncomingSearchRequestToJSONWrapper implements MultiTaskWrapperInter
     public JSONObject wrap(IncomingSearchRequestInterface request)
     {
         JSONObject json = new JSONObject();
-        Integer status = request.getHTTPStatus();
-        Long id = request.getRequestId();
+        String id = request.getExternalId();
 
-        json.put(Configuration.INTERNAL_JSON_STATUS, status);
+        json = statusWrap(request, json);
         json.put(Configuration.JSON_RESPONSE_TYPE, request.getResponseType());
         json.put(Configuration.JSON_RESPONSE_ID, id == null ? new JSONObject(true) : id);
+        return json;
+    }
+
+    private JSONObject statusWrap(IncomingSearchRequestInterface request, JSONObject json)
+    {
+        Integer status = request.getHTTPStatus();
+        json.put(Configuration.INTERNAL_JSON_STATUS, status);
         return json;
     }
 
     public JSONObject inlineWrap(IncomingSearchRequestInterface request)
     {
         JSONObject json = wrap(request);
-        JSONArray results = new JSONArray();
-
         Integer status = request.getHTTPStatus();
         if(!status.equals(Configuration.HTTP_OK)) {
             return json;
         }
 
+        json = singleResponseWrap(json, request);
+        return json;
+    }
+
+    @Override
+    public JSONArray asyncWrap(IncomingSearchRequestInterface request)
+    {
+        JSONArray results = new JSONArray();
+        results.add(singleResponseWrap(new JSONObject(), request));
+        return results;
+    }
+
+    private JSONObject singleResponseWrap(JSONObject json, IncomingSearchRequestInterface request)
+    {
         List<PatientSimilarityView> similarPatients;
         try {
             similarPatients = request.getResults(patientsFinder);
         } catch (IllegalArgumentException ex) {
             return this.wrap(request);
         }
+
+        JSONArray results = wrapResults(similarPatients);
+
+        //FIXME. Pick a method for ids.
+        json.put(Configuration.JSON_RESPONSE_ID, request.getRequestId() == null ? request.getExternalId() : request.getRequestId());
+        json.put(Configuration.JSON_RESULTS, results);
+        return json;
+    }
+
+    private JSONArray wrapResults(List<PatientSimilarityView> similarPatients)
+    {
+        JSONArray results = new JSONArray();
 
         WrapperInterface<Patient, Map<String, Object>> wrapper = new PatientToJSONWrapper(true);
         for (PatientSimilarityView patient : similarPatients) {
@@ -86,11 +116,7 @@ public class IncomingSearchRequestToJSONWrapper implements MultiTaskWrapperInter
                 //Should not happen
             }
         }
-
-        json.put(Configuration.JSON_RESPONSE_ID, request.getRequestId());
-        json.put(Configuration.JSON_RESULTS, results);
-
-        return json;
+        return results;
     }
 
     public String mailWrap(IncomingSearchRequestInterface request)
