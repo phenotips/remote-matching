@@ -31,9 +31,9 @@
   <author>xwiki:XWiki.Admin</author>
   <customClass/>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <creationDate>1394733772000</creationDate>
-  <date>1397162244000</date>
-  <contentUpdateDate>1395855745000</contentUpdateDate>
+  <creationDate>1397573785000</creationDate>
+  <date>1397573785000</date>
+  <contentUpdateDate>1397573785000</contentUpdateDate>
   <version>1.1</version>
   <title/>
   <defaultTemplate/>
@@ -540,7 +540,7 @@ $xwiki.ssx.use($displayDocumentName) ##
 {{/velocity}}
 
 {{velocity}}
-#if ("$!{request.xaction}" == 'lastentry') 
+#if ("$!{request.xaction}" == 'lastentry')
  #set ($entryClassName = $request.dataClassName)
   #set ($options = {})
   #set ($discard = $options.put('propertyName', "$!{request.propertyName}"))
