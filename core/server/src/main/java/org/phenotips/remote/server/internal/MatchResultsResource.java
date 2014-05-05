@@ -26,13 +26,13 @@ import org.phenotips.remote.api.Configuration;
 import org.phenotips.remote.api.OutgoingSearchRequestInterface;
 import org.phenotips.remote.api.RequestHandlerInterface;
 import org.phenotips.remote.server.MatchResultsInterface;
+import org.phenotips.remote.server.internal.queuetasks.ContextSetter;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.rest.XWikiResource;
 import org.xwiki.rest.XWikiRestException;
 
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 
 import org.hibernate.Session;
@@ -67,9 +67,11 @@ public class MatchResultsResource extends XWikiResource implements MatchResultsI
         try {
             XWikiContext context = this.getXWikiContext();
             JSONArray jsonResponse;
+
             //FIXME. Should the response here be verified? Well, yes, but how pressing is it?
-            HttpServletRequest httpRequest = context.getRequest().getHttpServletRequest();
+//            HttpServletRequest httpRequest = context.getRequest().getHttpServletRequest();
             Session session = this.sessionFactory.getSessionFactory().openSession();
+            ContextSetter.set(context);
 
             jsonResponse = JSONArray.fromObject(json);
             RequestHandlerInterface<OutgoingSearchRequestInterface> requestHandler =

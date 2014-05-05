@@ -97,9 +97,27 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
         request = existingRequest;
         try {
             existingRequest.setExternalId(JSONToMetadataConverter.externalResponseId(json));
-            existingRequest.setResponseType(JSONToMetadataConverter.responseType(json));
-            if (StringUtils
-                .equals(existingRequest.getResponseType(), Configuration.REQUEST_RESPONSE_TYPE_SYNCHRONOUS))
+
+            String responseType = null;
+            try {
+                responseType = JSONToMetadataConverter.responseType(json);
+            } catch (JSONException ex) {
+                //FIXME. This can also become a site for bugs.
+                if (existingRequest.getResponseType() != null) {
+                    //Let the function continue.
+                } else {
+                    //Assume default (on null)
+                    responseType = Configuration.DEFAULT_NULL_REQUEST_RESPONSE_TYPE;
+                }
+            }
+            if (responseType != null) {
+                existingRequest.setResponseType(responseType);
+            }
+
+            /* TODO. Figure out if this check is actually needed.
+            If more types of responses are included later on this will become a site for bugs. */
+            if (!StringUtils
+                .equalsIgnoreCase(existingRequest.getResponseType(), Configuration.REQUEST_RESPONSE_TYPE_EMAIL))
             {
                 existingRequest.addResults(JSONToMetadataConverter.responseResults(json));
             }

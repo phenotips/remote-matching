@@ -22,6 +22,7 @@ package org.phenotips.remote.server.internal;
 import org.phenotips.remote.api.Configuration;
 import org.phenotips.remote.server.MatchInterface;
 import org.phenotips.remote.server.RequestProcessorInterface;
+import org.phenotips.remote.server.internal.queuetasks.ContextSetter;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.rest.XWikiResource;
@@ -35,10 +36,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
-import com.xpn.xwiki.doc.XWikiDocument;
 
 import net.sf.json.JSONObject;
 
@@ -61,7 +60,7 @@ public class MatchResource extends XWikiResource implements MatchInterface
         HttpServletRequest httpRequest = context.getRequest().getHttpServletRequest();
 
         try {
-            setCurrentContextDocument(context);
+            ContextSetter.set(context);
 
             //Using futures to queue tasks and to retrieve results.
             ExecutorService queue = Executors.newSingleThreadExecutor();
@@ -75,12 +74,5 @@ public class MatchResource extends XWikiResource implements MatchInterface
         } else {
             return Response.status(status).build();
         }
-    }
-
-    private void setCurrentContextDocument(XWikiContext context) throws XWikiException
-    {
-        XWiki wiki = context.getWiki();
-        XWikiDocument currentDoc = wiki.getDocument(Configuration.ABSOLUTE_DOCUMENT_REFERENCE, context);
-        context.setDoc(currentDoc);
     }
 }

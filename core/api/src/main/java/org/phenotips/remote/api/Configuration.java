@@ -84,6 +84,8 @@ public interface Configuration
 
     String DEFAULT_REQUEST_QUERY_TYPE = "once";
     String DEFAULT_INCOMING_REQUEST_RESPONSE_TYPE = REQUEST_RESPONSE_TYPE_SYNCHRONOUS;
+    //Used when the request loader could not find a response type in JSON.
+    String DEFAULT_NULL_REQUEST_RESPONSE_TYPE = REQUEST_RESPONSE_TYPE_ASYCHRONOUS;
 
     String INTERNAL_JSON_STATUS = "status";
 
