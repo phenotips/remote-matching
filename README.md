@@ -4,7 +4,7 @@ Remote matching module [VERSION 0.1]
 *A working beta version of Remote Matching project. It is highly probable that the code contains a large number of bugs.
 It is very close to the specification, mainly lacking the support for ```periodic``` requests and the functionality needed for such requests.
 The code is largely __undocumented and uncommented__; it is likely that fixing this and bugs will be the next stage of the project,
-before implementing ```preiodic``` requests.*
+before implementing ```periodic``` requests.*
 
 #####Implemented features:
  - Functionality almost completely to specification when doing synchronous requests.

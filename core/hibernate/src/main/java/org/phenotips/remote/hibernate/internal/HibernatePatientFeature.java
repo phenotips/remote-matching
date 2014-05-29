@@ -156,4 +156,9 @@ public class HibernatePatientFeature implements HibernatePatientFeatureInterface
     {
         throw new UnsupportedOperationException();
     }
+
+    public String getNotes()
+    {
+        throw new UnsupportedOperationException();
+    }
 }
