@@ -44,7 +44,7 @@ import net.sf.json.JSONObject;
 /**
  * Resource for listing full patient phenotype.
  *
- * @version $Id: a5e0487469d4280ae58cd29e702f50b6bc891ab6 $
+ * @version $Id$
  */
 @Component("org.phenotips.remote.server.internal.MatchResource")
 public class MatchResource extends XWikiResource implements MatchInterface

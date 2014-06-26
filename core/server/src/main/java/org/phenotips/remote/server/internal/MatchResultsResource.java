@@ -47,7 +47,7 @@ import net.sf.json.JSONObject;
 /**
  * Resource for receiving asynchronous answers from remote search servers.
  *
- * @version $Id: a5e0487469d4280ae58cd29e702f50b6bc891ab6 $
+ * @version $Id$
  */
 @Component("org.phenotips.remote.server.internal.MatchResultsResource")
 public class MatchResultsResource extends XWikiResource implements MatchResultsInterface

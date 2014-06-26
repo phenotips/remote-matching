@@ -34,7 +34,7 @@ import com.xpn.xwiki.XWikiException;
 /**
  * Interface for the /match endpoint. This is where a remote request would send the request to.
  *
- * @version $Id: 2a40da554444794e3dadbee73dbce9828151e281 $
+ * @version $Id$
  */
 @Path("/remoteMatcher/" + Configuration.REMOTE_URL_SEARCH_ENDPOINT)
 public interface MatchInterface

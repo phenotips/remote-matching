@@ -35,7 +35,7 @@ import com.xpn.xwiki.XWikiException;
  * Interface for the /matchResults endpoint. This is where an asynchronous answer from a remote search server would be
  * received.
  *
- * @version $Id: 2a40da554444794e3dadbee73dbce9828151e281 $
+ * @version $Id$
  */
 @Path("/remoteMatcher/" + Configuration.REMOTE_URL_ASYNCHRONOUS_RESULTS_ENDPOINT)
 public interface MatchResultsInterface

@@ -39,7 +39,7 @@ import com.xpn.xwiki.store.hibernate.HibernateSessionFactory;
  * TODO fix the doc
  * Registers the IncomingSearchRequest with Hibernate
  * 
- * @version $Id: 47ee02c319f36bb8f11d9b37bd16052635f82614 $
+ * @version $Id$
  * @since 1.0M10
  */
 @Component
