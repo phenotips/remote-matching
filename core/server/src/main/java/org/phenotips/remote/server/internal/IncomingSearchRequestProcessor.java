@@ -51,6 +51,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
+import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
@@ -70,6 +71,9 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
     /** Handles persistence. */
     @Inject
     private HibernateSessionFactory sessionFactory;
+
+    @Inject
+    private Logger logger;
 
     @Inject
     private Execution execution;
@@ -132,6 +136,7 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
         try {
             isAuthorized = validateIP(baseURL, httpRequest.getRemoteAddr());
         } catch (MalformedURLException ex) {
+            logger.error("Could not validate request due the URL being malformed.");
             return Configuration.HTTP_SERVER_ERROR;
         } catch (UnknownHostException ex) {
             return Configuration.HTTP_BAD_REQUEST;
