@@ -33,6 +33,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
 
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
@@ -46,10 +47,16 @@ import net.sf.json.JSONObject;
 public class RemoteMatchingClient
 {
     public static String sendRequest(OutgoingSearchRequestInterface request,
-        WrapperInterface<OutgoingSearchRequestInterface, JSONObject> wrapper) throws Exception
+        WrapperInterface<OutgoingSearchRequestInterface, JSONObject> wrapper, Logger logger) throws Exception
     {
         JSONObject json = wrapper.wrap(request);
-        CloseableHttpResponse httpResponse = RemoteMatchingClient.send(request, json);
+        CloseableHttpResponse httpResponse;
+        try {
+            httpResponse = RemoteMatchingClient.send(request, json);
+        } catch (Exception ex) {
+            logger.error("Could not send request due to the following error: " + ex.toString());
+            throw ex;
+        }
         httpResponse.close();
         if (!((Integer) httpResponse.getStatusLine().getStatusCode()).equals(Configuration.HTTP_OK)) {
             throw new Exception("The request did not return OK status");

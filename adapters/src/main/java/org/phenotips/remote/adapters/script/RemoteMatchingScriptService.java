@@ -106,7 +106,7 @@ public class RemoteMatchingScriptService implements ScriptService
                 new OutgoingSearchRequestToJSONWrapper(wiki, context);
             String result;
             try {
-                result = RemoteMatchingClient.sendRequest(request, requestWrapper);
+                result = RemoteMatchingClient.sendRequest(request, requestWrapper, logger);
             } catch (Exception ex) {
                 return false;
             }
