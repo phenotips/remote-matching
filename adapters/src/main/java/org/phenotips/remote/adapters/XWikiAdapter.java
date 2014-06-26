@@ -30,6 +30,7 @@ import org.xwiki.model.reference.EntityReference;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
@@ -52,16 +53,26 @@ public class XWikiAdapter
         return wiki.getDocument(userReference, context).getXObject(Configuration.USER_OBJECT_REFERENCE);
     }
 
-    static public BaseObject getRemoteConfiguration(String baseURL, XWiki wiki, XWikiContext context)
+    static public BaseObject getRemoteConfiguration(String baseURL, XWiki wiki, XWikiContext context, Logger logger)
         throws XWikiException
     {
         XWikiDocument configurationsDoc =
             wiki.getDocument(Configuration.REMOTE_CONFIGURATIONS_DOCUMENT_REFERENCE, context);
-        for (BaseObject remote : configurationsDoc.getXObjects(Configuration.REMOTE_CONFIGURATION_OBJECT_REFERENCE)) {
-            if (StringUtils.equalsIgnoreCase(remote.getStringValue(Configuration.REMOTE_BASE_URL_FIELD), baseURL)) {
+        if (configurationsDoc == null) {
+            logger.error("Could not find configurations document");
+        }
+        List<BaseObject> configurations =
+            configurationsDoc.getXObjects(Configuration.REMOTE_CONFIGURATION_OBJECT_REFERENCE);
+        for (BaseObject remote : configurations) {
+            String url = remote.getStringValue(Configuration.REMOTE_BASE_URL_FIELD);
+            if (StringUtils.equalsIgnoreCase(url, baseURL)) {
+                logger.info("Matched configuration with URL: " + url);
                 return remote;
             }
         }
+        logger.error(
+            "Could not find any remote configuration objects or no match was found. Configurations list size: " +
+                configurations.size());
         //FIXME. Not exactly true.
         throw new XWikiException();
     }

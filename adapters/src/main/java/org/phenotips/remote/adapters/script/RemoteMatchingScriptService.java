@@ -96,7 +96,7 @@ public class RemoteMatchingScriptService implements ScriptService
 
             BaseObject xwikiRequestObject = xwikiObject.getXWikiObject();
             RequestHandlerInterface<OutgoingSearchRequestInterface> requestHandler =
-                new OutgoingRequestHandler(xwikiRequestObject, wiki, context, resolver);
+                new OutgoingRequestHandler(xwikiRequestObject, wiki, context, resolver, logger);
             OutgoingSearchRequestInterface request = requestHandler.getRequest();
 
             Session session = this.sessionFactory.getSessionFactory().openSession();

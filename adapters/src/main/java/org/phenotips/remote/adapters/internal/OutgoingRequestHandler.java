@@ -35,6 +35,7 @@ import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
@@ -51,6 +52,8 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  */
 public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingSearchRequestInterface>
 {
+    private Logger logger;
+
     private String baseURL;
 
     private String key;
@@ -74,8 +77,9 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
     private Session session;
 
     public OutgoingRequestHandler(BaseObject requestObject, XWiki wiki, XWikiContext context,
-        DocumentReferenceResolver<String> resolver) throws XWikiException
+        DocumentReferenceResolver<String> resolver, Logger logger) throws XWikiException
     {
+        this.logger = logger;
         xwikiRequestObject = requestObject;
         wikiContext = context;
         this.wiki = wiki;
@@ -87,7 +91,7 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
         patient = XWikiAdapter.getPatient(patientDocument);
         baseURL = requestObject.getStringValue(Configuration.REMOTE_BASE_URL_FIELD).trim();
         key =
-            XWikiAdapter.getRemoteConfiguration(baseURL, wiki, context).getStringValue(Configuration.REMOTE_KEY_FIELD);
+            XWikiAdapter.getRemoteConfiguration(baseURL, wiki, context, logger).getStringValue(Configuration.REMOTE_KEY_FIELD);
         processSubmitter(submitter);
     }
 
