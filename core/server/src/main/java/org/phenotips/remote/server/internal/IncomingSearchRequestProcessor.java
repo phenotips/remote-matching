@@ -137,6 +137,8 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
             isAuthorized = validateIP(baseURL, httpRequest.getRemoteAddr());
         } catch (MalformedURLException ex) {
             logger.error("Could not validate request due the URL being malformed.");
+            logger.error("URL: " + baseURL);
+            ex.printStackTrace();
             return Configuration.HTTP_SERVER_ERROR;
         } catch (UnknownHostException ex) {
             return Configuration.HTTP_BAD_REQUEST;
