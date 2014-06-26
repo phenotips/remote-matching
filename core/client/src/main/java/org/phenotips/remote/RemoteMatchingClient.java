@@ -55,7 +55,8 @@ public class RemoteMatchingClient
             httpResponse = RemoteMatchingClient.send(request, json);
         } catch (Exception ex) {
             logger.error("Could not send request due to the following error: " + ex.toString());
-            logger.info("Target URL: " + request.getTargetURL());
+            logger.error("Target URL: " + request.getTargetURL());
+            ex.printStackTrace();
             throw ex;
         }
         httpResponse.close();
