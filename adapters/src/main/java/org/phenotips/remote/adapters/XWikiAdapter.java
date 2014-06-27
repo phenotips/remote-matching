@@ -90,14 +90,16 @@ public class XWikiAdapter
         throws XWikiException
     {
         Logger logger = LoggerFactory.getLogger(XWikiAdapter.class);
+
         XWikiDocument configurationsDocument =
             wiki.getDocument(Configuration.REMOTE_CONFIGURATIONS_DOCUMENT_REFERENCE, context);
+        logger.error("The xml of configurationsDocument: {}", configurationsDocument.toFullXML(context));
+
         List<BaseObject> remotes =
             configurationsDocument.getXObjects(Configuration.REMOTE_CONFIGURATION_OBJECT_REFERENCE);
+        logger.error("The number of remote configurations: {}", remotes.size());
 
-        logger.debug("The number of remote configurations: {}", remotes.size());
         for (BaseObject remote : remotes) {
-            logger.debug("The remote object is: {}", remote.toXMLString());
             String testKey = remote.getStringValue(Configuration.REMOTE_KEY_FIELD);
             //FIXME Security hole.
             logger.debug("The key is {}", testKey);
