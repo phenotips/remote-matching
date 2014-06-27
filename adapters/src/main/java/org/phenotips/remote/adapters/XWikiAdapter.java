@@ -30,6 +30,8 @@ import org.xwiki.model.reference.EntityReference;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
@@ -87,13 +89,18 @@ public class XWikiAdapter
     static public BaseObject getRemoteConfigurationByKey(String key, XWiki wiki, XWikiContext context)
         throws XWikiException
     {
+        Logger logger = LoggerFactory.getLogger(XWikiAdapter.class);
         XWikiDocument configurationsDocument =
             wiki.getDocument(Configuration.REMOTE_CONFIGURATIONS_DOCUMENT_REFERENCE, context);
         List<BaseObject> remotes =
             configurationsDocument.getXObjects(Configuration.REMOTE_CONFIGURATION_OBJECT_REFERENCE);
 
+        logger.debug("The number of remote configurations: {}", remotes.size());
         for (BaseObject remote : remotes) {
+            logger.debug("The remote object is: {}", remote.toXMLString());
             String testKey = remote.getStringValue(Configuration.REMOTE_KEY_FIELD);
+            //FIXME Security hole.
+            logger.debug("The key is {}", testKey);
             if (StringUtils.equalsIgnoreCase(testKey, key)) {
                 return remote;
             }
