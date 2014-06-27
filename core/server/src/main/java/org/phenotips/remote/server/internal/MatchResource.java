@@ -36,6 +36,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 
@@ -65,7 +68,9 @@ public class MatchResource extends XWikiResource implements MatchInterface
             //Using futures to queue tasks and to retrieve results.
             ExecutorService queue = Executors.newSingleThreadExecutor();
             jsonResponse = requestProcessor.processHTTPRequest(json, queue, httpRequest);
-        } catch (Exception e) {
+        } catch (Exception ex) {
+            Logger logger = LoggerFactory.getLogger(MatchResource.class);
+            logger.error("Could not process request due to the following error: {}", ex.getMessage(), ex);
             return Response.status(Configuration.HTTP_SERVER_ERROR).build();
         }
         Integer status = (Integer) jsonResponse.remove("status");
