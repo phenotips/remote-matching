@@ -93,16 +93,19 @@ public class XWikiAdapter
 
         XWikiDocument configurationsDocument =
             wiki.getDocument(Configuration.REMOTE_CONFIGURATIONS_DOCUMENT_REFERENCE, context);
-        logger.error("The xml of configurationsDocument: {}", configurationsDocument.toFullXML(context));
 
+        //FIXME. There is a weird bug that produces more configurations than there are.
         List<BaseObject> remotes =
             configurationsDocument.getXObjects(Configuration.REMOTE_CONFIGURATION_OBJECT_REFERENCE);
         logger.error("The number of remote configurations: {}", remotes.size());
 
         for (BaseObject remote : remotes) {
+            if (remote == null) {
+                continue;
+            }
             String testKey = remote.getStringValue(Configuration.REMOTE_KEY_FIELD);
             //FIXME Security hole.
-            logger.debug("The key is {}", testKey);
+            logger.debug("The xml: {}", remote.toXMLString());
             if (StringUtils.equalsIgnoreCase(testKey, key)) {
                 return remote;
             }
