@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
@@ -43,6 +44,8 @@ import com.xpn.xwiki.objects.BaseObject;
  */
 public class XWikiAdapter
 {
+    private static final Logger logger = LoggerFactory.getLogger(XWikiAdapter.class);
+
     static public BaseObject getSubmitter(String userId, XWiki wiki, XWikiContext context,
         DocumentReferenceResolver<String> resolver) throws XWikiException
     {
@@ -53,7 +56,7 @@ public class XWikiAdapter
         return wiki.getDocument(userReference, context).getXObject(Configuration.USER_OBJECT_REFERENCE);
     }
 
-    static public BaseObject getRemoteConfiguration(String baseURL, XWiki wiki, XWikiContext context, Logger logger)
+    static public BaseObject getRemoteConfiguration(String baseURL, XWiki wiki, XWikiContext context)
         throws XWikiException
     {
         XWikiDocument configurationsDoc =
@@ -64,6 +67,9 @@ public class XWikiAdapter
         List<BaseObject> configurations =
             configurationsDoc.getXObjects(Configuration.REMOTE_CONFIGURATION_OBJECT_REFERENCE);
         for (BaseObject remote : configurations) {
+            if (remote == null) {
+                continue;
+            }
             String url = remote.getStringValue(Configuration.REMOTE_BASE_URL_FIELD);
             if (StringUtils.equalsIgnoreCase(url, baseURL)) {
                 logger.info("Matched configuration with URL: " + url);
@@ -100,11 +106,19 @@ public class XWikiAdapter
     {
         XWikiDocument configurationsDocument =
             wiki.getDocument(Configuration.REMOTE_CONFIGURATIONS_DOCUMENT_REFERENCE, context);
+
+        //FIXME. There is a weird bug that produces more configurations than there are.
         List<BaseObject> remotes =
             configurationsDocument.getXObjects(Configuration.REMOTE_CONFIGURATION_OBJECT_REFERENCE);
+        logger.error("The number of remote configurations: {}", remotes.size());
 
         for (BaseObject remote : remotes) {
+            if (remote == null) {
+                continue;
+            }
             String testKey = remote.getStringValue(Configuration.REMOTE_KEY_FIELD);
+            //FIXME Security hole.
+            logger.debug("The xml: {}", remote.toXMLString());
             if (StringUtils.equalsIgnoreCase(testKey, key)) {
                 return remote;
             }
