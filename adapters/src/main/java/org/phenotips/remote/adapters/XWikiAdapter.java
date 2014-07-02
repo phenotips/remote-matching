@@ -60,6 +60,9 @@ public class XWikiAdapter
         XWikiDocument configurationsDoc =
             wiki.getDocument(Configuration.REMOTE_CONFIGURATIONS_DOCUMENT_REFERENCE, context);
         for (BaseObject remote : configurationsDoc.getXObjects(Configuration.REMOTE_CONFIGURATION_OBJECT_REFERENCE)) {
+            if (remote == null) {
+                continue;
+            }
             if (StringUtils.equalsIgnoreCase(remote.getStringValue(Configuration.REMOTE_BASE_URL_FIELD), baseURL)) {
                 return remote;
             }
