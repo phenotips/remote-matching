@@ -49,8 +49,8 @@ public class XWikiAdapter
     static public BaseObject getSubmitter(String userId, XWiki wiki, XWikiContext context,
         DocumentReferenceResolver<String> resolver) throws XWikiException
     {
-        //Fixme. Does not check if the document is a user, but will return null if not.
-        //Fixme. [possible] Does not check if the patient belongs to the user?
+        // Fixme. Does not check if the document is a user, but will return null if not.
+        // Fixme. [possible] Does not check if the patient belongs to the user?
 
         EntityReference userReference = resolver.resolve(userId);
         return wiki.getDocument(userReference, context).getXObject(Configuration.USER_OBJECT_REFERENCE);
@@ -79,7 +79,7 @@ public class XWikiAdapter
         logger.error(
             "Could not find any remote configuration objects or no match was found. Configurations list size: " +
                 configurations.size());
-        //FIXME. Not exactly true.
+        // FIXME. Not exactly true.
         throw new XWikiException();
     }
 
@@ -107,7 +107,7 @@ public class XWikiAdapter
         XWikiDocument configurationsDocument =
             wiki.getDocument(Configuration.REMOTE_CONFIGURATIONS_DOCUMENT_REFERENCE, context);
 
-        //FIXME. There is a weird bug that produces more configurations than there are.
+        // FIXME. There is a weird bug that produces more configurations than there are.
         List<BaseObject> remotes =
             configurationsDocument.getXObjects(Configuration.REMOTE_CONFIGURATION_OBJECT_REFERENCE);
         logger.error("The number of remote configurations: {}", remotes.size());
@@ -117,13 +117,13 @@ public class XWikiAdapter
                 continue;
             }
             String testKey = remote.getStringValue(Configuration.REMOTE_KEY_FIELD);
-            //FIXME Security hole.
+            // FIXME Security hole.
             logger.debug("The xml: {}", remote.toXMLString());
             if (StringUtils.equalsIgnoreCase(testKey, key)) {
                 return remote;
             }
         }
-        //FIXME. Once again, not exactly true.
+        // FIXME. Once again, not exactly true.
         throw new XWikiException();
     }
 }

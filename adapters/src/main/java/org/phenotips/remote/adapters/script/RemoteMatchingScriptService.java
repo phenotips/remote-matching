@@ -117,7 +117,7 @@ public class RemoteMatchingScriptService implements ScriptService
 
             return true;
         } catch (Exception ex) {
-            logger.error("Failed to send request", ex);
+            this.logger.error("Failed to send request", ex);
         }
         return false;
     }
@@ -140,9 +140,9 @@ public class RemoteMatchingScriptService implements ScriptService
                     return resultsList;
                 }
                 OutgoingSearchRequestInterface request =
-                    requestHandler.loadRequest(Long.valueOf(requestIdString), internalPatientService);
+                    requestHandler.loadRequest(Long.valueOf(requestIdString), this.internalPatientService);
 
-                List<PatientSimilarityView> allResults = request.getResults(viewFactory);
+                List<PatientSimilarityView> allResults = request.getResults(this.viewFactory);
                 resultsList.addAll(allResults);
             }
             return resultsList;
@@ -153,7 +153,7 @@ public class RemoteMatchingScriptService implements ScriptService
 
     private XWikiContext getContext()
     {
-        return (XWikiContext) execution.getContext().getProperty("xwikicontext");
+        return (XWikiContext) this.execution.getContext().getProperty("xwikicontext");
     }
 
     private XWiki getWiki(XWikiContext context)

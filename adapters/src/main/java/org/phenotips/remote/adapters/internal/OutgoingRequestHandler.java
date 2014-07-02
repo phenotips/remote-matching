@@ -76,16 +76,16 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
     public OutgoingRequestHandler(BaseObject requestObject, XWiki wiki, XWikiContext context,
         DocumentReferenceResolver<String> resolver) throws XWikiException
     {
-        xwikiRequestObject = requestObject;
-        wikiContext = context;
+        this.xwikiRequestObject = requestObject;
+        this.wikiContext = context;
         this.wiki = wiki;
         String patientId = requestObject.getStringValue("patientId");
         String submitterId = requestObject.getStringValue("submitterId");
 
         BaseObject submitter = XWikiAdapter.getSubmitter(submitterId, wiki, context, resolver);
-        patientDocument = XWikiAdapter.getPatientDoc(patientId, wiki, context);
-        patient = XWikiAdapter.getPatient(patientDocument);
-        baseURL = requestObject.getStringValue(Configuration.REMOTE_BASE_URL_FIELD).trim();
+        this.patientDocument = XWikiAdapter.getPatientDoc(patientId, wiki, context);
+        this.patient = XWikiAdapter.getPatient(this.patientDocument);
+        this.baseURL = requestObject.getStringValue(Configuration.REMOTE_BASE_URL_FIELD).trim();
         this.key = XWikiAdapter.getRemoteConfiguration(this.baseURL, wiki, context).getStringValue(
             Configuration.REMOTE_KEY_FIELD);
         processSubmitter(submitter);
@@ -94,7 +94,7 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
     /** Little hack for updating a request object and not having to write another function into the interface */
     public OutgoingRequestHandler(OutgoingSearchRequestInterface existingRequest, JSONObject json)
     {
-        request = existingRequest;
+        this.request = existingRequest;
         try {
             existingRequest.setExternalId(JSONToMetadataConverter.externalResponseId(json));
 
@@ -102,11 +102,11 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
             try {
                 responseType = JSONToMetadataConverter.responseType(json);
             } catch (JSONException ex) {
-                //FIXME. This can also become a site for bugs.
+                // FIXME. This can also become a site for bugs.
                 if (existingRequest.getResponseType() != null) {
-                    //Let the function continue.
+                    // Let the function continue.
                 } else {
-                    //Assume default (on null)
+                    // Assume default (on null)
                     responseType = Configuration.DEFAULT_NULL_REQUEST_RESPONSE_TYPE;
                 }
             }
@@ -114,15 +114,17 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
                 existingRequest.setResponseType(responseType);
             }
 
-            /* TODO. Figure out if this check is actually needed.
-            If more types of responses are included later on this will become a site for bugs. */
+            /*
+             * TODO. Figure out if this check is actually needed. If more types of responses are included later on this
+             * will become a site for bugs.
+             */
             if (!StringUtils
                 .equalsIgnoreCase(existingRequest.getResponseType(), Configuration.REQUEST_RESPONSE_TYPE_EMAIL))
             {
                 existingRequest.addResults(JSONToMetadataConverter.responseResults(json));
             }
         } catch (JSONException ex) {
-            //Do nothing
+            // Do nothing
         }
     }
 
@@ -133,30 +135,31 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
 
     private void processSubmitter(BaseObject submitter)
     {
-        submitterName = submitter.getStringValue("first_name") + " " + submitter.getStringValue("last_name");
-        submitterEmail = submitter.getStringValue("email");
+        this.submitterName = submitter.getStringValue("first_name") + " " + submitter.getStringValue("last_name");
+        this.submitterEmail = submitter.getStringValue("email");
     }
 
     private Patient getPhenoTipsPatient()
     {
-        return patient;
+        return this.patient;
     }
 
+    @Override
     public OutgoingSearchRequestInterface getRequest()
     {
-        if (request != null) {
-            return request;
+        if (this.request != null) {
+            return this.request;
         }
-        request = new OutgoingSearchRequest();
+        this.request = new OutgoingSearchRequest();
 
-        request.setReferencePatient(getPhenoTipsPatient());
-        request.setKey(key);
-        request.setTargetURL(baseURL);
-        request.setSubmitterName(submitterName);
-        request.setSubmitterEmail(submitterEmail);
-        request.setQueryType(Configuration.DEFAULT_REQUEST_QUERY_TYPE);
+        this.request.setReferencePatient(getPhenoTipsPatient());
+        this.request.setKey(this.key);
+        this.request.setTargetURL(this.baseURL);
+        this.request.setSubmitterName(this.submitterName);
+        this.request.setSubmitterEmail(this.submitterEmail);
+        this.request.setQueryType(Configuration.DEFAULT_REQUEST_QUERY_TYPE);
 
-        return request;
+        return this.request;
     }
 
     @Override
@@ -165,13 +168,13 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
         Transaction t = session.beginTransaction();
 
         Long id;
-        if (request.getRequestId() == null) {
-            id = (Long) session.save(request);
-            xwikiRequestObject.set(Configuration.REMOTE_HIBERNATE_ID, id, wikiContext);
-            wiki.saveDocument(xwikiRequestObject.getOwnerDocument(), wikiContext);
+        if (this.request.getRequestId() == null) {
+            id = (Long) session.save(this.request);
+            this.xwikiRequestObject.set(Configuration.REMOTE_HIBERNATE_ID, id, this.wikiContext);
+            this.wiki.saveDocument(this.xwikiRequestObject.getOwnerDocument(), this.wikiContext);
         } else {
-            session.saveOrUpdate(request);
-            id = request.getRequestId();
+            session.saveOrUpdate(this.request);
+            id = this.request.getRequestId();
         }
 
         t.commit();
@@ -181,9 +184,9 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
     @Override
     public OutgoingSearchRequestInterface loadRequest(Long id, PatientRepository internalService)
     {
-        Transaction t = session.beginTransaction();
+        Transaction t = this.session.beginTransaction();
         OutgoingSearchRequestInterface request = new OutgoingSearchRequest();
-        session.load(request, id);
+        this.session.load(request, id);
         t.commit();
 
         request.setReferencePatient(internalService.getPatientById(request.getReferencePatientId()));
