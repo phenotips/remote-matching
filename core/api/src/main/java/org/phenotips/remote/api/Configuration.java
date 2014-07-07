@@ -73,7 +73,7 @@ public interface Configuration
     String JSON_SUBMITTER_INSTITUTION = "institution";
     String JSON_QUERY_TYPE = "queryType";
     String JSON_REQUEST_ID = "id";
-    String JSON_RESPONSE_ID = "queryId";
+    String JSON_RESPONSE_ID = "queryID";
     String JSON_RESPONSE_TYPE = "responseType";
     String JSON_RESULTS = "results";
     String JSON_DISORDERS = "disorders";
