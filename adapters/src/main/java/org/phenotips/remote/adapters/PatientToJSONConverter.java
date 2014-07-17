@@ -82,7 +82,7 @@ public class PatientToJSONConverter
                         id = ((JSONObject) featureMatch.get("category")).getString("id");
 
                         featureJson.put("id", id);
-                        //FIXME json changed it seems
+                        // FIXME json changed it seems
                         featureJson.put("observed", booleanToYesNo(patientFeature.isPresent()));
                         if (ageOfOnset != null) {
                             featureJson.put(Configuration.JSON_FEATURE_AGE_OF_ONSET, ageOfOnset.getId());
@@ -123,19 +123,16 @@ public class PatientToJSONConverter
         remappedGlobalQualifierStrings.put("global_mode_of_inheritance", "mode_of_inheritance");
 
         JSONObject json = new JSONObject();
-        JSONArray disorders = new JSONArray();
-        JSONArray features = new JSONArray();
 
-        //These are the actual qualifiers, that are remapped to have the keys compliant with the remote JSON standard.
+        // These are the actual qualifiers, that are remapped to have the keys compliant with the remote JSON standard.
         PatientData<ImmutablePair<String, SolrOntologyTerm>> existingQualifiers =
             patient.<ImmutablePair<String, SolrOntologyTerm>>getData("global-qualifiers");
         if (globalQualifiers != null) {
             for (ImmutablePair<String, SolrOntologyTerm> qualifierPair : existingQualifiers) {
                 for (String key : remappedGlobalQualifierStrings.keySet()) {
-                    //Could do contains, but is it safe?
+                    // Could do contains, but is it safe?
                     if (StringUtils.equalsIgnoreCase(qualifierPair.getLeft(), key)) {
-                        globalQualifiers
-                            .put(remappedGlobalQualifierStrings.get(key), qualifierPair.getRight().getId());
+                        globalQualifiers.put(remappedGlobalQualifierStrings.get(key), qualifierPair.getRight().getId());
                         break;
                     }
                 }

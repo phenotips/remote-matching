@@ -50,7 +50,6 @@ import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.Session;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWiki;
@@ -90,15 +89,16 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
     @Named("incoming-json")
     private MultiTypeWrapperInterface<IncomingSearchRequestInterface, JSONObject> requestWrapper;
 
+    @Override
     public JSONObject processHTTPRequest(String stringJson, ExecutorService queue, HttpServletRequest httpRequest)
         throws Exception
     {
-        XWikiContext context = (XWikiContext) execution.getContext().getProperty("xwikicontext");
+        XWikiContext context = (XWikiContext) this.execution.getContext().getProperty("xwikicontext");
 
         /*
-        Is the request authorized? If not, should not be able to continue at all.
-        This is the first, and only line of defence.
-        */
+         * Is the request authorized? If not, should not be able to continue at all. This is the first, and only line of
+         * defence.
+         */
         BaseObject configurationObject = getConfigurationObject(context, httpRequest);
         Integer authorizationStatus = validateRequest(httpRequest, context, configurationObject);
         if (!authorizationStatus.equals(Configuration.HTTP_OK)) {
@@ -107,15 +107,15 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
             return authorizationJSON;
         }
 
-        //FIXME. Should not be requested under Admin.
-//        context.setUserReference(
-//            new DocumentReference(context.getMainXWiki(), Configuration.REST_DEFAULT_USER_SPACE,
-//                Configuration.REST_DEFAULT_USER_NAME));
+        // FIXME. Should not be requested under Admin.
+        // context.setUserReference(
+        // new DocumentReference(context.getMainXWiki(), Configuration.REST_DEFAULT_USER_SPACE,
+        // Configuration.REST_DEFAULT_USER_NAME));
         context.setUserReference(new DocumentReference(context.getMainXWiki(), "XWiki", "Admin"));
 
-        //XWiki cannot find the context through (XWiki) Execution when called inside (Java) Executor.
+        // XWiki cannot find the context through (XWiki) Execution when called inside (Java) Executor.
         Callable<JSONObject> task =
-            new QueueTaskInternalProcessing(stringJson, queue, this, configurationObject, execution.getContext());
+            new QueueTaskInternalProcessing(stringJson, queue, this, configurationObject, this.execution.getContext());
         Future<JSONObject> responseFuture = queue.submit(task);
         return responseFuture.get();
     }
@@ -128,16 +128,16 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
         return XWikiAdapter.getRemoteConfigurationByKey(key, wiki, context);
     }
 
-    private Integer validateRequest(HttpServletRequest httpRequest, XWikiContext context,
-        BaseObject configurationObject) throws XWikiException, UnknownHostException, MalformedURLException
+    private Integer validateRequest(HttpServletRequest httpRequest, XWikiContext context, BaseObject configurationObject)
+        throws XWikiException, UnknownHostException, MalformedURLException
     {
         Boolean isAuthorized;
         String baseURL = configurationObject.getStringValue(Configuration.REMOTE_BASE_URL_FIELD);
         try {
             isAuthorized = validateIP(baseURL, httpRequest.getRemoteAddr());
         } catch (MalformedURLException ex) {
-            logger.error("Could not validate request due the URL being malformed.");
-            logger.error("URL: " + baseURL);
+            this.logger.error("Could not validate request due the URL being malformed.");
+            this.logger.error("URL: " + baseURL);
             ex.printStackTrace();
             return Configuration.HTTP_SERVER_ERROR;
         } catch (UnknownHostException ex) {
@@ -157,38 +157,37 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
         return StringUtils.equalsIgnoreCase(resolvedIP, ip);
     }
 
+    @Override
     public JSONObject internalProcessing(String stringJson, ExecutorService queue, BaseObject configurationObject,
         ExecutionContext executionContext) throws Exception
     {
-        execution.setContext(executionContext);
-        XWikiContext context = (XWikiContext) executionContext.getProperty("xwikicontext");
+        this.execution.setContext(executionContext);
         JSONObject json = JSONObject.fromObject(stringJson);
-        Session session = this.sessionFactory.getSessionFactory().openSession();
 
         RequestHandlerInterface<IncomingSearchRequestInterface> requestHandler =
-            new IncomingRequestHandler(json, patientWrapper, metaWrapper, configurationObject);
+            new IncomingRequestHandler(json, this.patientWrapper, this.metaWrapper, configurationObject);
         IncomingSearchRequestInterface request = requestHandler.getRequest();
         if (!request.getHTTPStatus().equals(Configuration.HTTP_OK)) {
-            return requestWrapper.wrap(request);
+            return this.requestWrapper.wrap(request);
         }
 
         String type = request.getResponseType();
         if (StringUtils.equalsIgnoreCase(type, Configuration.REQUEST_RESPONSE_TYPE_SYNCHRONOUS)) {
-            return requestWrapper.inlineWrap(request);
+            return this.requestWrapper.inlineWrap(request);
         } else if (StringUtils.equalsIgnoreCase(type, Configuration.REQUEST_RESPONSE_TYPE_EMAIL)) {
-            Runnable task =
-                new QueueTaskEmail(requestHandler, requestWrapper, execution.getContext());
+            Runnable task = new QueueTaskEmail(requestHandler, this.requestWrapper, this.execution.getContext());
             queue.submit(task);
         } else if (StringUtils.equalsIgnoreCase(type, Configuration.REQUEST_RESPONSE_TYPE_ASYCHRONOUS)) {
-            Runnable task = new QueueTaskAsyncAnswer(requestHandler, requestWrapper);
+            Runnable task = new QueueTaskAsyncAnswer(requestHandler, this.requestWrapper);
             queue.submit(task);
         }
 
         /*
-        TODO. In case of periodic requests, the request should be saved.
-        */
-//        requestHandler.saveRequest(session);
+         * TODO. In case of periodic requests, the request should be saved.
+         */
+        // Session session = this.sessionFactory.getSessionFactory().openSession();
+        // requestHandler.saveRequest(session);
 
-        return requestWrapper.wrap(request);
+        return this.requestWrapper.wrap(request);
     }
 }

@@ -44,7 +44,6 @@ import com.xpn.xwiki.objects.BaseObject;
 
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * TODO fix the doc
@@ -118,9 +117,8 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
              * TODO. Figure out if this check is actually needed. If more types of responses are included later on this
              * will become a site for bugs.
              */
-            if (!StringUtils
-                .equalsIgnoreCase(existingRequest.getResponseType(), Configuration.REQUEST_RESPONSE_TYPE_EMAIL))
-            {
+            if (!StringUtils.equalsIgnoreCase(existingRequest.getResponseType(),
+                Configuration.REQUEST_RESPONSE_TYPE_EMAIL)) {
                 existingRequest.addResults(JSONToMetadataConverter.responseResults(json));
             }
         } catch (JSONException ex) {
@@ -197,6 +195,6 @@ public class OutgoingRequestHandler implements RequestHandlerInterface<OutgoingS
     public Boolean mail(XWikiContext context,
         MultiTypeWrapperInterface<IncomingSearchRequestInterface, JSONObject> wrapper)
     {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 }

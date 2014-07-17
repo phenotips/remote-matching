@@ -38,7 +38,6 @@ import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 
@@ -59,7 +58,7 @@ public class OutgoingSearchRequest extends AbstractRequest implements OutgoingSe
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "requestentity")
     @Cascade({CascadeType.ALL})
-//    @JoinColumn(name="RESULT_HP_ID")
+    // @JoinColumn(name="RESULT_HP_ID")
     public Set<HibernatePatient> results = new HashSet<HibernatePatient>();
 
     public OutgoingSearchRequest()
@@ -67,7 +66,8 @@ public class OutgoingSearchRequest extends AbstractRequest implements OutgoingSe
 
     }
 
-    @Override protected String getURLSuffix() throws Exception
+    @Override
+    protected String getURLSuffix() throws Exception
     {
         if (getKey() == null) {
             throw new Exception("No key is set");
@@ -75,10 +75,11 @@ public class OutgoingSearchRequest extends AbstractRequest implements OutgoingSe
         return Configuration.REMOTE_URL_SEARCH_EXTENSION + getKey();
     }
 
+    @Override
     public List<PatientSimilarityView> getResults(PatientSimilarityViewFactory viewFactory)
     {
         List<PatientSimilarityView> patientSimilarityViews = new LinkedList<PatientSimilarityView>();
-        for (Patient patient : results) {
+        for (Patient patient : this.results) {
             patientSimilarityViews.add(viewFactory.makeSimilarPatient(patient, getReferencePatient()));
         }
         return patientSimilarityViews;
@@ -91,38 +92,31 @@ public class OutgoingSearchRequest extends AbstractRequest implements OutgoingSe
         this.referencePatientId = referencePatient.getId();
     }
 
+    @Override
     public Patient getReferencePatient() throws NullPointerException
     {
-        if (referencePatient != null) {
-            return referencePatient;
+        if (this.referencePatient != null) {
+            return this.referencePatient;
         } else {
             throw new NullPointerException(
                 "Reference patient is not set. Likely cause is this class instance being loaded from database");
         }
     }
 
-    public String getReferencePatientId() { return referencePatientId; }
+    @Override
+    public String getReferencePatientId()
+    {
+        return this.referencePatientId;
+    }
 
+    @Override
     public void addResults(Set<HibernatePatientInterface> results)
     {
-        for (HibernatePatientInterface patient: results) {
+        for (HibernatePatientInterface patient : results) {
             patient.setParent(this);
             this.results.add((HibernatePatient) patient);
         }
     }
-
-    private int convertTextToIntBool(String text)
-    {
-        if (StringUtils.equalsIgnoreCase(text, "yes")) {
-            return 1;
-        } else if (StringUtils.equalsIgnoreCase(text, "no")) {
-            return -1;
-        } else {
-            return 0;
-        }
-    }
-
-
 
     public Integer getResponseStatus()
     {

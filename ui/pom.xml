@@ -76,7 +76,6 @@
       <plugin>
         <groupId>org.xwiki.commons</groupId>
         <artifactId>xwiki-commons-tool-xar-plugin</artifactId>
-        <version>${xwiki.version}</version>
       </plugin>
     </plugins>
   </build>
