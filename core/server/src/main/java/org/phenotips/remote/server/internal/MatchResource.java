@@ -65,9 +65,9 @@ public class MatchResource extends XWikiResource implements MatchInterface
         try {
             ContextSetter.set(context);
 
-            //Using futures to queue tasks and to retrieve results.
+            // Using futures to queue tasks and to retrieve results.
             ExecutorService queue = Executors.newSingleThreadExecutor();
-            jsonResponse = requestProcessor.processHTTPRequest(json, queue, httpRequest);
+            jsonResponse = this.requestProcessor.processHTTPRequest(json, queue, httpRequest);
         } catch (Exception ex) {
             Logger logger = LoggerFactory.getLogger(MatchResource.class);
             logger.error("Could not process request due to the following error: {}", ex.getMessage(), ex);

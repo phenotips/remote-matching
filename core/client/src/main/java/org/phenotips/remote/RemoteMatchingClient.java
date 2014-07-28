@@ -67,13 +67,13 @@ public class RemoteMatchingClient
         return EntityUtils.toString(httpResponse.getEntity());
     }
 
-    //FIXME. Should re-try on fail.
+    // FIXME. Should re-try on fail.
     public static void sendAsyncAnswer(IncomingSearchRequestInterface request,
         MultiTypeWrapperInterface<IncomingSearchRequestInterface, JSONObject> wrapper) throws Exception
     {
         JSONArray json = wrapper.asyncWrap(request);
 
-        //FIXME. Check status, return null.
+        // FIXME. Check status, return null.
         RemoteMatchingClient.send(request, json).close();
     }
 

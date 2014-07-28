@@ -38,8 +38,7 @@ import javax.persistence.Transient;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Class for storing an incoming request outside the main PhenoTips database for privacy reasons. It is a combination
- * of
+ * Class for storing an incoming request outside the main PhenoTips database for privacy reasons. It is a combination of
  * a Patient interface, and a Request interface. Some functions, such as getId are ambiguous, because they can apply
  * both to the patient and the request. However, this seems to be the lesser evil at this time.
  *
@@ -56,7 +55,8 @@ public class IncomingSearchRequest extends AbstractRequest implements IncomingSe
     private Integer httpStatus = Configuration.HTTP_OK;
 
     public IncomingSearchRequest()
-    {}
+    {
+    }
 
     @Override
     protected String getURLSuffix() throws Exception
@@ -67,39 +67,49 @@ public class IncomingSearchRequest extends AbstractRequest implements IncomingSe
         return "";
     }
 
+    @Override
     public void setReferencePatient(HibernatePatientInterface patient)
     {
-        referencePatient = (HibernatePatient) patient;
+        this.referencePatient = (HibernatePatient) patient;
     }
 
+    @Override
     public HibernatePatientInterface getReferencePatient() throws IllegalArgumentException
     {
-        if (referencePatient == null) {
-            //FIXME. This should be custom.
-            httpStatus = Configuration.HTTP_BAD_REQUEST;
+        if (this.referencePatient == null) {
+            // FIXME. This should be custom.
+            this.httpStatus = Configuration.HTTP_BAD_REQUEST;
             throw new IllegalArgumentException("The reference patient for the incoming request has not been set");
         }
-        return referencePatient;
+        return this.referencePatient;
     }
 
+    @Override
     public List<PatientSimilarityView> getResults(SimilarPatientsFinder finder) throws IllegalArgumentException
     {
         try {
             return finder.findSimilarPatients(getReferencePatient());
         } catch (IllegalArgumentException ex) {
-            httpStatus = Configuration.HTTP_BAD_REQUEST;
+            this.httpStatus = Configuration.HTTP_BAD_REQUEST;
             return null;
         }
     }
 
-    public Integer getHttpStatus() { return httpStatus; }
+    public Integer getHttpStatus()
+    {
+        return this.httpStatus;
+    }
 
-//    public String getExternalId() { return "RemoteRequest" + id; }
-    public String getExternalId() { return id == null ? super.getExternalId() : id.toString(); }
+    // public String getExternalId() { return "RemoteRequest" + id; }
+    @Override
+    public String getExternalId()
+    {
+        return this.id == null ? super.getExternalId() : this.id.toString();
+    }
 
     public DocumentReference getDocument()
     {
-        //FIXME this is ugly. Can't leave empty.
+        // FIXME this is ugly. Can't leave empty.
         DocumentReference fakeReference = new DocumentReference("xwiki", "data", "0");
         return fakeReference;
     }
@@ -115,7 +125,8 @@ public class IncomingSearchRequest extends AbstractRequest implements IncomingSe
         this.httpStatus = httpStatus;
     }
 
-    @Override public Integer getHTTPStatus()
+    @Override
+    public Integer getHTTPStatus()
     {
         return this.httpStatus;
     }

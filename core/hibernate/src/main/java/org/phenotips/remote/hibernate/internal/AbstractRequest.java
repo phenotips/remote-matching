@@ -32,10 +32,10 @@ import javax.persistence.Table;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * This class combines shared functions between the different search request types ({@link
- * org.phenotips.remote.hibernate.internal.OutgoingSearchRequest},
- * {@link org.phenotips.remote.hibernate.internal.IncomingSearchRequest}).
- * The children of this class are made persistent by Hibernate.
+ * This class combines shared functions between the different search request types (
+ * {@link org.phenotips.remote.hibernate.internal.OutgoingSearchRequest},
+ * {@link org.phenotips.remote.hibernate.internal.IncomingSearchRequest}). The children of this class are made
+ * persistent by Hibernate.
  */
 @Entity
 @Inheritance
@@ -76,7 +76,7 @@ public abstract class AbstractRequest implements RequestInterface
     @Override
     public Long getRequestId()
     {
-        return id;
+        return this.id;
     }
 
     @Override
@@ -98,7 +98,7 @@ public abstract class AbstractRequest implements RequestInterface
     @Override
     public String getTargetURL()
     {
-        return url;
+        return this.url;
     }
 
     @Override
@@ -110,7 +110,7 @@ public abstract class AbstractRequest implements RequestInterface
     @Override
     public String getSubmitterName()
     {
-        return submitterName;
+        return this.submitterName;
     }
 
     @Override
@@ -122,7 +122,7 @@ public abstract class AbstractRequest implements RequestInterface
     @Override
     public String getSubmitterEmail()
     {
-        return submitterEmail;
+        return this.submitterEmail;
     }
 
     @Override
@@ -134,7 +134,7 @@ public abstract class AbstractRequest implements RequestInterface
     @Override
     public String getSubmitterInstitution()
     {
-        return submitterInstitution;
+        return this.submitterInstitution;
     }
 
     @Override
@@ -145,13 +145,13 @@ public abstract class AbstractRequest implements RequestInterface
 
     protected String getKey()
     {
-        return key;
+        return this.key;
     }
 
     @Override
     public String getQueryType()
     {
-        return queryType;
+        return this.queryType;
     }
 
     @Override
@@ -169,7 +169,7 @@ public abstract class AbstractRequest implements RequestInterface
     @Override
     public String getResponseType()
     {
-        return responseType;
+        return this.responseType;
     }
 
     @Override
@@ -181,6 +181,6 @@ public abstract class AbstractRequest implements RequestInterface
     @Override
     public String getExternalId()
     {
-        return externalId;
+        return this.externalId;
     }
 }

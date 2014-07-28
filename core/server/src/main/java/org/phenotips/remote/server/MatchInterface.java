@@ -45,7 +45,7 @@ public interface MatchInterface
      * TODO fix the doc.
      */
     @Consumes(MediaType.APPLICATION_JSON)
-    @POST Response matchPost(String json)
+    @POST
+    Response matchPost(String json)
         throws XWikiRestException, XWikiException;
 }
-

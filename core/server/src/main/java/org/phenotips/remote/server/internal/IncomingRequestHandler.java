@@ -73,43 +73,42 @@ public class IncomingRequestHandler implements RequestHandlerInterface<IncomingS
     @Override
     public IncomingSearchRequestInterface getRequest()
     {
-        if (request != null) {
-            return request;
+        if (this.request != null) {
+            return this.request;
         }
 
-        request = metaWrapper.wrap(json);
-        if (!request.getHTTPStatus().equals(Configuration.HTTP_OK)) {
-            return request;
+        this.request = this.metaWrapper.wrap(this.json);
+        if (!this.request.getHTTPStatus().equals(Configuration.HTTP_OK)) {
+            return this.request;
         }
 
-        //If the original request contains a response type, do not change it.
-        if (StringUtils.isBlank(request.getResponseType())) {
-            request.setResponseType(configuredResponseType);
+        // If the original request contains a response type, do not change it.
+        if (StringUtils.isBlank(this.request.getResponseType())) {
+            this.request.setResponseType(this.configuredResponseType);
         }
         /**
-         * URL must always be set after! the response type is. Although it is a design hole,
-         * at the same time it can never fully be mitigated, even if the the process which determines the final url
-         * is given to the getTargetURL function.
-         * On second thought it's a FIXME
+         * URL must always be set after! the response type is. Although it is a design hole, at the same time it can
+         * never fully be mitigated, even if the the process which determines the final url is given to the getTargetURL
+         * function. On second thought it's a FIXME
          */
-        request.setTargetURL(baseURL);
+        this.request.setTargetURL(this.baseURL);
 
-        if (StringUtils.equals(request.getResponseType(), Configuration.REQUEST_RESPONSE_TYPE_EMAIL) &&
-            StringUtils.isBlank(request.getSubmitterEmail()))
+        if (StringUtils.equals(this.request.getResponseType(), Configuration.REQUEST_RESPONSE_TYPE_EMAIL) &&
+            StringUtils.isBlank(this.request.getSubmitterEmail()))
         {
-            request.setHTTPStatus(Configuration.HTTP_BAD_REQUEST);
-            return request;
+            this.request.setHTTPStatus(Configuration.HTTP_BAD_REQUEST);
+            return this.request;
         }
 
-        HibernatePatientInterface hibernatePatient = patientWrapper.wrap(JSONObject.fromObject(json));
+        HibernatePatientInterface hibernatePatient = this.patientWrapper.wrap(JSONObject.fromObject(this.json));
         if (hibernatePatient == null) {
-            request.setHTTPStatus(Configuration.HTTP_BAD_REQUEST);
-            return request;
+            this.request.setHTTPStatus(Configuration.HTTP_BAD_REQUEST);
+            return this.request;
         }
 
-        request.setReferencePatient(hibernatePatient);
+        this.request.setReferencePatient(hibernatePatient);
 
-        return request;
+        return this.request;
     }
 
     @Override
@@ -117,11 +116,11 @@ public class IncomingRequestHandler implements RequestHandlerInterface<IncomingS
     {
         Transaction t = session.beginTransaction();
         Long id;
-        if (request.getRequestId() == null) {
-            id = (Long) session.save(request);
+        if (this.request.getRequestId() == null) {
+            id = (Long) session.save(this.request);
         } else {
-            session.saveOrUpdate(request);
-            id = request.getRequestId();
+            session.saveOrUpdate(this.request);
+            id = this.request.getRequestId();
         }
         t.commit();
 
@@ -141,9 +140,9 @@ public class IncomingRequestHandler implements RequestHandlerInterface<IncomingS
         try {
             MailSenderPlugin mailSender =
                 (MailSenderPlugin) context.getWiki().getPlugin(Configuration.MAIL_SENDER, context);
-            //The mail object should be constructed in the wrapper.
-            Mail mail = new Mail(Configuration.EMAIL_FROM_ADDRESS, request.getSubmitterEmail(), null, null,
-                Configuration.EMAIL_SUBJECT, "", wrapper.mailWrap(request));
+            // The mail object should be constructed in the wrapper.
+            Mail mail = new Mail(Configuration.EMAIL_FROM_ADDRESS, this.request.getSubmitterEmail(), null, null,
+                Configuration.EMAIL_SUBJECT, "", wrapper.mailWrap(this.request));
             mailSender.sendMail(mail, context);
         } catch (MessagingException | UnsupportedEncodingException ex) {
             return false;

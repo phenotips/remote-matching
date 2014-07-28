@@ -52,8 +52,8 @@ import net.sf.json.JSONObject;
 @Component("org.phenotips.remote.server.internal.MatchResultsResource")
 public class MatchResultsResource extends XWikiResource implements MatchResultsInterface
 {
-    //    @Inject
-//    RequestProcessorInterface requestProcessor;
+    // @Inject
+    // RequestProcessorInterface requestProcessor;
     @Inject
     private HibernateSessionFactory sessionFactory;
 
@@ -68,8 +68,8 @@ public class MatchResultsResource extends XWikiResource implements MatchResultsI
             XWikiContext context = this.getXWikiContext();
             JSONArray jsonResponse;
 
-            //FIXME. Should the response here be verified? Well, yes, but how pressing is it?
-//            HttpServletRequest httpRequest = context.getRequest().getHttpServletRequest();
+            // FIXME. Should the response here be verified? Well, yes, but how pressing is it?
+            // HttpServletRequest httpRequest = context.getRequest().getHttpServletRequest();
             Session session = this.sessionFactory.getSessionFactory().openSession();
             ContextSetter.set(context);
 
@@ -80,13 +80,14 @@ public class MatchResultsResource extends XWikiResource implements MatchResultsI
                 try {
                     JSONObject response = (JSONObject) responseUC;
                     String id = JSONToMetadataConverter.externalResponseId(response);
-                    //FIXME
+                    // FIXME
                     OutgoingSearchRequestInterface request =
-                        requestHandler.loadRequest(Long.parseLong(id), internalPatientService);
-                    RequestHandlerInterface<OutgoingSearchRequestInterface> handler = new OutgoingRequestHandler(request, response);
+                        requestHandler.loadRequest(Long.parseLong(id), this.internalPatientService);
+                    RequestHandlerInterface<OutgoingSearchRequestInterface> handler =
+                        new OutgoingRequestHandler(request, response);
                     handler.saveRequest(session);
                 } catch (Exception ex) {
-                    //FIXME. Nothing to do for now. Probably should be logged.
+                    // FIXME. Nothing to do for now. Probably should be logged.
                 }
             }
             return Response.status(Configuration.HTTP_OK).build();

@@ -57,7 +57,7 @@ public class OutgoingSearchRequest extends AbstractRequest implements OutgoingSe
     private Patient referencePatient;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "requestentity")
-    @Cascade({CascadeType.ALL})
+    @Cascade({ CascadeType.ALL })
     // @JoinColumn(name="RESULT_HP_ID")
     public Set<HibernatePatient> results = new HashSet<HibernatePatient>();
 

@@ -46,15 +46,17 @@ public class QueueTaskInternalProcessing implements Callable<JSONObject>
         RequestProcessorInterface _requestProcessor, BaseObject _configurationObject,
         ExecutionContext _executionContext)
     {
-        stringJson = _stringJson;
-        queue = _queue;
-        requestProcessor = _requestProcessor;
-        configurationObject = _configurationObject;
-        executionContext = _executionContext;
+        this.stringJson = _stringJson;
+        this.queue = _queue;
+        this.requestProcessor = _requestProcessor;
+        this.configurationObject = _configurationObject;
+        this.executionContext = _executionContext;
     }
 
-    @Override public JSONObject call() throws Exception
+    @Override
+    public JSONObject call() throws Exception
     {
-        return requestProcessor.internalProcessing(stringJson, queue, configurationObject, executionContext);
+        return this.requestProcessor.internalProcessing(this.stringJson, this.queue, this.configurationObject,
+            this.executionContext);
     }
 }

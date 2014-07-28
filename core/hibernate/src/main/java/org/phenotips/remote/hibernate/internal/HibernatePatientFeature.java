@@ -78,14 +78,16 @@ public class HibernatePatientFeature implements HibernatePatientFeatureInterface
     @Override
     public void setParent(HibernatePatientInterface patient)
     {
-        hibernatepatient = (HibernatePatient) patient;
+        this.hibernatepatient = (HibernatePatient) patient;
     }
 
+    @Override
     public String getId()
     {
-        return id;
+        return this.id;
     }
 
+    @Override
     public String getName()
     {
         if (this.name != null) {
@@ -105,27 +107,31 @@ public class HibernatePatientFeature implements HibernatePatientFeatureInterface
         return this.id;
     }
 
+    @Override
     public String getType()
     {
-        if (present == 1) {
+        if (this.present == 1) {
             return "phenotype";
-        } else if (present == -1) {
+        } else if (this.present == -1) {
             return "negative_phenotype";
         } else {
             return "";
         }
     }
 
+    @Override
     public boolean isPresent()
     {
-        return present == 1;
+        return this.present == 1;
     }
 
+    @Override
     public Map<String, ? extends FeatureMetadatum> getMetadata()
     {
         return new HashMap<String, FeatureMetadatum>();
     }
 
+    @Override
     public JSONObject toJSON()
     {
         JSONObject result = new JSONObject();
@@ -143,20 +149,25 @@ public class HibernatePatientFeature implements HibernatePatientFeatureInterface
         return result;
     }
 
-    public void setId(String newId) {
+    @Override
+    public void setId(String newId)
+    {
         this.id = newId;
     }
 
+    @Override
     public void setPresent(Integer isPresent)
     {
-        present = isPresent;
+        this.present = isPresent;
     }
 
+    @Override
     public String getValue()
     {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public String getNotes()
     {
         throw new UnsupportedOperationException();

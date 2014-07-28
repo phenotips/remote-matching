@@ -32,21 +32,20 @@ public class QueueTaskAsyncAnswer implements Runnable
 
     private MultiTypeWrapperInterface<IncomingSearchRequestInterface, JSONObject> requestWrapper;
 
-
     public QueueTaskAsyncAnswer(RequestHandlerInterface<IncomingSearchRequestInterface> _requestHandler,
         MultiTypeWrapperInterface<IncomingSearchRequestInterface, JSONObject> _requestWrapper)
     {
-        requestHandler = _requestHandler;
-        requestWrapper = _requestWrapper;
+        this.requestHandler = _requestHandler;
+        this.requestWrapper = _requestWrapper;
     }
 
     @Override
     public void run()
     {
         try {
-            RemoteMatchingClient.sendAsyncAnswer(requestHandler.getRequest(), requestWrapper);
+            RemoteMatchingClient.sendAsyncAnswer(this.requestHandler.getRequest(), this.requestWrapper);
         } catch (Exception ex) {
-            //Do nothing
+            // Do nothing
         }
     }
 }

@@ -44,9 +44,9 @@ public class QueueTaskEmail implements Runnable
         MultiTypeWrapperInterface<IncomingSearchRequestInterface, JSONObject> _requestWrapper,
         ExecutionContext _executionContext)
     {
-        requestHandler = _requestHandler;
-        requestWrapper = _requestWrapper;
-        executionContext = _executionContext;
+        this.requestHandler = _requestHandler;
+        this.requestWrapper = _requestWrapper;
+        this.executionContext = _executionContext;
     }
 
     @Override
@@ -56,13 +56,13 @@ public class QueueTaskEmail implements Runnable
             EmbeddableComponentManager componentManager = new EmbeddableComponentManager();
             componentManager.initialize(this.getClass().getClassLoader());
             Execution execution = componentManager.getInstance(Execution.class);
-            execution.setContext(executionContext);
-            XWikiContext context = (XWikiContext) executionContext.getProperty("xwikicontext");
+            execution.setContext(this.executionContext);
+            XWikiContext context = (XWikiContext) this.executionContext.getProperty("xwikicontext");
 
-            requestHandler.mail(context, requestWrapper);
+            this.requestHandler.mail(context, this.requestWrapper);
             componentManager.dispose();
         } catch (ComponentLookupException ex) {
-            //There is nothing that can be done.
+            // There is nothing that can be done.
         }
     }
 }

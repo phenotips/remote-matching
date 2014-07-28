@@ -62,11 +62,11 @@ public class HibernatePatient implements HibernatePatientInterface
     public AbstractRequest requestentity;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "hibernatepatient")
-    @Cascade({CascadeType.ALL})
+    @Cascade({ CascadeType.ALL })
     public Set<HibernatePatientFeature> features = new HashSet<HibernatePatientFeature>();
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "hibernatepatient")
-    @Cascade({CascadeType.ALL})
+    @Cascade({ CascadeType.ALL })
     public Set<HibernatePatientDisorder> disorders = new HashSet<HibernatePatientDisorder>();
 
     public HibernatePatient()
@@ -74,27 +74,31 @@ public class HibernatePatient implements HibernatePatientInterface
 
     }
 
+    @Override
     public void addFeatures(Set<HibernatePatientFeatureInterface> featureSet)
     {
         for (HibernatePatientFeatureInterface feature : featureSet) {
             feature.setParent(this);
-            features.add((HibernatePatientFeature) feature);
+            this.features.add((HibernatePatientFeature) feature);
         }
     }
 
+    @Override
     public void addDisorders(Set<HibernatePatientDisorderInterface> disorderSet)
     {
         for (HibernatePatientDisorderInterface disorder : disorderSet) {
             disorder.setParent(this);
-            disorders.add((HibernatePatientDisorder) disorder);
+            this.disorders.add((HibernatePatientDisorder) disorder);
         }
     }
 
+    @Override
     public String getId()
     {
-        return "RemotePatient" + id;
+        return "RemotePatient" + this.id;
     }
 
+    @Override
     public String getExternalId()
     {
         throw new UnsupportedOperationException();
@@ -103,47 +107,55 @@ public class HibernatePatient implements HibernatePatientInterface
     @Override
     public void setParent(RequestInterface request)
     {
-        requestentity = (AbstractRequest) request;
+        this.requestentity = (AbstractRequest) request;
     }
 
+    @Override
     public DocumentReference getDocument()
     {
-        //FIXME this is ugly. Can't leave empty.
+        // FIXME this is ugly. Can't leave empty.
         DocumentReference fakeReference = new DocumentReference("xwiki", "data", "0");
         return fakeReference;
     }
 
+    @Override
     public DocumentReference getReporter()
     {
         return new DocumentReference("xwiki", "XWiki", "Undisclosed");
     }
 
+    @Override
     public Set<? extends Feature> getFeatures()
     {
-//        return new HashSet<Feature>();
-        return features;
+        // return new HashSet<Feature>();
+        return this.features;
     }
 
+    @Override
     public Set<? extends Disorder> getDisorders()
     {
         return new HashSet<Disorder>();
     }
 
+    @Override
     public <T> PatientData<T> getData(String name)
     {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public JSONObject toJSON()
     {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public JSONObject toJSON(Collection<String> onlyFieldNames)
     {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void updateFromJSON(JSONObject json)
     {
         throw new UnsupportedOperationException();

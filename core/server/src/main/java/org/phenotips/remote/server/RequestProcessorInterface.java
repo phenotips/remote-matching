@@ -38,5 +38,6 @@ public interface RequestProcessorInterface
 {
     JSONObject processHTTPRequest(String json, ExecutorService queue, HttpServletRequest httpRequest) throws Exception;
 
-    JSONObject internalProcessing(String json, ExecutorService queue, BaseObject configurationObject, ExecutionContext executionContext) throws Exception;
+    JSONObject internalProcessing(String json, ExecutorService queue, BaseObject configurationObject,
+        ExecutionContext executionContext) throws Exception;
 }
