@@ -56,7 +56,6 @@ import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xpn.xwiki.store.hibernate.HibernateSessionFactory;
 
 import net.sf.json.JSONObject;
 
@@ -67,10 +66,6 @@ import net.sf.json.JSONObject;
 @Singleton
 public class IncomingSearchRequestProcessor implements RequestProcessorInterface
 {
-    /** Handles persistence. */
-    @Inject
-    private HibernateSessionFactory sessionFactory;
-
     @Inject
     private Logger logger;
 

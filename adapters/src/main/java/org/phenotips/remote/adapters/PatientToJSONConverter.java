@@ -122,8 +122,6 @@ public class PatientToJSONConverter
         remappedGlobalQualifierStrings.put("global_age_of_onset", "age_of_onset");
         remappedGlobalQualifierStrings.put("global_mode_of_inheritance", "mode_of_inheritance");
 
-        JSONObject json = new JSONObject();
-
         // These are the actual qualifiers, that are remapped to have the keys compliant with the remote JSON standard.
         PatientData<ImmutablePair<String, SolrOntologyTerm>> existingQualifiers =
             patient.<ImmutablePair<String, SolrOntologyTerm>>getData("global-qualifiers");
