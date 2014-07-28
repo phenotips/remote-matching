@@ -38,6 +38,7 @@ public class PatientToJSONWrapper implements WrapperInterface<Patient, Map<Strin
         this.isPrivate = isPrivate.length > 0 ? isPrivate[0] : false;
     }
 
+    @Override
     public Map<String, Object> wrap(Patient patient)
     {
         Map<String, Object> json = new HashMap<String, Object>();
@@ -46,10 +47,10 @@ public class PatientToJSONWrapper implements WrapperInterface<Patient, Map<Strin
             json.put("gender", PatientToJSONConverter.gender(patient));
             json.putAll(PatientToJSONConverter.globalQualifiers(patient));
         } catch (Exception ex) {
-            //Do nothing. These are optional.
+            // Do nothing. These are optional.
         }
         json.put("disorders", PatientToJSONConverter.disorders(patient));
-        if (!isPrivate) {
+        if (!this.isPrivate) {
             json.put("features", PatientToJSONConverter.features(patient));
         } else {
             json.put("features", PatientToJSONConverter.nonPersonalFeatures(patient));

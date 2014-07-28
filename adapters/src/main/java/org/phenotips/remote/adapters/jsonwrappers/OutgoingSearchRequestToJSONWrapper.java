@@ -48,6 +48,7 @@ public class OutgoingSearchRequestToJSONWrapper implements WrapperInterface<Outg
         this.context = context;
     }
 
+    @Override
     public JSONObject wrap(OutgoingSearchRequestInterface request)
     {
         JSONObject json = new JSONObject();
@@ -56,12 +57,12 @@ public class OutgoingSearchRequestToJSONWrapper implements WrapperInterface<Outg
         try {
             reference = request.getReferencePatient();
         } catch (NullPointerException ex) {
-            //FIXME. The second catch can lead to bugs, but it should not.
+            // FIXME. The second catch can lead to bugs, but it should not.
             try {
-                reference = XWikiAdapter.getPatient(request.getReferencePatientId(), wiki, context);
+                reference = XWikiAdapter.getPatient(request.getReferencePatientId(), this.wiki, this.context);
             } catch (XWikiException wEx) {
-                //Should not happen. If the id of the patient does not exist, an error should have been thrown before
-                //this code is executed.
+                // Should not happen. If the id of the patient does not exist, an error should have been thrown before
+                // this code is executed.
             }
         }
         if (reference == null) {

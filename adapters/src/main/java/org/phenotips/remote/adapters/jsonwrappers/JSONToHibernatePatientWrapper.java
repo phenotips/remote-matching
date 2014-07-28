@@ -41,6 +41,7 @@ import net.sf.json.JSONObject;
 @Named("json-patient")
 public class JSONToHibernatePatientWrapper implements WrapperInterface<JSONObject, HibernatePatientInterface>
 {
+    @Override
     public HibernatePatientInterface wrap(JSONObject json)
     {
         HibernatePatientInterface patient = new HibernatePatient();

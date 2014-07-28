@@ -47,9 +47,8 @@ public class JSONToMetadataConverter
             throw new Exception("There is no submitter information");
         }
 
-        String[] keys =
-            {Configuration.JSON_SUBMITTER_NAME, Configuration.JSON_SUBMITTER_EMAIL,
-                Configuration.JSON_SUBMITTER_INSTITUTION};
+        String[] keys = { Configuration.JSON_SUBMITTER_NAME, Configuration.JSON_SUBMITTER_EMAIL,
+            Configuration.JSON_SUBMITTER_INSTITUTION };
         Map<String, String> submitterMap = new HashMap<String, String>();
         for (String key : keys) {
             Object valueObject = submitter.get(key);

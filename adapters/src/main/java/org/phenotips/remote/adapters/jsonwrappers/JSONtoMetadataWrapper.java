@@ -51,7 +51,7 @@ public class JSONtoMetadataWrapper implements WrapperInterface<JSONObject, Incom
             // Do nothing
         }
 
-        //FIXME. Not enough integrity checking.
+        // FIXME. Not enough integrity checking.
         try {
             request.setExternalId(JSONToMetadataConverter.externalRequestId(json));
 
