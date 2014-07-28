@@ -63,8 +63,8 @@
   </properties>
 
   <modules>
-    <module>adapters</module>
     <module>core</module>
+    <module>adapters</module>
     <module>ui</module>
     <module>standalone-patch</module>
   </modules>
