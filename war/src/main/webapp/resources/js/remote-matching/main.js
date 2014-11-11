@@ -23,8 +23,12 @@ var RemoteMatching = (function (RemoteMatching)
     // Start augmentation.
     var outgoingRequest = RemoteMatching.outgoingRequest = RemoteMatching.outgoingRequest || {};
 
+    console.log("AA1");
+
     require(['jquery'], function ($)
     {
+        console.log("AA2");
+
         outgoingRequest.simpleAjaxCall = function (url, data, domObj)
         {
             $.get(url, data, function (response)
@@ -32,6 +36,8 @@ var RemoteMatching = (function (RemoteMatching)
 //                domObj.html(response);
             });
         };
+
+        console.log("AA3");
 
         $("div.remoteSearch span.buttonwrapper a").click(function (event)
         {

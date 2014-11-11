@@ -77,43 +77,42 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
     </humanReadableName>
-    <mutuallyAccepted>
-      <customDisplay/>
-      <defaultValue/>
-      <disabled>0</disabled>
-      <displayFormType>checkbox</displayFormType>
-      <displayType/>
-      <name>mutuallyAccepted</name>
-      <number>5</number>
-      <prettyName>Mutually Accepted</prettyName>
-      <unmodifiable>0</unmodifiable>
-      <validationMessage/>
-      <validationRegExp/>
-      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
-    </mutuallyAccepted>
     <remoteAuthToken>
       <customDisplay/>
       <disabled>0</disabled>
       <name>remoteAuthToken</name>
       <number>2</number>
       <picker>0</picker>
-      <prettyName>Authentication Token</prettyName>
+      <prettyName>Remote Authentication Token (for sending requests to the server)</prettyName>
       <size>30</size>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
     </remoteAuthToken>
-    <responseFormat>
+    <localAuthToken>
+      <customDisplay/>
+      <disabled>0</disabled>
+      <name>localAuthToken</name>
+      <number>2</number>
+      <picker>0</picker>
+      <prettyName>Local Authentication Token (should be provided by the server to send requests here)</prettyName>
+      <size>30</size>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+    </localAuthToken>
+    <defaultResponseFormat>
       <cache>0</cache>
       <customDisplay/>
       <disabled>0</disabled>
       <displayType>select</displayType>
       <multiSelect>0</multiSelect>
-      <name>responseFormat</name>
+      <name>defaultResponseFormat</name>
       <number>4</number>
       <picker>0</picker>
-      <prettyName>Accepted Response Format</prettyName>
+      <prettyName>Default Response Format</prettyName>
       <relationalStorage>0</relationalStorage>
       <separator> </separator>
       <separators> ,|</separators>
@@ -124,7 +123,7 @@
       <validationRegExp/>
       <values>inline|asynchronous|email</values>
       <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
-    </responseFormat>
+    </defaultResponseFormat>
   </class>
   <content/>
 </xwikidoc>

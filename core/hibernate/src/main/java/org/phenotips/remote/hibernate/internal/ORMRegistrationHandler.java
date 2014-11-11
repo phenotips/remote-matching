@@ -38,7 +38,7 @@ import com.xpn.xwiki.store.hibernate.HibernateSessionFactory;
 /**
  * TODO fix the doc
  * Registers the IncomingSearchRequest with Hibernate
- * 
+ *
  * @version $Id$
  * @since 1.0M10
  */
@@ -67,10 +67,11 @@ public class ORMRegistrationHandler implements EventListener
     public void onEvent(Event event, Object source, Object data)
     {
         Configuration configuration = this.sessionFactory.getConfiguration();
-        configuration.addAnnotatedClass(IncomingSearchRequest.class);
-        configuration.addAnnotatedClass(OutgoingSearchRequest.class);
+        configuration.addAnnotatedClass(DefaultIncomingSearchRequest.class);
+        configuration.addAnnotatedClass(DefaultOutgoingSearchRequest.class);
         configuration.addAnnotatedClass(HibernatePatientFeature.class);
         configuration.addAnnotatedClass(HibernatePatientDisorder.class);
+        configuration.addAnnotatedClass(HibernatePatientGene.class);
         configuration.addAnnotatedClass(HibernatePatient.class);
     }
 }

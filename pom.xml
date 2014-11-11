@@ -64,7 +64,6 @@
 
   <modules>
     <module>core</module>
-    <module>adapters</module>
     <module>ui</module>
     <module>standalone-patch</module>
   </modules>

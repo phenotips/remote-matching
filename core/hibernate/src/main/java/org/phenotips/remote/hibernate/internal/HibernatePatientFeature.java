@@ -23,8 +23,8 @@ import org.phenotips.components.ComponentManagerRegistry;
 import org.phenotips.data.FeatureMetadatum;
 import org.phenotips.ontology.OntologyManager;
 import org.phenotips.ontology.OntologyTerm;
-import org.phenotips.remote.api.HibernatePatientFeatureInterface;
-import org.phenotips.remote.api.HibernatePatientInterface;
+import org.phenotips.remote.api.MatchingPatientFeature;
+import org.phenotips.remote.api.MatchingPatient;
 
 import org.xwiki.component.manager.ComponentLookupException;
 
@@ -52,7 +52,7 @@ import net.sf.json.JSONObject;
  * FIXME. Must extends the AbstractPhenoTipsOntologyProperty
  */
 @Entity
-public class HibernatePatientFeature implements HibernatePatientFeatureInterface
+public class HibernatePatientFeature implements MatchingPatientFeature
 {
     @Id
     @GeneratedValue
@@ -65,9 +65,8 @@ public class HibernatePatientFeature implements HibernatePatientFeatureInterface
     @JoinColumn(name = "hibernatepatient_id", nullable = false)
     public HibernatePatient hibernatepatient;
 
-    /** 1 - true, -1 - false, 0 - NA */
     @Basic
-    private int present = 0;
+    private String present = "unknown";
 
     @Basic
     private String name;
@@ -76,7 +75,7 @@ public class HibernatePatientFeature implements HibernatePatientFeatureInterface
     private Map<String, FeatureMetadatum> metadata = new TreeMap<String, FeatureMetadatum>();
 
     @Override
-    public void setParent(HibernatePatientInterface patient)
+    public void setParent(MatchingPatient patient)
     {
         this.hibernatepatient = (HibernatePatient) patient;
     }
@@ -110,9 +109,9 @@ public class HibernatePatientFeature implements HibernatePatientFeatureInterface
     @Override
     public String getType()
     {
-        if (this.present == 1) {
+        if (this.present.equals("yes")) {
             return "phenotype";
-        } else if (this.present == -1) {
+        } else if (this.present.equals("no")) {
             return "negative_phenotype";
         } else {
             return "";
@@ -122,7 +121,7 @@ public class HibernatePatientFeature implements HibernatePatientFeatureInterface
     @Override
     public boolean isPresent()
     {
-        return this.present == 1;
+        return this.present.equals("yes");
     }
 
     @Override
@@ -136,9 +135,8 @@ public class HibernatePatientFeature implements HibernatePatientFeatureInterface
     {
         JSONObject result = new JSONObject();
         result.element("id", getId());
-        result.element("name", getName());
-        result.element("type", getType());
-        result.element("isPresent", this.present);
+        result.element("observed", getObserved());
+        // TODO: get ageOfOnset out of metadata
         if (!this.metadata.isEmpty()) {
             JSONArray metadataList = new JSONArray();
             for (FeatureMetadatum metadatum : this.metadata.values()) {
@@ -156,9 +154,14 @@ public class HibernatePatientFeature implements HibernatePatientFeatureInterface
     }
 
     @Override
-    public void setPresent(Integer isPresent)
+    public void setObserved(String observedStatus)
     {
-        this.present = isPresent;
+        this.present = observedStatus;
+    }
+
+    public String getObserved()
+    {
+        return this.present;
     }
 
     @Override

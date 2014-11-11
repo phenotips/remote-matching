@@ -76,11 +76,6 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>remote-matching-adapters</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
       <!-- Group id should not be constant -->
       <groupId>org.phenotips</groupId>
       <artifactId>phenotips-constants</artifactId>
@@ -104,6 +99,11 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>remote-matching-core-hibernate</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>remote-matching-core-common</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

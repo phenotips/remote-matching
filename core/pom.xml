@@ -34,6 +34,7 @@
   <modules>
     <module>api</module>
     <module>hibernate</module>
+    <module>common</module>
     <module>server</module>
     <module>client</module>
   </modules>

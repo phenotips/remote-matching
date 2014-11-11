@@ -43,29 +43,37 @@
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>false</hidden>
   <content>{{velocity}}
-## set response type
+#if ($xcontext.action == 'get')
+  $response.setContentType('application/json')
+#end
+#set ($response = {'sent':'false', 'requestID':-1})
 #set ($patientId = $request.get("patientId"))
 #set ($requestGuid = $request.get("guid"))
 #set ($userId = $request.get("userId"))
-#set ($patientDoc = $xwiki.getDocument("data", $patientId))
-#set ($requestObjects = $patientDoc.getObjects("PhenomeCentral.RemoteRequest"))
-#foreach ($obj in $requestObjects)
-  $obj.getGuid()
-  #if ($obj.getGuid() == $requestGuid)
-    #set($requestObject = $obj)
+#if ($patientId)
+  #set ($patientDoc = $xwiki.getDocument("data", $patientId))
+  #set ($requestObjects = $patientDoc.getObjects("PhenomeCentral.RemoteRequest"))
+  #foreach ($obj in $requestObjects)
+    #if ($obj.getGuid() == $requestGuid)
+      #set($requestObject = $obj)
+    #end
   #end
+  #if ($requestObject)
+    $requestObject.set("patientId", $patientId)
+    $requestObject.set("submitterId", $userId)
+    $patientDoc.save()
+    #set ($result = $services.remoteMatching.sendRequest($requestObject))
+    #if ($result)
+      #set($response.sent = true)
+      #set($response.requestID = $result)
+    #end
+  #else
+    #set ($response.errorMessage = 'patient with the given ID and GUID was not found')
+  #end
+#else
+  #set ($response.errorMessage = 'no patientID is given')
 #end
-============
-$requestGuid
-$requestObject
-$userId
-
-$requestObject.set("patientId", $patientId)
-$requestObject.set("submitterId", $userId)
-$patientDoc.save()
-
-$services.remoteMatching
-$services.remoteMatching.sendRequest($requestObject)
+$jsontool.serialize($response)
 {{/velocity}}
 </content>
 </xwikidoc>

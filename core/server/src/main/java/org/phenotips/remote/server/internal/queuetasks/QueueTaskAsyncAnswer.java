@@ -19,33 +19,96 @@
  */
 package org.phenotips.remote.server.internal.queuetasks;
 
-import org.phenotips.remote.RemoteMatchingClient;
-import org.phenotips.remote.api.IncomingSearchRequestInterface;
-import org.phenotips.remote.api.MultiTypeWrapperInterface;
-import org.phenotips.remote.api.RequestHandlerInterface;
+//import org.phenotips.remote.RemoteMatchingClient;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+
+import org.phenotips.data.similarity.PatientSimilarityView;
+import org.phenotips.remote.api.IncomingSearchRequest;
+//import org.phenotips.remote.api.RequestHandlerInterface;
+
+import org.phenotips.remote.api.ApiConfiguration;
+import org.phenotips.remote.api.ApiDataConverter;
+import org.phenotips.remote.common.ApplicationConfiguration;
+import org.phenotips.remote.server.MatchingPatientsFinder;
+//import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.xwiki.context.ExecutionContext;
+//import org.xwiki.model.reference.DocumentReference;
+//import org.xwiki.component.embed.EmbeddableComponentManager;
+//import org.xwiki.context.Execution;
+//import com.xpn.xwiki.XWikiContext;
+//import org.phenotips.remote.server.internal.queuetasks.ContextSetter;
+//import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.objects.BaseObject;
+
+import org.slf4j.Logger;
 
 import net.sf.json.JSONObject;
 
 public class QueueTaskAsyncAnswer implements Runnable
 {
-    private RequestHandlerInterface<IncomingSearchRequestInterface> requestHandler;
+    private IncomingSearchRequest request;
 
-    private MultiTypeWrapperInterface<IncomingSearchRequestInterface, JSONObject> requestWrapper;
+    private BaseObject configurationObject;
 
-    public QueueTaskAsyncAnswer(RequestHandlerInterface<IncomingSearchRequestInterface> _requestHandler,
-        MultiTypeWrapperInterface<IncomingSearchRequestInterface, JSONObject> _requestWrapper)
+    private ExecutionContext executionContext;
+
+    private ApiDataConverter apiVersionSpecificConverter;
+
+    private MatchingPatientsFinder patientsFinder;
+
+    private Logger logger;
+
+    public QueueTaskAsyncAnswer(IncomingSearchRequest request, BaseObject configurationObject,
+                                Logger logger, ExecutionContext executionContext,
+                                ApiDataConverter apiVersionSpecificConverter,
+                                MatchingPatientsFinder patientsFinder)
     {
-        this.requestHandler = _requestHandler;
-        this.requestWrapper = _requestWrapper;
+        this.request = request;
+        this.configurationObject = configurationObject;
+        this.logger = logger;
+        this.executionContext = executionContext;
+        this.apiVersionSpecificConverter = apiVersionSpecificConverter;
+        this.patientsFinder = patientsFinder;
     }
 
     @Override
     public void run()
     {
         try {
-            RemoteMatchingClient.sendAsyncAnswer(this.requestHandler.getRequest(), this.requestWrapper);
+            List<PatientSimilarityView> matches = patientsFinder.findMatchingPatients(this.request.getRemotePatient());
+
+            Map<IncomingSearchRequest, List<PatientSimilarityView>> manyResults = new HashMap<IncomingSearchRequest, List<PatientSimilarityView>>();
+
+            manyResults.put(this.request, matches);
+
+            JSONObject replyJSON = apiVersionSpecificConverter.generateAsyncResult(manyResults);
+
+            CloseableHttpClient client = HttpClients.createDefault();
+
+            StringEntity jsonEntity = new StringEntity(replyJSON.toString(), ContentType.create("application/json", "UTF-8"));
+
+            //String remoteServerId = this.request.getRemoteServerId();
+            String baseURL = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_BASE_URL_FIELD);
+            if (baseURL.charAt(baseURL.length() - 1) != '/') {
+                baseURL += "/";
+            }
+            String targetURL = baseURL + ApiConfiguration.REMOTE_URL_ASYNCHRONOUS_RESULTS_ENDPOINT;
+
+            logger.error("Sending async reply to [" + targetURL + "]: " + replyJSON.toString());
+
+            HttpPost httpRequest = new HttpPost(targetURL);
+            httpRequest.setEntity(jsonEntity);
+            client.execute(httpRequest);
         } catch (Exception ex) {
             // Do nothing
+            logger.error("Error posting async response: [{}]", ex);
         }
     }
 }

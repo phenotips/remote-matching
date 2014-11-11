@@ -19,39 +19,47 @@
  */
 package org.phenotips.remote.server.internal.queuetasks;
 
-import org.phenotips.remote.api.IncomingSearchRequestInterface;
-import org.phenotips.remote.api.MultiTypeWrapperInterface;
-import org.phenotips.remote.api.RequestHandlerInterface;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
+import org.phenotips.remote.api.IncomingSearchRequest;
+//import org.phenotips.remote.api.RequestHandlerInterface;
+
+import org.slf4j.Logger;
 import org.xwiki.component.embed.EmbeddableComponentManager;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 
 import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.objects.BaseObject;
+
+import java.util.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 import net.sf.json.JSONObject;
 
 public class QueueTaskEmail implements Runnable
 {
-    private RequestHandlerInterface<IncomingSearchRequestInterface> requestHandler;
+    //private RequestHandlerInterface<IncomingSearchRequest> requestHandler;
 
-    private MultiTypeWrapperInterface<IncomingSearchRequestInterface, JSONObject> requestWrapper;
+    //private MultiTypeWrapperInterface<IncomingSearchRequest, JSONObject> requestWrapper;
 
-    private ExecutionContext executionContext;
+    //private ExecutionContext executionContext;
 
-    public QueueTaskEmail(RequestHandlerInterface<IncomingSearchRequestInterface> _requestHandler,
-        MultiTypeWrapperInterface<IncomingSearchRequestInterface, JSONObject> _requestWrapper,
-        ExecutionContext _executionContext)
+    public QueueTaskEmail(IncomingSearchRequest request, BaseObject configurationObject,
+                          Logger logger, ExecutionContext executionContext)
     {
-        this.requestHandler = _requestHandler;
-        this.requestWrapper = _requestWrapper;
-        this.executionContext = _executionContext;
+        //this.requestHandler = _requestHandler;
+        //this.requestWrapper = _requestWrapper;
+        //this.executionContext = _executionContext;
     }
 
     @Override
     public void run()
-    {
+    {/*
         try {
             EmbeddableComponentManager componentManager = new EmbeddableComponentManager();
             componentManager.initialize(this.getClass().getClassLoader());
@@ -59,10 +67,33 @@ public class QueueTaskEmail implements Runnable
             execution.setContext(this.executionContext);
             XWikiContext context = (XWikiContext) this.executionContext.getProperty("xwikicontext");
 
-            this.requestHandler.mail(context, this.requestWrapper);
+            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+            Date date = new Date();
+            String emailText = "The following matches were found for the query submitted on " + dateFormat.format(date) +
+                               " for patient labelled as [" + request.getRemotePatient().getLabel() + "]:\n";
+
+            //this.requestHandler.mail(context, this.requestWrapper);
+             *
+    @Override
+    public Boolean mail(XWikiContext context,
+        MultiTypeWrapperInterface<IncomingSearchRequest, JSONObject> wrapper)
+    {
+        try {
+            MailSenderPlugin mailSender =
+                (MailSenderPlugin) context.getWiki().getPlugin(AppConfiguration.MAIL_SENDER, context);
+            // The mail object should be constructed in the wrapper.
+            Mail mail = new Mail(AppConfiguration.EMAIL_FROM_ADDRESS, this.request.getSubmitterEmail(), null, null,
+                AppConfiguration.EMAIL_SUBJECT, "", wrapper.mailWrap(this.request));
+            mailSender.sendMail(mail, context);
+        } catch (MessagingException | UnsupportedEncodingException ex) {
+            return false;
+        }
+        return true;
+    }
+                 *
             componentManager.dispose();
         } catch (ComponentLookupException ex) {
             // There is nothing that can be done.
-        }
+        }*/
     }
 }

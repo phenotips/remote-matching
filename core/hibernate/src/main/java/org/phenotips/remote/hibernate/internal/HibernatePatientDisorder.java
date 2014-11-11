@@ -20,8 +20,8 @@
 package org.phenotips.remote.hibernate.internal;
 
 import org.phenotips.data.internal.AbstractPhenoTipsOntologyProperty;
-import org.phenotips.remote.api.HibernatePatientDisorderInterface;
-import org.phenotips.remote.api.HibernatePatientInterface;
+import org.phenotips.remote.api.MatchingPatientDisorder;
+import org.phenotips.remote.api.MatchingPatient;
 
 import javax.persistence.Basic;
 import javax.persistence.Entity;
@@ -36,7 +36,7 @@ import javax.persistence.ManyToOne;
  */
 @Entity
 public class HibernatePatientDisorder extends AbstractPhenoTipsOntologyProperty
-    implements HibernatePatientDisorderInterface
+    implements MatchingPatientDisorder
 {
     @Id
     @GeneratedValue
@@ -64,7 +64,7 @@ public class HibernatePatientDisorder extends AbstractPhenoTipsOntologyProperty
     }
 
     @Override
-    public void setParent(HibernatePatientInterface patient)
+    public void setParent(MatchingPatient patient)
     {
         this.hibernatepatient = (HibernatePatient) patient;
     }

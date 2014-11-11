@@ -19,43 +19,36 @@
  */
 package org.phenotips.remote.server.internal;
 
-import org.phenotips.remote.adapters.XWikiAdapter;
-import org.phenotips.remote.api.Configuration;
-import org.phenotips.remote.api.HibernatePatientInterface;
-import org.phenotips.remote.api.IncomingSearchRequestInterface;
-import org.phenotips.remote.api.MultiTypeWrapperInterface;
-import org.phenotips.remote.api.RequestHandlerInterface;
-import org.phenotips.remote.api.WrapperInterface;
-import org.phenotips.remote.server.RequestProcessorInterface;
+import org.phenotips.remote.server.MatchingPatientsFinder;
+import org.phenotips.remote.api.IncomingSearchRequest;
+import org.phenotips.remote.api.ApiConfiguration;
+import org.phenotips.remote.api.ApiDataConverter;
+import org.phenotips.remote.common.ApiFactory;
+import org.phenotips.remote.common.ApplicationConfiguration;
+import org.phenotips.remote.common.internal.XWikiAdapter;
+import org.phenotips.remote.server.SearchRequestProcessor;
 import org.phenotips.remote.server.internal.queuetasks.QueueTaskAsyncAnswer;
 import org.phenotips.remote.server.internal.queuetasks.QueueTaskEmail;
-import org.phenotips.remote.server.internal.queuetasks.QueueTaskInternalProcessing;
+import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
+import org.phenotips.data.similarity.PatientSimilarityView;
+
+import java.util.concurrent.ExecutorService;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
-import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.reference.DocumentReference;
 
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
-import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.objects.BaseObject;
+
+import java.util.List;
 
 import net.sf.json.JSONObject;
 
@@ -64,7 +57,7 @@ import net.sf.json.JSONObject;
  */
 @Component
 @Singleton
-public class IncomingSearchRequestProcessor implements RequestProcessorInterface
+public class IncomingSearchRequestProcessor implements SearchRequestProcessor
 {
     @Inject
     private Logger logger;
@@ -73,19 +66,16 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
     private Execution execution;
 
     @Inject
-    @Named("json-patient")
-    private WrapperInterface<JSONObject, HibernatePatientInterface> patientWrapper;
+    ApiFactory apiFactory;
 
     @Inject
-    @Named("json-meta")
-    private WrapperInterface<JSONObject, IncomingSearchRequestInterface> metaWrapper;
+    private MatchingPatientsFinder patientsFinder;
 
     @Inject
-    @Named("incoming-json")
-    private MultiTypeWrapperInterface<IncomingSearchRequestInterface, JSONObject> requestWrapper;
+    private RemoteMatchingStorageManager requestStorageManager;
 
     @Override
-    public JSONObject processHTTPRequest(String stringJson, ExecutorService queue, HttpServletRequest httpRequest)
+    public JSONObject processHTTPSearchRequest(String apiVersion, String stringJson, ExecutorService queue, HttpServletRequest httpRequest)
         throws Exception
     {
         XWikiContext context = (XWikiContext) this.execution.getContext().getProperty("xwikicontext");
@@ -94,95 +84,111 @@ public class IncomingSearchRequestProcessor implements RequestProcessorInterface
          * Is the request authorized? If not, should not be able to continue at all. This is the first, and only line of
          * defence.
          */
-        BaseObject configurationObject = getConfigurationObject(context, httpRequest);
-        Integer authorizationStatus = validateRequest(httpRequest, context, configurationObject);
-        if (!authorizationStatus.equals(Configuration.HTTP_OK)) {
+        BaseObject configurationObject = XWikiAdapter.getRemoteConfigurationGivenRemoteIP(httpRequest.getRemoteAddr(), context);
+        Integer authorizationStatus = validateRequest(httpRequest, configurationObject);
+        if (!authorizationStatus.equals(ApiConfiguration.HTTP_OK)) {
             JSONObject authorizationJSON = new JSONObject();
-            authorizationJSON.put(Configuration.INTERNAL_JSON_STATUS, authorizationStatus);
+            authorizationJSON.put(ApiConfiguration.INTERNAL_JSON_STATUS, authorizationStatus);
             return authorizationJSON;
         }
 
-        // FIXME. Should not be requested under Admin.
-        // context.setUserReference(
-        // new DocumentReference(context.getMainXWiki(), Configuration.REST_DEFAULT_USER_SPACE,
-        // Configuration.REST_DEFAULT_USER_NAME));
+        // FIXME? Should not be requested under Admin.
         context.setUserReference(new DocumentReference(context.getMainXWiki(), "XWiki", "Admin"));
 
-        // XWiki cannot find the context through (XWiki) Execution when called inside (Java) Executor.
-        Callable<JSONObject> task =
-            new QueueTaskInternalProcessing(stringJson, queue, this, configurationObject, this.execution.getContext());
-        Future<JSONObject> responseFuture = queue.submit(task);
-        return responseFuture.get();
-    }
+        logger.error("Received JSON search request: <<{}>>", stringJson);
 
-    private BaseObject getConfigurationObject(XWikiContext context, HttpServletRequest httpRequest)
-        throws XWikiException
-    {
-        XWiki wiki = context.getWiki();
-        String key = httpRequest.getParameter(Configuration.URL_KEY_PARAMETER);
-        return XWikiAdapter.getRemoteConfigurationByKey(key, wiki, context);
-    }
-
-    private Integer validateRequest(HttpServletRequest httpRequest, XWikiContext context, BaseObject configurationObject)
-        throws XWikiException, UnknownHostException, MalformedURLException
-    {
-        Boolean isAuthorized;
-        String baseURL = configurationObject.getStringValue(Configuration.REMOTE_BASE_URL_FIELD);
+        ApiDataConverter apiVersionSpecificConverter;
         try {
-            isAuthorized = validateIP(baseURL, httpRequest.getRemoteAddr());
-        } catch (MalformedURLException ex) {
-            this.logger.error("Could not validate request due the URL being malformed.");
-            this.logger.error("URL: " + baseURL);
-            ex.printStackTrace();
-            return Configuration.HTTP_SERVER_ERROR;
-        } catch (UnknownHostException ex) {
-            return Configuration.HTTP_BAD_REQUEST;
+            apiVersionSpecificConverter = this.apiFactory.getApiVersion(apiVersion);
+        } catch (Exception ex) {
+            JSONObject reply = new JSONObject();
+            reply.put("error", "unsupported API version");
+            reply.put(ApiConfiguration.INTERNAL_JSON_STATUS, ApiConfiguration.HTTP_BAD_REQUEST);
+            return reply;
         }
-        if (!isAuthorized) {
-            return Configuration.HTTP_UNAUTHORIZED;
-        }
-        return Configuration.HTTP_OK;
-    }
 
-    private boolean validateIP(String baseURL, String ip) throws UnknownHostException, MalformedURLException
-    {
-        URL url = new URL(baseURL);
-        InetAddress address = InetAddress.getByName(url.getHost());
-        String resolvedIP = address.getHostAddress();
-        return StringUtils.equalsIgnoreCase(resolvedIP, ip);
-    }
-
-    @Override
-    public JSONObject internalProcessing(String stringJson, ExecutorService queue, BaseObject configurationObject,
-        ExecutionContext executionContext) throws Exception
-    {
-        this.execution.setContext(executionContext);
         JSONObject json = JSONObject.fromObject(stringJson);
 
-        RequestHandlerInterface<IncomingSearchRequestInterface> requestHandler =
-            new IncomingRequestHandler(json, this.patientWrapper, this.metaWrapper, configurationObject);
-        IncomingSearchRequestInterface request = requestHandler.getRequest();
-        if (!request.getHTTPStatus().equals(Configuration.HTTP_OK)) {
-            return this.requestWrapper.wrap(request);
+        try {
+            logger.error("...parsing input...");
+
+            IncomingSearchRequest request = this.createRequest(apiVersionSpecificConverter, json, configurationObject);
+
+            logger.error("...handling...");
+
+            String type = request.getResponseType();
+
+            if (request.getQueryType() == ApiConfiguration.REQUEST_QUERY_TYPE_PERIODIC ||
+                StringUtils.equalsIgnoreCase(type, ApiConfiguration.REQUEST_RESPONSE_TYPE_ASYNCHRONOUS)) {
+                // save to DB & assign unique ID
+                requestStorageManager.saveIncomingPeriodicRequest(request);
+            }
+
+            if (StringUtils.equalsIgnoreCase(type, ApiConfiguration.REQUEST_RESPONSE_TYPE_SYNCHRONOUS)) {
+                logger.error("Request type: inline");
+
+                List<PatientSimilarityView> matches = patientsFinder.findMatchingPatients(request.getRemotePatient());
+
+                return apiVersionSpecificConverter.generateInlineResponse(request, matches);
+
+            } else if (StringUtils.equalsIgnoreCase(type, ApiConfiguration.REQUEST_RESPONSE_TYPE_EMAIL)) {
+                logger.error("Request type: emial");
+
+                Runnable task = new QueueTaskEmail(request, configurationObject, logger, this.execution.getContext());
+                queue.submit(task);
+
+                return apiVersionSpecificConverter.generateNonInlineResponse(request);
+
+            } else if (StringUtils.equalsIgnoreCase(type, ApiConfiguration.REQUEST_RESPONSE_TYPE_ASYNCHRONOUS)) {
+                logger.error("Request type: async");
+
+                Runnable task = new QueueTaskAsyncAnswer(request, configurationObject, logger, this.execution.getContext(),
+                                                         apiVersionSpecificConverter, patientsFinder);
+                queue.submit(task);
+
+                return apiVersionSpecificConverter.generateNonInlineResponse(request);
+            }
+        } catch (IllegalArgumentException ex) {
+            logger.error("DATA Error: {}", ex);
+            return apiVersionSpecificConverter.generateWrongInputDataResponse();
+        } catch (Exception ex) {
+            logger.error("CODE Error: {}", ex);
+            return apiVersionSpecificConverter.generateInternalServerErrorResponse();
         }
 
-        String type = request.getResponseType();
-        if (StringUtils.equalsIgnoreCase(type, Configuration.REQUEST_RESPONSE_TYPE_SYNCHRONOUS)) {
-            return this.requestWrapper.inlineWrap(request);
-        } else if (StringUtils.equalsIgnoreCase(type, Configuration.REQUEST_RESPONSE_TYPE_EMAIL)) {
-            Runnable task = new QueueTaskEmail(requestHandler, this.requestWrapper, this.execution.getContext());
-            queue.submit(task);
-        } else if (StringUtils.equalsIgnoreCase(type, Configuration.REQUEST_RESPONSE_TYPE_ASYCHRONOUS)) {
-            Runnable task = new QueueTaskAsyncAnswer(requestHandler, this.requestWrapper);
-            queue.submit(task);
+        return null;
+    }
+
+    private Integer validateRequest(HttpServletRequest httpRequest, BaseObject configurationObject)
+    {
+        if (configurationObject == null) {
+            return ApiConfiguration.HTTP_UNAUTHORIZED;  // this server is not listed as an accepted server, and has no key
+        }
+        // TODO: for a period of time support both URl and 'X-Auth-Token' HTTP header HTTP header, then remove URL" key param support
+        String requestKey = httpRequest.getParameter(ApiConfiguration.URL_KEY_PARAMETER);
+        if (requestKey == null) {
+            requestKey = httpRequest.getHeader(ApiConfiguration.HTTPHEADER_KEY_PARAMETER);
+        }
+        String configuredKey = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_LOCAL_KEY_FIELD);
+        logger.error("VALIDATE: Key: {}, Configured: {}", requestKey, configuredKey);
+        if (requestKey == null || configuredKey == null || !requestKey.equals(configuredKey)) {
+             return ApiConfiguration.HTTP_UNAUTHORIZED;
+        }
+        return ApiConfiguration.HTTP_OK;
+    }
+
+    private IncomingSearchRequest createRequest(ApiDataConverter apiDataConverter, JSONObject json, BaseObject configurationObject) throws IllegalArgumentException
+    {
+        String remoteServerId = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_NAME);
+
+        IncomingSearchRequest request = apiDataConverter.getIncomingJSONParser().parseIncomingRequest(json, remoteServerId);
+
+        if (StringUtils.equals(request.getResponseType(), ApiConfiguration.REQUEST_RESPONSE_TYPE_EMAIL) &&
+            StringUtils.isBlank(request.getSubmitterEmail()))
+        {
+            throw new IllegalArgumentException("Can not respond by email to a query with no email specified");
         }
 
-        /*
-         * TODO. In case of periodic requests, the request should be saved.
-         */
-        // Session session = this.sessionFactory.getSessionFactory().openSession();
-        // requestHandler.saveRequest(session);
-
-        return this.requestWrapper.wrap(request);
+        return request;
     }
 }

@@ -45,13 +45,19 @@
               <artifactItems>
                 <artifactItem>
                   <groupId>${project.groupId}</groupId>
-                  <artifactId>remote-matching-adapters</artifactId>
+                  <artifactId>remote-matching-core-api</artifactId>
                   <version>${project.version}</version>
                   <type>jar</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>${project.groupId}</groupId>
-                  <artifactId>remote-matching-core-api</artifactId>
+                  <artifactId>remote-matching-core-hibernate</artifactId>
+                  <version>${project.version}</version>
+                  <type>jar</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>remote-matching-core-common</artifactId>
                   <version>${project.version}</version>
                   <type>jar</type>
                 </artifactItem>
@@ -64,12 +70,6 @@
                 <artifactItem>
                   <groupId>${project.groupId}</groupId>
                   <artifactId>remote-matching-core-server</artifactId>
-                  <version>${project.version}</version>
-                  <type>jar</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>${project.groupId}</groupId>
-                  <artifactId>remote-matching-core-hibernate</artifactId>
                   <version>${project.version}</version>
                   <type>jar</type>
                 </artifactItem>

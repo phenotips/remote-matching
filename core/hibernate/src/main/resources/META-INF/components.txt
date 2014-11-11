@@ -1,1 +1,2 @@
 org.phenotips.remote.hibernate.internal.ORMRegistrationHandler
+org.phenotips.remote.hibernate.internal.DefaultRemoteMatchingStorageManager

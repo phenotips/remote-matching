@@ -19,13 +19,7 @@
  */
 package org.phenotips.remote;
 
-import org.phenotips.remote.api.Configuration;
-import org.phenotips.remote.api.IncomingSearchRequestInterface;
-import org.phenotips.remote.api.MultiTypeWrapperInterface;
-import org.phenotips.remote.api.OutgoingSearchRequestInterface;
-import org.phenotips.remote.api.RequestInterface;
-import org.phenotips.remote.api.WrapperInterface;
-
+import org.phenotips.remote.api.ApiConfiguration;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
@@ -35,6 +29,9 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.xpn.xwiki.XWiki;
+import com.xpn.xwiki.XWikiContext;
 
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
@@ -47,10 +44,13 @@ import net.sf.json.JSONObject;
  */
 public class RemoteMatchingClient
 {
-    public static String sendRequest(OutgoingSearchRequestInterface request,
-        WrapperInterface<OutgoingSearchRequestInterface, JSONObject> wrapper) throws Exception
+    /*
+    public static String sendRequest(OutgoingSearchRequestInterface request, XWikiContext context) throws Exception
     {
-        JSONObject json = wrapper.wrap(request);
+        XWiki wiki = context.getWiki();
+        OutgoingSearchRequestToJSONWrapper requestWrapper = new OutgoingSearchRequestToJSONWrapper(wiki, context);
+
+        JSONObject json = requestWrapper.wrap(request);
         CloseableHttpResponse httpResponse;
         try {
             httpResponse = RemoteMatchingClient.send(request, json);
@@ -87,4 +87,5 @@ public class RemoteMatchingClient
         httpRequest.setEntity(jsonEntity);
         return client.execute(httpRequest);
     }
+    */
 }

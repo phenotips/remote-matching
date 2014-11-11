@@ -42,27 +42,34 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>false</hidden>
-  <content>
-{{velocity}}
-#set ($patient = $services.patients.getPatientById("$!{request.patient}"))
-#set ($matches = $services.remoteMatching.getSimilarityResults($patient))
-  #if ("$!matches" == '')
-    #set ($matches = [])
-  #end
+  <content>{{velocity}}
 #if ($xcontext.action == 'get')
   $response.setContentType('application/json')
 #end
-{
-  "query": $patient.toJSON(),
-  "resultsCount" : $matches.size(),
-  "results" : [
-  #foreach ($p in $matches)
-    $p.toJSON()
-    #if ($foreach.hasNext()),
+#if ($request.query)
+  #set ($patient = $services.patients.getPatientById("$!{request.query}"))
+  #set ($matches = $services.remoteMatching.getSimilarityResults($patient))
+    #if ("$!matches" == '')
+      #set ($matches = [])
     #end
-  #end
-  ]
+  #set ($patientJSON = $patient.toJSON())
+{
+    "query": $patientJSON,
+    "resultsCount" : $matches.size(),
+    "results" : [
+    #foreach ($p in $matches)
+      $p.toJSON()
+      #if ($foreach.hasNext()),
+      #end
+    #end
+    ]
 }
-{{/velocity}}
-</content>
+#else
+{
+    "error": "patient is not specified"
+    "resultsCount" : 0,
+    "results" : []
+}
+#end
+{{/velocity}}</content>
 </xwikidoc>

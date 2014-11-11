@@ -1,4 +1,0 @@
-org.phenotips.remote.adapters.script.RemoteMatchingScriptService
-org.phenotips.remote.adapters.jsonwrappers.JSONToHibernatePatientWrapper
-org.phenotips.remote.adapters.jsonwrappers.JSONtoMetadataWrapper
-org.phenotips.remote.adapters.jsonwrappers.IncomingSearchRequestToJSONWrapper

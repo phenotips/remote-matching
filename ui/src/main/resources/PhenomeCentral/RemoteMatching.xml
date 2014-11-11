@@ -506,10 +506,9 @@ $xwiki.jsfx.use('js/remote-matching/main.js')
       ##=======================================
       ## [TODO]
       ## Display the results of the searches.
-      ##=======================================
-      #set ($queryString = 'patient='+$doc.name)
+      ##=======================================      
       ===== Matches =====
-      (% class="similarity-results-container" id="similar-remote-patients-container" %)((({{html clean=false}}&lt;input type="hidden" name="service" value="$xwiki.getURL('PhenomeCentral.RemoteResults', 'get', $queryString)"&gt;{{/html}})))##
+      (% class="similarity-results-container" id="similar-remote-patients-container" %)((({{html clean=false}}&lt;input type="hidden" name="service" value="$xwiki.getURL('PhenomeCentral.RemoteResults', 'get')"&gt;{{/html}})))##
       ##{{html clean=false}}&lt;/div&gt;{{/html}}##
 
 

@@ -19,7 +19,7 @@
  */
 package org.phenotips.remote.server.internal.queuetasks;
 
-import org.phenotips.remote.api.Configuration;
+import org.phenotips.remote.common.ApplicationConfiguration;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
@@ -31,7 +31,7 @@ public class ContextSetter
     public static void set(XWikiContext context) throws XWikiException
     {
         XWiki wiki = context.getWiki();
-        XWikiDocument currentDoc = wiki.getDocument(Configuration.ABSOLUTE_DOCUMENT_REFERENCE, context);
+        XWikiDocument currentDoc = wiki.getDocument(ApplicationConfiguration.ABSOLUTE_DOCUMENT_REFERENCE, context);
         context.setDoc(currentDoc);
     }
 }

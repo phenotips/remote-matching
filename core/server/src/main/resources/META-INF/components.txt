@@ -1,3 +1,5 @@
-org.phenotips.remote.server.internal.MatchResource
-org.phenotips.remote.server.internal.MatchResultsResource
+org.phenotips.remote.server.internal.DefaultApiRequestHandler
+org.phenotips.remote.server.internal.DefaultMatchingPatientsFinder
 org.phenotips.remote.server.internal.IncomingSearchRequestProcessor
+org.phenotips.remote.server.internal.IncomingAsyncResponseProcessor
+
