@@ -26,25 +26,17 @@ import java.util.HashMap;
 
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.IncomingSearchRequest;
-//import org.phenotips.remote.api.RequestHandlerInterface;
 
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.ApiDataConverter;
 import org.phenotips.remote.common.ApplicationConfiguration;
 import org.phenotips.remote.server.MatchingPatientsFinder;
-//import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+//import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.HttpClients;
-import org.xwiki.context.ExecutionContext;
-//import org.xwiki.model.reference.DocumentReference;
-//import org.xwiki.component.embed.EmbeddableComponentManager;
-//import org.xwiki.context.Execution;
-//import com.xpn.xwiki.XWikiContext;
-//import org.phenotips.remote.server.internal.queuetasks.ContextSetter;
-//import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.objects.BaseObject;
 
 import org.slf4j.Logger;
@@ -57,8 +49,6 @@ public class QueueTaskAsyncAnswer implements Runnable
 
     private BaseObject configurationObject;
 
-    private ExecutionContext executionContext;
-
     private ApiDataConverter apiVersionSpecificConverter;
 
     private MatchingPatientsFinder patientsFinder;
@@ -66,14 +56,12 @@ public class QueueTaskAsyncAnswer implements Runnable
     private Logger logger;
 
     public QueueTaskAsyncAnswer(IncomingSearchRequest request, BaseObject configurationObject,
-                                Logger logger, ExecutionContext executionContext,
-                                ApiDataConverter apiVersionSpecificConverter,
+                                Logger logger, ApiDataConverter apiVersionSpecificConverter,
                                 MatchingPatientsFinder patientsFinder)
     {
         this.request = request;
         this.configurationObject = configurationObject;
         this.logger = logger;
-        this.executionContext = executionContext;
         this.apiVersionSpecificConverter = apiVersionSpecificConverter;
         this.patientsFinder = patientsFinder;
     }

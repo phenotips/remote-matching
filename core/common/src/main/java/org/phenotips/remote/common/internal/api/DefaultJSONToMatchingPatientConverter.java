@@ -78,7 +78,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
             if (genes != null) {
                 patient.addGenes(genes);
             }
-            logger.error("JSON->Patient OK");
+            logger.debug("JSON->Patient OK");
             return patient;
         } catch (Exception ex) {
             logger.error("JSON->Patient: ERROR: {}", ex);

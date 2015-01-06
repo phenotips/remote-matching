@@ -118,7 +118,7 @@ public class XWikiAdapter
             }
 
             logger.error("Request IP: {}", remoteIP);
-            logger.error("The number of remote configurations: {}", remotes.size());
+            logger.debug("The number of remote configurations: {}", remotes.size());
 
             for (BaseObject remote : remotes) {
                 if (remote == null) {
@@ -127,7 +127,7 @@ public class XWikiAdapter
                 try {
                     String configuredURL = remote.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_BASE_URL_FIELD);
                     String configuredIP  = InetAddress.getByName(new URL(configuredURL).getHost()).getHostAddress();
-                    logger.error("Next server: {},  ip: {}", configuredURL, configuredIP);
+                    logger.debug("Next server: {},  ip: {}", configuredURL, configuredIP);
                     if (StringUtils.equalsIgnoreCase(remoteIP, configuredIP)) {
                         return remote;
                     }

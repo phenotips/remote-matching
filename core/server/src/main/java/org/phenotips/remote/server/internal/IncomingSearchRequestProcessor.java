@@ -36,7 +36,9 @@ import java.util.concurrent.ExecutorService;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
+import org.xwiki.context.concurrent.ExecutionContextRunnable;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.component.manager.ComponentManager;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -74,25 +76,17 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
     @Inject
     private RemoteMatchingStorageManager requestStorageManager;
 
+    @Inject
+    private ComponentManager componentManager;
+
     @Override
     public JSONObject processHTTPSearchRequest(String apiVersion, String stringJson, ExecutorService queue, HttpServletRequest httpRequest)
         throws Exception
     {
         XWikiContext context = (XWikiContext) this.execution.getContext().getProperty("xwikicontext");
-
-        /*
-         * Is the request authorized? If not, should not be able to continue at all. This is the first, and only line of
-         * defence.
-         */
         BaseObject configurationObject = XWikiAdapter.getRemoteConfigurationGivenRemoteIP(httpRequest.getRemoteAddr(), context);
-        Integer authorizationStatus = validateRequest(httpRequest, configurationObject);
-        if (!authorizationStatus.equals(ApiConfiguration.HTTP_OK)) {
-            JSONObject authorizationJSON = new JSONObject();
-            authorizationJSON.put(ApiConfiguration.INTERNAL_JSON_STATUS, authorizationStatus);
-            return authorizationJSON;
-        }
 
-        // FIXME? Should not be requested under Admin.
+        // FIXME? Is there other way to access all the necessary patients/data?
         context.setUserReference(new DocumentReference(context.getMainXWiki(), "XWiki", "Admin"));
 
         logger.error("Received JSON search request: <<{}>>", stringJson);
@@ -134,7 +128,8 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
             } else if (StringUtils.equalsIgnoreCase(type, ApiConfiguration.REQUEST_RESPONSE_TYPE_EMAIL)) {
                 logger.error("Request type: emial");
 
-                Runnable task = new QueueTaskEmail(request, configurationObject, logger, this.execution.getContext());
+                Runnable task = new ExecutionContextRunnable(new QueueTaskEmail(request, configurationObject, logger),
+                                                             componentManager);
                 queue.submit(task);
 
                 return apiVersionSpecificConverter.generateNonInlineResponse(request);
@@ -142,8 +137,8 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
             } else if (StringUtils.equalsIgnoreCase(type, ApiConfiguration.REQUEST_RESPONSE_TYPE_ASYNCHRONOUS)) {
                 logger.error("Request type: async");
 
-                Runnable task = new QueueTaskAsyncAnswer(request, configurationObject, logger, this.execution.getContext(),
-                                                         apiVersionSpecificConverter, patientsFinder);
+                Runnable task = new ExecutionContextRunnable(new QueueTaskAsyncAnswer(request, configurationObject, logger,
+                                                             apiVersionSpecificConverter, patientsFinder), componentManager);
                 queue.submit(task);
 
                 return apiVersionSpecificConverter.generateNonInlineResponse(request);
@@ -157,24 +152,6 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
         }
 
         return null;
-    }
-
-    private Integer validateRequest(HttpServletRequest httpRequest, BaseObject configurationObject)
-    {
-        if (configurationObject == null) {
-            return ApiConfiguration.HTTP_UNAUTHORIZED;  // this server is not listed as an accepted server, and has no key
-        }
-        // TODO: for a period of time support both URl and 'X-Auth-Token' HTTP header HTTP header, then remove URL" key param support
-        String requestKey = httpRequest.getParameter(ApiConfiguration.URL_KEY_PARAMETER);
-        if (requestKey == null) {
-            requestKey = httpRequest.getHeader(ApiConfiguration.HTTPHEADER_KEY_PARAMETER);
-        }
-        String configuredKey = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_LOCAL_KEY_FIELD);
-        logger.error("VALIDATE: Key: {}, Configured: {}", requestKey, configuredKey);
-        if (requestKey == null || configuredKey == null || !requestKey.equals(configuredKey)) {
-             return ApiConfiguration.HTTP_UNAUTHORIZED;
-        }
-        return ApiConfiguration.HTTP_OK;
     }
 
     private IncomingSearchRequest createRequest(ApiDataConverter apiDataConverter, JSONObject json, BaseObject configurationObject) throws IllegalArgumentException

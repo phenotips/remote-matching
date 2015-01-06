@@ -49,8 +49,7 @@ public class QueueTaskEmail implements Runnable
 
     //private ExecutionContext executionContext;
 
-    public QueueTaskEmail(IncomingSearchRequest request, BaseObject configurationObject,
-                          Logger logger, ExecutionContext executionContext)
+    public QueueTaskEmail(IncomingSearchRequest request, BaseObject configurationObject, Logger logger)
     {
         //this.requestHandler = _requestHandler;
         //this.requestWrapper = _requestWrapper;

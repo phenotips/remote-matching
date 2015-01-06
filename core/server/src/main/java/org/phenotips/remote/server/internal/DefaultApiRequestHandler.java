@@ -20,6 +20,8 @@
 package org.phenotips.remote.server.internal;
 
 import org.phenotips.remote.api.ApiConfiguration;
+import org.phenotips.remote.common.ApplicationConfiguration;
+import org.phenotips.remote.common.internal.XWikiAdapter;
 import org.phenotips.remote.server.ApiRequestHandler;
 import org.phenotips.remote.server.SearchRequestProcessor;
 import org.phenotips.remote.server.AsyncResponseProcessor;
@@ -42,6 +44,7 @@ import org.slf4j.LoggerFactory;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.objects.BaseObject;
 
 import net.sf.json.JSONObject;
 
@@ -72,9 +75,13 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
         try {
             JSONObject jsonResponse;
             XWikiContext context = this.getXWikiContext();
+            ContextSetter.set(context);
             HttpServletRequest httpRequest = context.getRequest().getHttpServletRequest();
 
-            ContextSetter.set(context);
+            if (!isRequestAuthorized(httpRequest, context)) {
+                return Response.status(ApiConfiguration.HTTP_UNAUTHORIZED).build();
+            }
+
             // Using futures to queue tasks and to retrieve results.
             ExecutorService queue = Executors.newSingleThreadExecutor();
             jsonResponse = this.searchRequestProcessor.processHTTPSearchRequest(apiVersion, json, queue, httpRequest);
@@ -104,9 +111,13 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
         try {
             JSONObject jsonResponse = new JSONObject();
             XWikiContext context = this.getXWikiContext();
+            ContextSetter.set(context);
             HttpServletRequest httpRequest = context.getRequest().getHttpServletRequest();
 
-            ContextSetter.set(context);
+            if (!isRequestAuthorized(httpRequest, context)) {
+                return Response.status(ApiConfiguration.HTTP_UNAUTHORIZED).build();
+            }
+
             Integer status = this.asyncReponseProcessor.processHTTPAsyncResponse(apiVersion, json, httpRequest);
 
             if (status.equals(ApiConfiguration.HTTP_OK)) {
@@ -119,5 +130,25 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
             logger.error("Could not process remote async response: {}", ex.getMessage(), ex);
             return Response.status(ApiConfiguration.HTTP_SERVER_ERROR).build();
         }
+    }
+
+    private boolean isRequestAuthorized(HttpServletRequest httpRequest, XWikiContext context)
+    {
+        BaseObject configurationObject = XWikiAdapter.getRemoteConfigurationGivenRemoteIP(httpRequest.getRemoteAddr(), context);
+        if (configurationObject == null) {
+            return false;  // this server is not listed as an accepted server, and has no key
+        }
+        // TODO: for now support both URL and 'X-Auth-Token' HTTP header;
+        //       remove URL key param support once all parties switch to X-Auth-Token
+        String requestKey = httpRequest.getParameter(ApiConfiguration.URL_KEY_PARAMETER);
+        if (requestKey == null) {
+            requestKey = httpRequest.getHeader(ApiConfiguration.HTTPHEADER_KEY_PARAMETER);
+        }
+        String configuredKey = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_LOCAL_KEY_FIELD);
+        logger.error("Remote server key validation: Key: {}, Configured: {}", requestKey, configuredKey);
+        if (requestKey == null || configuredKey == null || !requestKey.equals(configuredKey)) {
+             return false;
+        }
+        return true;
     }
 }
