@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>phenotips-components</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1-milestone-1</version>
     <relativePath />
   </parent>
   <artifactId>remote-matching-parent</artifactId>
@@ -57,8 +57,8 @@
   </organization>
 
   <properties>
-    <phenotips.version>1.1-SNAPSHOT</phenotips.version>
-    <patientNetwork.version>1.0-SNAPSHOT</patientNetwork.version>
+    <phenotips.version>1.1-milestone-1</phenotips.version>
+    <patientNetwork.version>1.0-milestone-4</patientNetwork.version>
     <!-- Disable Clirr since this is the first version -->
     <clirr.skip>true</clirr.skip>
     <!-- Codestyle needs to be improved... -->
