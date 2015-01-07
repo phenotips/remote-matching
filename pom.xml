@@ -68,6 +68,5 @@
   <modules>
     <module>core</module>
     <module>ui</module>
-    <module>standalone-patch</module>
   </modules>
 </project>
