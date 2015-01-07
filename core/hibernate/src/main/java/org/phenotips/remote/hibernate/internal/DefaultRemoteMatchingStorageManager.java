@@ -19,21 +19,20 @@
  */
 package org.phenotips.remote.hibernate.internal;
 
-import java.util.Map;
-
 import org.phenotips.remote.api.IncomingSearchRequest;
 import org.phenotips.remote.api.OutgoingSearchRequest;
-import org.phenotips.remote.api.SearchRequest;
 import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
+
 import org.xwiki.component.annotation.Component;
+
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.HibernateException;
-import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.store.hibernate.HibernateSessionFactory;
@@ -84,7 +83,7 @@ public class DefaultRemoteMatchingStorageManager implements RemoteMatchingStorag
             session.update(request);
             t.commit();
         } catch (HibernateException ex) {
-            logger.error("updateIncomingPeriodicRequest: ERROR: {}", ex);
+            this.logger.error("updateIncomingPeriodicRequest: ERROR: {}", ex);
             return false;
         }
         return true;

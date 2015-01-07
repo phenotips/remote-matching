@@ -19,28 +19,29 @@
  */
 package org.phenotips.remote.server.internal;
 
-import org.phenotips.remote.api.MatchingPatient;
-import org.phenotips.remote.api.MatchingPatientGene;
 import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
+import org.phenotips.data.IndexedPatientData;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
-import org.phenotips.data.IndexedPatientData;
+import org.phenotips.remote.api.MatchingPatient;
+import org.phenotips.remote.api.MatchingPatientGene;
+
 import org.xwiki.model.reference.DocumentReference;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.List;
-import java.util.LinkedList;
-import java.util.LinkedHashMap;
 
 import net.sf.json.JSONObject;
 
 /**
- * Implementation of {@link org.phenotips.data.Patient} based on the data obtained from the remote server for
- * use in the similarity search algorithm (which takes a model patient as one of the inputs)
+ * Implementation of {@link org.phenotips.data.Patient} based on the data obtained from the remote server for use in the
+ * similarity search algorithm (which takes a model patient as one of the inputs)
  *
  * @version $Id$
  * @since 1.0M8

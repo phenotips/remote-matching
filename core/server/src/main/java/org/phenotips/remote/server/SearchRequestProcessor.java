@@ -33,5 +33,6 @@ import net.sf.json.JSONObject;
 @Role
 public interface SearchRequestProcessor
 {
-    JSONObject processHTTPSearchRequest(String apiVersion, String json, ExecutorService queue, HttpServletRequest httpRequest) throws Exception;
+    JSONObject processHTTPSearchRequest(String apiVersion, String json, ExecutorService queue,
+        HttpServletRequest httpRequest) throws Exception;
 }

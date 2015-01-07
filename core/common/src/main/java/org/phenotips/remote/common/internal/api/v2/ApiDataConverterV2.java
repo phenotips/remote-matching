@@ -19,19 +19,20 @@
  */
 package org.phenotips.remote.common.internal.api.v2;
 
+import org.phenotips.data.similarity.PatientSimilarityView;
+import org.phenotips.remote.api.ApiDataConverter;
+import org.phenotips.remote.api.IncomingSearchRequest;
+import org.phenotips.remote.api.fromjson.IncomingJSONParser;
+import org.phenotips.remote.api.tojson.OutgoingRequestToJSONConverter;
+
+import org.xwiki.component.annotation.Component;
+
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Named;
 
 import net.sf.json.JSONObject;
-
-import org.phenotips.data.similarity.PatientSimilarityView;
-import org.phenotips.remote.api.ApiDataConverter;
-import org.phenotips.remote.api.IncomingSearchRequest;
-import org.phenotips.remote.api.fromjson.IncomingJSONParser;
-import org.phenotips.remote.api.tojson.OutgoingRequestToJSONConverter;
-import org.xwiki.component.annotation.Component;
 
 @Component
 @Named("api-data-converter-v2")
@@ -43,6 +44,7 @@ public class ApiDataConverterV2 implements ApiDataConverter
     {
     }
 
+    @Override
     public String getApiVersion()
     {
         return VERSION_STRING;
@@ -50,11 +52,13 @@ public class ApiDataConverterV2 implements ApiDataConverter
 
     //================================================================
 
+    @Override
     public JSONObject generateWrongInputDataResponse()
     {
         return null;
     }
 
+    @Override
     public JSONObject generateInternalServerErrorResponse()
     {
         return null;
@@ -62,21 +66,25 @@ public class ApiDataConverterV2 implements ApiDataConverter
 
     //================================================================
 
+    @Override
     public IncomingJSONParser getIncomingJSONParser()
     {
         return null;
     }
 
+    @Override
     public JSONObject generateInlineResponse(IncomingSearchRequest request, List<PatientSimilarityView> resultList)
     {
         return null;
     }
 
+    @Override
     public JSONObject generateNonInlineResponse(IncomingSearchRequest request)
     {
         return null;
     }
 
+    @Override
     public JSONObject generateAsyncResult(Map<IncomingSearchRequest, List<PatientSimilarityView>> results)
     {
         return null;
@@ -84,6 +92,7 @@ public class ApiDataConverterV2 implements ApiDataConverter
 
     //================================================================
 
+    @Override
     public OutgoingRequestToJSONConverter getOutgoingRequestToJSONConverter()
     {
         return null;

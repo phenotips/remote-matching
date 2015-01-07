@@ -19,17 +19,17 @@
  */
 package org.phenotips.remote.hibernate;
 
-import org.xwiki.component.annotation.Role;
-
 import org.phenotips.remote.api.IncomingSearchRequest;
 import org.phenotips.remote.api.OutgoingSearchRequest;
+
+import org.xwiki.component.annotation.Role;
 
 import java.util.Map;
 
 @Role
 public interface RemoteMatchingStorageManager
 {
-  //=======================================================================
+    // =======================================================================
     /**
      * Saves a new incoming periodic request or updates an existing request
      *
@@ -39,8 +39,8 @@ public interface RemoteMatchingStorageManager
     String saveIncomingPeriodicRequest(IncomingSearchRequest request);
 
     /**
-     * Replaces existing periodic request with the given queryID with
-     * Throws iff request has no queryID field set
+     * Replaces existing periodic request with the given queryID with Throws iff request has no queryID field set
+     *
      * @param request
      * @return true iff a request with the given ID was present in the system
      */
@@ -52,6 +52,7 @@ public interface RemoteMatchingStorageManager
 
     /**
      * Saves the request,
+     *
      * @param request
      * @param patientID
      * @return
@@ -59,7 +60,6 @@ public interface RemoteMatchingStorageManager
     String saveOutgoingRequest(OutgoingSearchRequest request, String patientID);
 
     /**
-     *
      * @param patientID
      * @return last request or null if none found
      */

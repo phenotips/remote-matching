@@ -20,8 +20,8 @@
 package org.phenotips.remote.hibernate.internal;
 
 import org.phenotips.data.internal.AbstractPhenoTipsOntologyProperty;
-import org.phenotips.remote.api.MatchingPatientDisorder;
 import org.phenotips.remote.api.MatchingPatient;
+import org.phenotips.remote.api.MatchingPatientDisorder;
 
 import javax.persistence.Basic;
 import javax.persistence.Entity;

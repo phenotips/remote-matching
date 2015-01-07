@@ -21,10 +21,10 @@ package org.phenotips.remote.hibernate.internal;
 
 import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
+import org.phenotips.remote.api.MatchingPatient;
 import org.phenotips.remote.api.MatchingPatientDisorder;
 import org.phenotips.remote.api.MatchingPatientFeature;
 import org.phenotips.remote.api.MatchingPatientGene;
-import org.phenotips.remote.api.MatchingPatient;
 import org.phenotips.remote.api.SearchRequest;
 
 import java.util.HashSet;

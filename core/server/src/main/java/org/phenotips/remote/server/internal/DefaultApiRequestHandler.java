@@ -23,9 +23,10 @@ import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.common.ApplicationConfiguration;
 import org.phenotips.remote.common.internal.XWikiAdapter;
 import org.phenotips.remote.server.ApiRequestHandler;
-import org.phenotips.remote.server.SearchRequestProcessor;
 import org.phenotips.remote.server.AsyncResponseProcessor;
+import org.phenotips.remote.server.SearchRequestProcessor;
 import org.phenotips.remote.server.internal.queuetasks.ContextSetter;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.rest.XWikiResource;
 import org.xwiki.rest.XWikiRestException;
@@ -69,8 +70,8 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
     @Override
     public Response matchPost(String json, String apiVersion) throws XWikiRestException, XWikiException
     {
-        logger.debug("PROCESS MATCH for version [{}]", apiVersion);
-        logger.debug("INPUT JSON: [{}]", json);
+        this.logger.debug("PROCESS MATCH for version [{}]", apiVersion);
+        this.logger.debug("INPUT JSON: [{}]", json);
 
         try {
             JSONObject jsonResponse;
@@ -105,8 +106,8 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
     @Override
     public Response matchResultsPost(String json, String apiVersion) throws XWikiRestException, XWikiException
     {
-        logger.debug("PROCESS MATCHRESULTS for version [{}]", apiVersion);
-        logger.debug("INPUT JSON: [{}]", json);
+        this.logger.debug("PROCESS MATCHRESULTS for version [{}]", apiVersion);
+        this.logger.debug("INPUT JSON: [{}]", json);
 
         try {
             JSONObject jsonResponse = new JSONObject();
@@ -134,9 +135,10 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
 
     private boolean isRequestAuthorized(HttpServletRequest httpRequest, XWikiContext context)
     {
-        BaseObject configurationObject = XWikiAdapter.getRemoteConfigurationGivenRemoteIP(httpRequest.getRemoteAddr(), context);
+        BaseObject configurationObject =
+            XWikiAdapter.getRemoteConfigurationGivenRemoteIP(httpRequest.getRemoteAddr(), context);
         if (configurationObject == null) {
-            return false;  // this server is not listed as an accepted server, and has no key
+            return false; // this server is not listed as an accepted server, and has no key
         }
         // TODO: for now support both URL and 'X-Auth-Token' HTTP header;
         //       remove URL key param support once all parties switch to X-Auth-Token
@@ -145,9 +147,9 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
             requestKey = httpRequest.getHeader(ApiConfiguration.HTTPHEADER_KEY_PARAMETER);
         }
         String configuredKey = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_LOCAL_KEY_FIELD);
-        logger.debug("Remote server key validation: Key: {}, Configured: {}", requestKey, configuredKey);
+        this.logger.debug("Remote server key validation: Key: {}, Configured: {}", requestKey, configuredKey);
         if (requestKey == null || configuredKey == null || !requestKey.equals(configuredKey)) {
-             return false;
+            return false;
         }
         return true;
     }

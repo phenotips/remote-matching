@@ -19,7 +19,6 @@
  */
 package org.phenotips.remote.common.internal.api;
 
-import org.phenotips.remote.api.tojson.PatientToJSONConverter;
 import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
 import org.phenotips.data.FeatureMetadatum;
@@ -27,7 +26,7 @@ import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
 import org.phenotips.ontology.internal.solr.SolrOntologyTerm;
 import org.phenotips.remote.api.ApiConfiguration;
-import org.slf4j.Logger;
+import org.phenotips.remote.api.tojson.PatientToJSONConverter;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +35,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -56,9 +56,10 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
     public DefaultPatientToJSONConverter(String apiVersion, Logger logger)
     {
         this.apiVersion = apiVersion;
-        this.logger     = logger;
+        this.logger = logger;
     }
 
+    @Override
     public JSONObject convert(Patient patient, boolean removePrivateData)
     {
         JSONObject json = new JSONObject();
@@ -86,7 +87,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             FeatureMetadatum ageOfOnset = metadata.get(ApiConfiguration.FEATURE_AGE_OF_ONSET);
 
             JSONObject featureJson = new JSONObject();
-            featureJson.put(ApiConfiguration.REPLY_JSON_FEATURE_ID,       patientFeature.getId());
+            featureJson.put(ApiConfiguration.REPLY_JSON_FEATURE_ID, patientFeature.getId());
             featureJson.put(ApiConfiguration.REPLY_JSON_FEATURE_OBSERVED, observedStatusToJSONString(patientFeature));
 
             if (ageOfOnset != null) {
@@ -158,27 +159,27 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
                 // FIXME: need to throw to indicate unsuported format:throw new Exception(ERROR_MESSAGE_UNSUPPORTED_JSON_FORMAT);
                 continue;
             }
-            for(int i = 0; i < featureMatches.size(); i++)
+            for (int i = 0; i < featureMatches.size(); i++)
             {
-                  String matchFeature = featureMatches.getString(i);
+                String matchFeature = featureMatches.getString(i);
 
-                  // if feature id is obfuscated use category Id instead as the best available substitute
-                  String featureId = matchFeature.isEmpty()? catId : matchFeature;
+                // if feature id is obfuscated use category Id instead as the best available substitute
+                String featureId = matchFeature.isEmpty() ? catId : matchFeature;
 
-                  // replace empty features by the most generic generic term,
-                  // and (possibly) re-format feature ID to the expected output format
-                  featureId = processFeatureID(featureId);
+                // replace empty features by the most generic generic term,
+                // and (possibly) re-format feature ID to the expected output format
+                featureId = processFeatureID(featureId);
 
-                  if (catId.isEmpty()) {
-                      notMatchedFeatures.add(featureId);
-                  }
-                  if (matchFeature.isEmpty()) {
-                      obfuscatedFeatures.add(featureId);
-                  }
+                if (catId.isEmpty()) {
+                    notMatchedFeatures.add(featureId);
+                }
+                if (matchFeature.isEmpty()) {
+                    obfuscatedFeatures.add(featureId);
+                }
 
-                  Integer count = featureCounts.containsKey(featureId) ?
-                                      featureCounts.get(featureId) : 0;
-                  featureCounts.put(featureId, count + 1);
+                Integer count = featureCounts.containsKey(featureId) ?
+                    featureCounts.get(featureId) : 0;
+                featureCounts.put(featureId, count + 1);
             }
         }
 

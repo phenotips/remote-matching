@@ -19,14 +19,11 @@
  */
 package org.phenotips.remote.server.internal;
 
-import org.phenotips.remote.server.AsyncResponseProcessor;
 import org.phenotips.remote.api.ApiConfiguration;
-import org.phenotips.remote.api.ApiDataConverter;
 import org.phenotips.remote.common.ApiFactory;
-import org.phenotips.remote.common.ApplicationConfiguration;
-import org.phenotips.remote.common.internal.XWikiAdapter;
 import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
-import org.xwiki.context.Execution;
+import org.phenotips.remote.server.AsyncResponseProcessor;
+
 import org.xwiki.component.annotation.Component;
 
 import javax.inject.Inject;
@@ -34,11 +31,6 @@ import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
-
-import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.objects.BaseObject;
-
-import net.sf.json.JSONObject;
 
 /**
  * Takes a json string in the constructor and does all the request processing functionality.

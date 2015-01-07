@@ -20,6 +20,7 @@
 package org.phenotips.remote.api.tojson;
 
 import org.phenotips.data.Patient;
+
 import net.sf.json.JSONObject;
 
 public interface PatientToJSONConverter

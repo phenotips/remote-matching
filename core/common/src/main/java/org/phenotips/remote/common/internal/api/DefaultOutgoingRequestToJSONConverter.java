@@ -19,10 +19,9 @@
  */
 package org.phenotips.remote.common.internal.api;
 
-import org.phenotips.remote.api.tojson.OutgoingRequestToJSONConverter;
 import org.phenotips.remote.api.OutgoingSearchRequest;
+import org.phenotips.remote.api.tojson.OutgoingRequestToJSONConverter;
 import org.phenotips.remote.api.tojson.PatientToJSONConverter;
-import org.phenotips.remote.common.internal.api.DefaultPatientToJSONConverter;
 
 import org.slf4j.Logger;
 
@@ -39,7 +38,7 @@ public class DefaultOutgoingRequestToJSONConverter implements OutgoingRequestToJ
     public DefaultOutgoingRequestToJSONConverter(String apiVersion, Logger logger)
     {
         this.apiVersion = apiVersion;
-        this.logger     = logger;
+        this.logger = logger;
 
         this.patientToJSONConverter = new DefaultPatientToJSONConverter(apiVersion, logger);
     }

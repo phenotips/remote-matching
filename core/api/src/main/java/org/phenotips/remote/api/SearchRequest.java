@@ -26,6 +26,7 @@ public interface SearchRequest
 {
     /**
      * The id of the other server (for both inocming and outgoing requests)
+     *
      * @return
      */
     String getRemoteServerId();
@@ -42,8 +43,8 @@ public interface SearchRequest
     String getQueryType();
 
     /**
-     * Is not mandatory for {@link org.phenotips.remote.api.OutgoingSearchRequest} as it is instantiated with
-     * the default value.
+     * Is not mandatory for {@link org.phenotips.remote.api.OutgoingSearchRequest} as it is instantiated with the
+     * default value.
      */
     String getResponseType();
 

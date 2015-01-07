@@ -19,16 +19,17 @@
  */
 package org.phenotips.remote.server.internal;
 
+import org.phenotips.data.similarity.PatientSimilarityView;
+import org.phenotips.remote.api.MatchingPatient;
+import org.phenotips.remote.server.MatchingPatientsFinder;
+import org.phenotips.similarity.SimilarPatientsFinder;
+
+import org.xwiki.component.annotation.Component;
+
 import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import org.phenotips.remote.server.MatchingPatientsFinder;
-import org.phenotips.remote.api.MatchingPatient;
-import org.phenotips.data.similarity.PatientSimilarityView;
-import org.phenotips.similarity.SimilarPatientsFinder;
-import org.xwiki.component.annotation.Component;
 
 @Component
 @Singleton
@@ -37,9 +38,10 @@ public class DefaultMatchingPatientsFinder implements MatchingPatientsFinder
     @Inject
     private SimilarPatientsFinder patientsFinder;
 
+    @Override
     public List<PatientSimilarityView> findMatchingPatients(MatchingPatient modelPatient)
     {
-        return patientsFinder.findSimilarPatients(new RemoteMatchingPatient(modelPatient));
+        return this.patientsFinder.findSimilarPatients(new RemoteMatchingPatient(modelPatient));
     }
 
 }

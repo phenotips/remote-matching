@@ -29,7 +29,8 @@ public interface ApiConfiguration
     String API_VERSION_STRING = "v1";
 
     String HTTPHEADER_KEY_PARAMETER = "X-Auth-Token";
-    String URL_KEY_PARAMETER        = "key";                // TODO: depricated
+
+    String URL_KEY_PARAMETER = "key"; // TODO: deprecated
 
     // Must not contain the '/' at the beginning of the string
     String REMOTE_URL_SEARCH_ENDPOINT = "mmapi/" + API_VERSION_STRING + "/match";

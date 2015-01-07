@@ -22,13 +22,14 @@ package org.phenotips.remote.common.internal;
 import org.phenotips.data.Patient;
 import org.phenotips.data.internal.PhenoTipsPatient;
 import org.phenotips.remote.common.ApplicationConfiguration;
+
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
 
 import java.net.InetAddress;
-import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -107,10 +108,10 @@ public class XWikiAdapter
     {
         try {
             XWikiDocument prefsDoc =
-                    context.getWiki().getDocument(ApplicationConfiguration.XWIKI_PREFERENCES_DOCUMENT_REFERENCE, context);
+                context.getWiki().getDocument(ApplicationConfiguration.XWIKI_PREFERENCES_DOCUMENT_REFERENCE, context);
 
             List<BaseObject> remotes =
-                    prefsDoc.getXObjects(ApplicationConfiguration.REMOTE_CONFIGURATION_OBJECT_REFERENCE);
+                prefsDoc.getXObjects(ApplicationConfiguration.REMOTE_CONFIGURATION_OBJECT_REFERENCE);
 
             if (remotes == null) {
                 logger.error("Remote matching admin section is absent or empty: can not process incoming request");
@@ -125,16 +126,18 @@ public class XWikiAdapter
                     continue;
                 }
                 try {
-                    String configuredURL = remote.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_BASE_URL_FIELD);
-                    String configuredIP  = InetAddress.getByName(new URL(configuredURL).getHost()).getHostAddress();
+                    String configuredURL =
+                        remote.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_BASE_URL_FIELD);
+                    String configuredIP = InetAddress.getByName(new URL(configuredURL).getHost()).getHostAddress();
                     logger.debug("Next server: {},  ip: {}", configuredURL, configuredIP);
                     if (StringUtils.equalsIgnoreCase(remoteIP, configuredIP)) {
                         return remote;
                     }
                 } catch (MalformedURLException ex) {
-                    logger.error("One of the configured remote matching servers has an incorrectly formatted URL=[{}]: {}",
-                                 remote.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_BASE_URL_FIELD),
-                                 ex.getMessage());
+                    logger.error(
+                        "One of the configured remote matching servers has an incorrectly formatted URL=[{}]: {}",
+                        remote.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_BASE_URL_FIELD),
+                        ex.getMessage());
                 }
             }
         } catch (Exception ex) {

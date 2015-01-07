@@ -19,18 +19,18 @@
  */
 package org.phenotips.remote.common.internal.api;
 
-import org.apache.commons.lang3.StringUtils;
-import org.phenotips.remote.common.internal.api.DefaultJSONToMatchingPatientConverter;
+import org.phenotips.remote.api.ApiConfiguration;
+import org.phenotips.remote.api.IncomingSearchRequest;
+import org.phenotips.remote.api.MatchingPatient;
 import org.phenotips.remote.api.fromjson.IncomingJSONParser;
 import org.phenotips.remote.api.fromjson.JSONToMatchingPatientConverter;
-import org.phenotips.remote.api.IncomingSearchRequest;
-import org.phenotips.remote.api.ApiConfiguration;
-import org.phenotips.remote.api.MatchingPatient;
 import org.phenotips.remote.hibernate.internal.DefaultIncomingSearchRequest;
-import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 
 import net.sf.json.JSONObject;
 
@@ -49,20 +49,22 @@ public class DefaultIncomingJSONParser implements IncomingJSONParser
     public DefaultIncomingJSONParser(String apiVersion, Logger logger)
     {
         this.apiVersion = apiVersion;
-        this.logger     = logger;
+        this.logger = logger;
 
         this.patientConverter = new DefaultJSONToMatchingPatientConverter(apiVersion, logger);
     }
 
     @Override
-    public IncomingSearchRequest parseIncomingRequest(JSONObject jsonRequest, String remoteServerId) {
+    public IncomingSearchRequest parseIncomingRequest(JSONObject jsonRequest, String remoteServerId)
+    {
 
-        MatchingPatient requestPatient = patientConverter.convert(jsonRequest);
+        MatchingPatient requestPatient = this.patientConverter.convert(jsonRequest);
 
         DefaultIncomingSearchRequest request = new DefaultIncomingSearchRequest(requestPatient, remoteServerId);
 
         try {
-            request.setResponseType(jsonRequest.optString(ApiConfiguration.JSON_RESPONSE_TYPE, ApiConfiguration.DEFAULT_REQUEST_RESPONSE_TYPE));
+            request.setResponseType(jsonRequest.optString(ApiConfiguration.JSON_RESPONSE_TYPE,
+                ApiConfiguration.DEFAULT_REQUEST_RESPONSE_TYPE));
 
             request.setQueryType(this.queryType(jsonRequest));
 
@@ -75,12 +77,12 @@ public class DefaultIncomingJSONParser implements IncomingJSONParser
 
             // TODO: label
         } catch (Exception ex) {
-            logger.error("Incoming request parsing error: {}", ex);
-            //request.setHTTPStatus(AppConfiguration.HTTP_BAD_REQUEST);
+            this.logger.error("Incoming request parsing error: {}", ex);
+            // request.setHTTPStatus(AppConfiguration.HTTP_BAD_REQUEST);
             return null;
         }
 
-        logger.debug("JSON->IncomingRequest done");
+        this.logger.debug("JSON->IncomingRequest done");
         return request;
     }
 

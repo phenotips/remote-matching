@@ -19,13 +19,14 @@
  */
 package org.phenotips.remote.common.internal;
 
-import org.phenotips.remote.common.ApiFactory;
 import org.phenotips.remote.api.ApiDataConverter;
+import org.phenotips.remote.common.ApiFactory;
+
 import org.xwiki.component.annotation.Component;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.inject.Named;
+import javax.inject.Singleton;
 
 @Component
 @Singleton
@@ -43,11 +44,13 @@ public class DefaultApiFactory implements ApiFactory
     //@Inject
     //private Map<String, ApiDataConverter> allApiDataConverters;  // the string is the hint
 
-    public ApiDataConverter getApiVersion(String apiVersion) {
+    @Override
+    public ApiDataConverter getApiVersion(String apiVersion)
+    {
         if (apiVersion.equals("v1")) {
-            return apiDataConverterV1;
+            return this.apiDataConverterV1;
         } else if (apiVersion.equals("v2")) {
-            return apiDataConverterV2;
+            return this.apiDataConverterV2;
         }
         throw new IllegalArgumentException("Unsupported API version [" + apiVersion + "]");
     }

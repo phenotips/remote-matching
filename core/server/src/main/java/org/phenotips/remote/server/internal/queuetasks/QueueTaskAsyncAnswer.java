@@ -20,26 +20,26 @@
 package org.phenotips.remote.server.internal.queuetasks;
 
 //import org.phenotips.remote.RemoteMatchingClient;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-
 import org.phenotips.data.similarity.PatientSimilarityView;
-import org.phenotips.remote.api.IncomingSearchRequest;
-
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.ApiDataConverter;
+import org.phenotips.remote.api.IncomingSearchRequest;
 import org.phenotips.remote.common.ApplicationConfiguration;
 import org.phenotips.remote.server.MatchingPatientsFinder;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 //import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.HttpClients;
-import com.xpn.xwiki.objects.BaseObject;
-
 import org.slf4j.Logger;
+
+import com.xpn.xwiki.objects.BaseObject;
 
 import net.sf.json.JSONObject;
 
@@ -70,33 +70,37 @@ public class QueueTaskAsyncAnswer implements Runnable
     public void run()
     {
         try {
-            List<PatientSimilarityView> matches = patientsFinder.findMatchingPatients(this.request.getRemotePatient());
+            List<PatientSimilarityView> matches =
+                this.patientsFinder.findMatchingPatients(this.request.getRemotePatient());
 
-            Map<IncomingSearchRequest, List<PatientSimilarityView>> manyResults = new HashMap<IncomingSearchRequest, List<PatientSimilarityView>>();
+            Map<IncomingSearchRequest, List<PatientSimilarityView>> manyResults =
+                new HashMap<IncomingSearchRequest, List<PatientSimilarityView>>();
 
             manyResults.put(this.request, matches);
 
-            JSONObject replyJSON = apiVersionSpecificConverter.generateAsyncResult(manyResults);
+            JSONObject replyJSON = this.apiVersionSpecificConverter.generateAsyncResult(manyResults);
 
             CloseableHttpClient client = HttpClients.createDefault();
 
-            StringEntity jsonEntity = new StringEntity(replyJSON.toString(), ContentType.create("application/json", "UTF-8"));
+            StringEntity jsonEntity =
+                new StringEntity(replyJSON.toString(), ContentType.create("application/json", "UTF-8"));
 
-            //String remoteServerId = this.request.getRemoteServerId();
-            String baseURL = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_BASE_URL_FIELD);
+            // String remoteServerId = this.request.getRemoteServerId();
+            String baseURL =
+                this.configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_BASE_URL_FIELD);
             if (baseURL.charAt(baseURL.length() - 1) != '/') {
                 baseURL += "/";
             }
             String targetURL = baseURL + ApiConfiguration.REMOTE_URL_ASYNCHRONOUS_RESULTS_ENDPOINT;
 
-            logger.debug("Sending async reply to [" + targetURL + "]: " + replyJSON.toString());
+            this.logger.debug("Sending async reply to [" + targetURL + "]: " + replyJSON.toString());
 
             HttpPost httpRequest = new HttpPost(targetURL);
             httpRequest.setEntity(jsonEntity);
             client.execute(httpRequest);
         } catch (Exception ex) {
             // Do nothing
-            logger.error("Error posting async response: [{}]", ex);
+            this.logger.error("Error posting async response: [{}]", ex);
         }
     }
 }

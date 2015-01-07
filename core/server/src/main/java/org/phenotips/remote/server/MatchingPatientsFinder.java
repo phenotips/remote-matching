@@ -19,11 +19,12 @@
  */
 package org.phenotips.remote.server;
 
-import java.util.List;
-
-import org.phenotips.remote.api.MatchingPatient;
 import org.phenotips.data.similarity.PatientSimilarityView;
+import org.phenotips.remote.api.MatchingPatient;
+
 import org.xwiki.component.annotation.Role;
+
+import java.util.List;
 
 @Role
 public interface MatchingPatientsFinder

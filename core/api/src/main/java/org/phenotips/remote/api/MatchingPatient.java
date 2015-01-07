@@ -19,10 +19,10 @@
  */
 package org.phenotips.remote.api;
 
-import java.util.Set;
-
 import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
+
+import java.util.Set;
 
 /**
  * TODO.
@@ -41,7 +41,7 @@ public interface MatchingPatient
 
     Set<? extends Disorder> getDisorders();
 
-    Set<? extends MatchingPatientGene> getGenes();  // TODO: Use VariantClass or similar instead of MatchingPatientGene?
+    Set<? extends MatchingPatientGene> getGenes(); // TODO: Use VariantClass or similar instead of MatchingPatientGene?
 
     String getExternalId();
 

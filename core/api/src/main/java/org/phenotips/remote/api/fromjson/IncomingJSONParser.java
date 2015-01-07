@@ -20,6 +20,7 @@
 package org.phenotips.remote.api.fromjson;
 
 import org.phenotips.remote.api.IncomingSearchRequest;
+
 import net.sf.json.JSONObject;
 
 public interface IncomingJSONParser

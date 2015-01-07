@@ -19,15 +19,6 @@
  */
 package org.phenotips.remote.common.internal.api.v1;
 
-import java.util.List;
-import java.util.Map;
-
-import net.sf.json.JSONObject;
-import net.sf.json.JSONArray;
-
-import org.xwiki.component.phase.Initializable;
-import org.phenotips.remote.common.internal.api.DefaultIncomingJSONParser;
-import org.phenotips.remote.common.internal.api.DefaultPatientToJSONConverter;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.ApiDataConverter;
@@ -35,12 +26,22 @@ import org.phenotips.remote.api.IncomingSearchRequest;
 import org.phenotips.remote.api.fromjson.IncomingJSONParser;
 import org.phenotips.remote.api.tojson.OutgoingRequestToJSONConverter;
 import org.phenotips.remote.api.tojson.PatientToJSONConverter;
-import org.slf4j.Logger;
-
-import javax.inject.Named;
-import javax.inject.Inject;
+import org.phenotips.remote.common.internal.api.DefaultIncomingJSONParser;
+import org.phenotips.remote.common.internal.api.DefaultPatientToJSONConverter;
 
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.phase.Initializable;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.slf4j.Logger;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 @Component
 @Named("api-data-converter-v1")
@@ -55,13 +56,15 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
     @Inject
     private Logger logger;
 
+    @Override
     public void initialize()
     {
-        incomingJSONParser = new DefaultIncomingJSONParser(getApiVersion(), logger);
+        this.incomingJSONParser = new DefaultIncomingJSONParser(getApiVersion(), this.logger);
 
-        patientToJSONConverter = new DefaultPatientToJSONConverter(getApiVersion(), logger);
+        this.patientToJSONConverter = new DefaultPatientToJSONConverter(getApiVersion(), this.logger);
     }
 
+    @Override
     public String getApiVersion()
     {
         return VERSION_STRING;
@@ -69,6 +72,7 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
 
     //================================================================
 
+    @Override
     public JSONObject generateWrongInputDataResponse()
     {
         JSONObject reply = new JSONObject();
@@ -76,6 +80,7 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
         return reply;
     }
 
+    @Override
     public JSONObject generateInternalServerErrorResponse()
     {
         JSONObject reply = new JSONObject();
@@ -85,17 +90,19 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
 
     //================================================================
 
+    @Override
     public IncomingJSONParser getIncomingJSONParser()
     {
-        return incomingJSONParser;
+        return this.incomingJSONParser;
     }
 
+    @Override
     public JSONObject generateInlineResponse(IncomingSearchRequest request, List<PatientSimilarityView> resultList)
     {
         JSONObject reply = new JSONObject();
 
         reply.put(ApiConfiguration.JSON_RESPONSE_TYPE, ApiConfiguration.REQUEST_RESPONSE_TYPE_SYNCHRONOUS);
-        reply.put(ApiConfiguration.JSON_RESPONSE_ID,   0);
+        reply.put(ApiConfiguration.JSON_RESPONSE_ID, 0);
 
         reply.put("modelPatientLabel", request.getRemotePatient().getLabel());      // TODO: DEBUG field
         reply.put("modelPatientId",    request.getRemotePatient().getExternalId()); // TODO: DEBUG field
@@ -103,9 +110,9 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
         JSONArray matchList = new JSONArray();
         for (PatientSimilarityView patient : resultList) {
             try {
-            matchList.add(this.patientToJSONConverter.convert(patient, true));
+                matchList.add(this.patientToJSONConverter.convert(patient, true));
             } catch (Exception ex) {
-                logger.error("Error converting patient to JSON: [{}]", ex);
+                this.logger.error("Error converting patient to JSON: [{}]", ex);
             }
         }
         reply.put(ApiConfiguration.JSON_RESULTS, matchList);
@@ -115,6 +122,7 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
         return reply;
     }
 
+    @Override
     public JSONObject generateNonInlineResponse(IncomingSearchRequest request)
     {
         JSONObject reply = new JSONObject();
@@ -134,6 +142,7 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
         return reply;
     }
 
+    @Override
     public JSONObject generateAsyncResult(Map<IncomingSearchRequest, List<PatientSimilarityView>> results)
     {
         JSONObject reply = new JSONObject();
@@ -150,9 +159,9 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
             JSONArray matchList = new JSONArray();
             for (PatientSimilarityView patient : resultList) {
                 try {
-                matchList.add(this.patientToJSONConverter.convert(patient, true));
+                    matchList.add(this.patientToJSONConverter.convert(patient, true));
                 } catch (Exception ex) {
-                    logger.error("Error converting patient to JSON: [{}]", ex);
+                    this.logger.error("Error converting patient to JSON: [{}]", ex);
                 }
             }
             oneResultsSet.put(ApiConfiguration.JSON_RESULTS, matchList);
@@ -167,6 +176,7 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
 
     //================================================================
 
+    @Override
     public OutgoingRequestToJSONConverter getOutgoingRequestToJSONConverter()
     {
         return null;

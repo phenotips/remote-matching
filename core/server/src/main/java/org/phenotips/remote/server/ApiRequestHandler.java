@@ -29,7 +29,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 //import org.xwiki.component.annotation.Role;
-
 import com.xpn.xwiki.XWikiException;
 
 /**

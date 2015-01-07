@@ -19,8 +19,8 @@
  */
 package org.phenotips.remote.hibernate.internal;
 
-import org.phenotips.remote.api.SearchRequest;
 import org.phenotips.remote.api.ApiConfiguration;
+import org.phenotips.remote.api.SearchRequest;
 
 import javax.persistence.Basic;
 import javax.persistence.DiscriminatorColumn;

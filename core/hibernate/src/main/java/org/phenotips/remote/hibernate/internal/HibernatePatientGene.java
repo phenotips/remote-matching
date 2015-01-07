@@ -19,8 +19,8 @@
  */
 package org.phenotips.remote.hibernate.internal;
 
-import org.phenotips.remote.api.MatchingPatientGene;
 import org.phenotips.remote.api.MatchingPatient;
+import org.phenotips.remote.api.MatchingPatientGene;
 
 import javax.persistence.Basic;
 import javax.persistence.Entity;

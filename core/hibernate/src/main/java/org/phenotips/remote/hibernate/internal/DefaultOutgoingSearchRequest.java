@@ -79,12 +79,14 @@ public class DefaultOutgoingSearchRequest extends AbstractSearchRequest implemen
     }
 
     @Override
-    public void setQueryID(String id) {
+    public void setQueryID(String id)
+    {
         this.remoteQueryId = id;
     }
 
     @Override
-    public Set<MatchingPatient> getResults() {
+    public Set<MatchingPatient> getResults()
+    {
         Set<MatchingPatient> result = new HashSet<MatchingPatient>();
         for (HibernatePatient remotePatient : this.results) {
             result.add(remotePatient);
