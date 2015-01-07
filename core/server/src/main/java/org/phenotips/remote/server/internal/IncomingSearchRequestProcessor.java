@@ -87,7 +87,7 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
         BaseObject configurationObject = XWikiAdapter.getRemoteConfigurationGivenRemoteIP(httpRequest.getRemoteAddr(), context);
 
         // FIXME? Is there other way to access all the necessary patients/data?
-        context.setUserReference(new DocumentReference(context.getMainXWiki(), "XWiki", "Admin"));
+        // context.setUserReference(new DocumentReference(context.getMainXWiki(), "XWiki", "Admin"));
 
         logger.error("Received JSON search request: <<{}>>", stringJson);
 
