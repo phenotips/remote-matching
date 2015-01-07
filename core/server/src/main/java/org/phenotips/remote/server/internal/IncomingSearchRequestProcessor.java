@@ -19,26 +19,26 @@
  */
 package org.phenotips.remote.server.internal;
 
-import org.phenotips.remote.server.MatchingPatientsFinder;
-import org.phenotips.remote.api.IncomingSearchRequest;
+import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.ApiDataConverter;
+import org.phenotips.remote.api.IncomingSearchRequest;
 import org.phenotips.remote.common.ApiFactory;
 import org.phenotips.remote.common.ApplicationConfiguration;
 import org.phenotips.remote.common.internal.XWikiAdapter;
+import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
+import org.phenotips.remote.server.MatchingPatientsFinder;
 import org.phenotips.remote.server.SearchRequestProcessor;
 import org.phenotips.remote.server.internal.queuetasks.QueueTaskAsyncAnswer;
 import org.phenotips.remote.server.internal.queuetasks.QueueTaskEmail;
-import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
-import org.phenotips.data.similarity.PatientSimilarityView;
-
-import java.util.concurrent.ExecutorService;
 
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.context.Execution;
 import org.xwiki.context.concurrent.ExecutionContextRunnable;
-import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.component.manager.ComponentManager;
+
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -49,8 +49,6 @@ import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.objects.BaseObject;
-
-import java.util.List;
 
 import net.sf.json.JSONObject;
 
@@ -80,16 +78,18 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
     private ComponentManager componentManager;
 
     @Override
-    public JSONObject processHTTPSearchRequest(String apiVersion, String stringJson, ExecutorService queue, HttpServletRequest httpRequest)
+    public JSONObject processHTTPSearchRequest(String apiVersion, String stringJson, ExecutorService queue,
+        HttpServletRequest httpRequest)
         throws Exception
     {
         XWikiContext context = (XWikiContext) this.execution.getContext().getProperty("xwikicontext");
-        BaseObject configurationObject = XWikiAdapter.getRemoteConfigurationGivenRemoteIP(httpRequest.getRemoteAddr(), context);
+        BaseObject configurationObject =
+            XWikiAdapter.getRemoteConfigurationGivenRemoteIP(httpRequest.getRemoteAddr(), context);
 
         // FIXME? Is there other way to access all the necessary patients/data?
         // context.setUserReference(new DocumentReference(context.getMainXWiki(), "XWiki", "Admin"));
 
-        logger.error("Received JSON search request: <<{}>>", stringJson);
+        this.logger.error("Received JSON search request: <<{}>>", stringJson);
 
         ApiDataConverter apiVersionSpecificConverter;
         try {
@@ -104,61 +104,67 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
         JSONObject json = JSONObject.fromObject(stringJson);
 
         try {
-            logger.error("...parsing input...");
+            this.logger.error("...parsing input...");
 
             IncomingSearchRequest request = this.createRequest(apiVersionSpecificConverter, json, configurationObject);
 
-            logger.error("...handling...");
+            this.logger.error("...handling...");
 
             String type = request.getResponseType();
 
             if (request.getQueryType() == ApiConfiguration.REQUEST_QUERY_TYPE_PERIODIC ||
                 StringUtils.equalsIgnoreCase(type, ApiConfiguration.REQUEST_RESPONSE_TYPE_ASYNCHRONOUS)) {
                 // save to DB & assign unique ID
-                requestStorageManager.saveIncomingPeriodicRequest(request);
+                this.requestStorageManager.saveIncomingPeriodicRequest(request);
             }
 
             if (StringUtils.equalsIgnoreCase(type, ApiConfiguration.REQUEST_RESPONSE_TYPE_SYNCHRONOUS)) {
-                logger.error("Request type: inline");
+                this.logger.error("Request type: inline");
 
-                List<PatientSimilarityView> matches = patientsFinder.findMatchingPatients(request.getRemotePatient());
+                List<PatientSimilarityView> matches =
+                    this.patientsFinder.findMatchingPatients(request.getRemotePatient());
 
                 return apiVersionSpecificConverter.generateInlineResponse(request, matches);
 
             } else if (StringUtils.equalsIgnoreCase(type, ApiConfiguration.REQUEST_RESPONSE_TYPE_EMAIL)) {
-                logger.error("Request type: emial");
+                this.logger.error("Request type: emial");
 
-                Runnable task = new ExecutionContextRunnable(new QueueTaskEmail(request, configurationObject, logger),
-                                                             componentManager);
+                Runnable task =
+                    new ExecutionContextRunnable(new QueueTaskEmail(request, configurationObject, this.logger),
+                        this.componentManager);
                 queue.submit(task);
 
                 return apiVersionSpecificConverter.generateNonInlineResponse(request);
 
             } else if (StringUtils.equalsIgnoreCase(type, ApiConfiguration.REQUEST_RESPONSE_TYPE_ASYNCHRONOUS)) {
-                logger.error("Request type: async");
+                this.logger.error("Request type: async");
 
-                Runnable task = new ExecutionContextRunnable(new QueueTaskAsyncAnswer(request, configurationObject, logger,
-                                                             apiVersionSpecificConverter, patientsFinder), componentManager);
+                Runnable task =
+                    new ExecutionContextRunnable(new QueueTaskAsyncAnswer(request, configurationObject, this.logger,
+                        apiVersionSpecificConverter, this.patientsFinder), this.componentManager);
                 queue.submit(task);
 
                 return apiVersionSpecificConverter.generateNonInlineResponse(request);
             }
         } catch (IllegalArgumentException ex) {
-            logger.error("DATA Error: {}", ex);
+            this.logger.error("DATA Error: {}", ex);
             return apiVersionSpecificConverter.generateWrongInputDataResponse();
         } catch (Exception ex) {
-            logger.error("CODE Error: {}", ex);
+            this.logger.error("CODE Error: {}", ex);
             return apiVersionSpecificConverter.generateInternalServerErrorResponse();
         }
 
         return null;
     }
 
-    private IncomingSearchRequest createRequest(ApiDataConverter apiDataConverter, JSONObject json, BaseObject configurationObject) throws IllegalArgumentException
+    private IncomingSearchRequest createRequest(ApiDataConverter apiDataConverter, JSONObject json,
+        BaseObject configurationObject) throws IllegalArgumentException
     {
-        String remoteServerId = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_NAME);
+        String remoteServerId =
+            configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_NAME);
 
-        IncomingSearchRequest request = apiDataConverter.getIncomingJSONParser().parseIncomingRequest(json, remoteServerId);
+        IncomingSearchRequest request =
+            apiDataConverter.getIncomingJSONParser().parseIncomingRequest(json, remoteServerId);
 
         if (StringUtils.equals(request.getResponseType(), ApiConfiguration.REQUEST_RESPONSE_TYPE_EMAIL) &&
             StringUtils.isBlank(request.getSubmitterEmail()))
