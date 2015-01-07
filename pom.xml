@@ -23,17 +23,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.phenomecentral</groupId>
-    <artifactId>phenomecentral-parent</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <relativePath>../phenomecentral.org/</relativePath>
+    <groupId>org.phenotips</groupId>
+    <artifactId>phenotips-components</artifactId>
+    <version>1.1-SNAPSHOT</version>
+    <relativePath />
   </parent>
-  <groupId>org.phenotips</groupId>
   <artifactId>remote-matching-parent</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Remote Matching - Parent POM</name>
-  <description>Remote Matching is a module for PhenomeCentral for interacting with other resources that do searches on patients with rare disorders.</description>
+  <description>Remote Matching is a module for PhenoTips for interacting with other resources that do searches on patients with rare disorders.</description>
   <url>http://phenomecentral.org/</url>
   <inceptionYear>2014</inceptionYear>
 
