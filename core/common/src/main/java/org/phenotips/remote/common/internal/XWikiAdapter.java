@@ -117,7 +117,7 @@ public class XWikiAdapter
                 return null;
             }
 
-            logger.error("Request IP: {}", remoteIP);
+            logger.debug("Request IP: {}", remoteIP);
             logger.debug("The number of remote configurations: {}", remotes.size());
 
             for (BaseObject remote : remotes) {

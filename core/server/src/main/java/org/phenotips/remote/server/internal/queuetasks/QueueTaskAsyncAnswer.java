@@ -89,7 +89,7 @@ public class QueueTaskAsyncAnswer implements Runnable
             }
             String targetURL = baseURL + ApiConfiguration.REMOTE_URL_ASYNCHRONOUS_RESULTS_ENDPOINT;
 
-            logger.error("Sending async reply to [" + targetURL + "]: " + replyJSON.toString());
+            logger.debug("Sending async reply to [" + targetURL + "]: " + replyJSON.toString());
 
             HttpPost httpRequest = new HttpPost(targetURL);
             httpRequest.setEntity(jsonEntity);

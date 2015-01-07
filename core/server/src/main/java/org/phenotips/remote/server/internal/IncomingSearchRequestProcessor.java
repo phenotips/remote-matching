@@ -89,7 +89,7 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
         // FIXME? Is there other way to access all the necessary patients/data?
         // context.setUserReference(new DocumentReference(context.getMainXWiki(), "XWiki", "Admin"));
 
-        this.logger.error("Received JSON search request: <<{}>>", stringJson);
+        this.logger.debug("Received JSON search request: <<{}>>", stringJson);
 
         ApiDataConverter apiVersionSpecificConverter;
         try {
@@ -104,11 +104,11 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
         JSONObject json = JSONObject.fromObject(stringJson);
 
         try {
-            this.logger.error("...parsing input...");
+            this.logger.debug("...parsing input...");
 
             IncomingSearchRequest request = this.createRequest(apiVersionSpecificConverter, json, configurationObject);
 
-            this.logger.error("...handling...");
+            this.logger.debug("...handling...");
 
             String type = request.getResponseType();
 
@@ -119,7 +119,7 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
             }
 
             if (StringUtils.equalsIgnoreCase(type, ApiConfiguration.REQUEST_RESPONSE_TYPE_SYNCHRONOUS)) {
-                this.logger.error("Request type: inline");
+                this.logger.debug("Request type: inline");
 
                 List<PatientSimilarityView> matches =
                     this.patientsFinder.findMatchingPatients(request.getRemotePatient());
@@ -127,7 +127,7 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
                 return apiVersionSpecificConverter.generateInlineResponse(request, matches);
 
             } else if (StringUtils.equalsIgnoreCase(type, ApiConfiguration.REQUEST_RESPONSE_TYPE_EMAIL)) {
-                this.logger.error("Request type: emial");
+                this.logger.debug("Request type: email");
 
                 Runnable task =
                     new ExecutionContextRunnable(new QueueTaskEmail(request, configurationObject, this.logger),
@@ -137,7 +137,7 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
                 return apiVersionSpecificConverter.generateNonInlineResponse(request);
 
             } else if (StringUtils.equalsIgnoreCase(type, ApiConfiguration.REQUEST_RESPONSE_TYPE_ASYNCHRONOUS)) {
-                this.logger.error("Request type: async");
+                this.logger.debug("Request type: async");
 
                 Runnable task =
                     new ExecutionContextRunnable(new QueueTaskAsyncAnswer(request, configurationObject, this.logger,

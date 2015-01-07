@@ -69,8 +69,8 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
     @Override
     public Response matchPost(String json, String apiVersion) throws XWikiRestException, XWikiException
     {
-        logger.error("PROCESS MATCH for version [{}]", apiVersion);
-        logger.error("INPUT JSON: [{}]", json);
+        logger.debug("PROCESS MATCH for version [{}]", apiVersion);
+        logger.debug("INPUT JSON: [{}]", json);
 
         try {
             JSONObject jsonResponse;
@@ -105,8 +105,8 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
     @Override
     public Response matchResultsPost(String json, String apiVersion) throws XWikiRestException, XWikiException
     {
-        logger.error("PROCESS MATCHRESULTS for version [{}]", apiVersion);
-        logger.error("INPUT JSON: [{}]", json);
+        logger.debug("PROCESS MATCHRESULTS for version [{}]", apiVersion);
+        logger.debug("INPUT JSON: [{}]", json);
 
         try {
             JSONObject jsonResponse = new JSONObject();
@@ -145,7 +145,7 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
             requestKey = httpRequest.getHeader(ApiConfiguration.HTTPHEADER_KEY_PARAMETER);
         }
         String configuredKey = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_LOCAL_KEY_FIELD);
-        logger.error("Remote server key validation: Key: {}, Configured: {}", requestKey, configuredKey);
+        logger.debug("Remote server key validation: Key: {}, Configured: {}", requestKey, configuredKey);
         if (requestKey == null || configuredKey == null || !requestKey.equals(configuredKey)) {
              return false;
         }

@@ -80,7 +80,7 @@ public class DefaultIncomingJSONParser implements IncomingJSONParser
             return null;
         }
 
-        logger.error("JSON->IncomingRequest done");
+        logger.debug("JSON->IncomingRequest done");
         return request;
     }
 
