@@ -64,7 +64,7 @@
     <dependency>
       <groupId>org.phenotips</groupId>
       <artifactId>patient-data-default-impl</artifactId>
-      <version>${project.version}</version>
+      <version>${phenotips.version}</version>
     </dependency>
     <dependency>
       <groupId>net.sf.json-lib</groupId>

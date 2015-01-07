@@ -34,6 +34,7 @@
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>
       <version>3.6.9.Final</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.commons</groupId>
@@ -53,22 +54,17 @@
     <dependency>
       <groupId>org.phenotips</groupId>
       <artifactId>patient-data-api</artifactId>
-      <version>${project.version}</version>
+      <version>${phenotips.version}</version>
     </dependency>
     <dependency>
       <groupId>org.phenotips</groupId>
       <artifactId>patient-similarity-data-api</artifactId>
-      <version>${project.version}</version>
+      <version>${patientNetwork.version}</version>
     </dependency>
     <dependency>
       <groupId>org.phenotips</groupId>
       <artifactId>patient-similarity-search</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.phenotips</groupId>
-      <artifactId>patient-data-api</artifactId>
-      <version>${project.version}</version>
+      <version>${patientNetwork.version}</version>
     </dependency>
     <dependency>
       <groupId>net.sf.json-lib</groupId>
