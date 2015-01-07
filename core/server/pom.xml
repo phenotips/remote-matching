@@ -47,17 +47,12 @@
     </dependency>
     <dependency>
       <groupId>org.xwiki.commons</groupId>
-      <artifactId>xwiki-commons-script</artifactId>
+      <artifactId>xwiki-commons-context</artifactId>
       <version>${xwiki.version}</version>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-security-api</artifactId>
-      <version>${xwiki.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-bridge</artifactId>
+      <artifactId>xwiki-platform-oldcore</artifactId>
       <version>${xwiki.version}</version>
     </dependency>
     <dependency>
@@ -66,30 +61,19 @@
       <version>${xwiki.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-mailsender</artifactId>
-      <version>${xwiki.version}</version>
-    </dependency>
-    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>remote-matching-core-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <!-- Group id should not be constant -->
       <groupId>org.phenotips</groupId>
-      <artifactId>phenotips-constants</artifactId>
-      <version>${phenotips.version}</version>
+      <artifactId>patient-similarity-data-api</artifactId>
+      <version>${patientNetwork.version}</version>
     </dependency>
     <dependency>
       <groupId>org.phenotips</groupId>
       <artifactId>patient-similarity-search</artifactId>
       <version>${patientNetwork.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.phenotips</groupId>
-      <artifactId>xwiki-platform-users-wiki</artifactId>
-      <version>${phenotips.version}</version>
     </dependency>
     <dependency>
       <groupId>org.phenotips</groupId>
@@ -107,6 +91,19 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>jsr311-api</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
     </dependency>
@@ -114,6 +111,14 @@
       <groupId>net.sf.json-lib</groupId>
       <artifactId>json-lib</artifactId>
       <classifier>jdk15</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
     </dependency>
   </dependencies>
 </project>
