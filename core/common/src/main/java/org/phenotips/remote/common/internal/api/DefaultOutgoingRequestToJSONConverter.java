@@ -19,11 +19,16 @@
  */
 package org.phenotips.remote.common.internal.api;
 
-import org.phenotips.remote.api.OutgoingSearchRequest;
+import org.phenotips.data.Patient;
+import org.phenotips.data.PatientRepository;
 import org.phenotips.remote.api.tojson.OutgoingRequestToJSONConverter;
+import org.phenotips.remote.api.OutgoingSearchRequest;
 import org.phenotips.remote.api.tojson.PatientToJSONConverter;
-
+import org.phenotips.remote.common.internal.api.DefaultPatientToJSONConverter;
 import org.slf4j.Logger;
+import org.xwiki.security.authorization.AuthorizationManager;
+import org.xwiki.security.authorization.Right;
+import org.xwiki.bridge.DocumentAccessBridge;
 
 import net.sf.json.JSONObject;
 
@@ -31,51 +36,88 @@ public class DefaultOutgoingRequestToJSONConverter implements OutgoingRequestToJ
 {
     private Logger logger;
 
+    private PatientRepository patientRepository;
+
+    private AuthorizationManager access;
+
+    private DocumentAccessBridge bridge;
+
     private PatientToJSONConverter patientToJSONConverter;
 
     private final String apiVersion;
 
-    public DefaultOutgoingRequestToJSONConverter(String apiVersion, Logger logger)
+    public DefaultOutgoingRequestToJSONConverter(String apiVersion, Logger logger, PatientRepository patientRepository,
+                                                 AuthorizationManager access, DocumentAccessBridge bridge)
     {
         this.apiVersion = apiVersion;
-        this.logger = logger;
 
-        this.patientToJSONConverter = new DefaultPatientToJSONConverter(apiVersion, logger);
+        this.logger            = logger;
+        this.patientRepository = patientRepository;
+        this.access            = access;
+        this.bridge            = bridge;
+
+        this.patientToJSONConverter = new DefaultPatientToJSONConverter(this.apiVersion, logger);
     }
 
     @Override
-    public JSONObject toJSON(OutgoingSearchRequest request, String remoteServerId)
+    public JSONObject toJSON(OutgoingSearchRequest request)
     {
-        Long patientId = request.getReferencePatientId();
+        String patientId = request.getReferencePatientId();
 
-        JSONObject json = new JSONObject();
-        /*
-        Patient reference = null;
+        Patient referencePatient = this.getPatientByID(patientId);
+        if (referencePatient == null) {
+            logger.error("Unable to get patient with id [{}]", patientId);
+            // can't access the requested patient
+            return null;
+        }
+
         try {
-            reference = request.getReferencePatient();
-        } catch (NullPointerException ex) {
-            // FIXME. The second catch can lead to bugs, but it should not.
-            try {
-                reference = XWikiAdapter.getPatient(request.getReferencePatientId(), this.wiki, this.context);
-            } catch (XWikiException wEx) {
-                // Should not happen. If the id of the patient does not exist, an error should have been thrown before
-                // this code is executed.
-            }
-        }
-        if (reference == null) {
+            JSONObject json = this.patientToJSONConverter.convert(referencePatient, false);
+
+            json.put("id", MD5(patientId));
+            json.put("queryType", request.getQueryType());
+
+            //JSONObject submitter = new JSONObject();
+            //submitter.put("name",  request.getSubmitterName());
+            //submitter.put("email", request.getSubmitterEmail());
+
             return json;
+        } catch (Exception ex) {
+            logger.error("Error converting patient to JSON: [{}]", ex);
+            return null;
         }
-        PatientToJSONWrapper patientWrapper = new PatientToJSONWrapper();
+    }
 
-        JSONObject submitter = new JSONObject();
-        submitter.put("name", request.getSubmitterName());
-        submitter.put("email", request.getSubmitterEmail());
+    private String MD5(String md5) {
+        try {
+             java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
+             byte[] array = md.digest(md5.getBytes());
+             StringBuffer sb = new StringBuffer();
+             for (int i = 0; i < array.length; ++i) {
+               sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1,3));
+            }
+             return sb.toString();
+         } catch (java.security.NoSuchAlgorithmException e) {
+         }
+         return null;
+     }
 
-        json.put("id", request.getRequestId());
-        json.put("queryType", request.getQueryType());
-        json.put("submitter", submitter);
-        json.putAll(patientWrapper.wrap(reference));
-        */
-        return json;
+    private Patient getPatientByID(String patientID)
+    {
+        Patient patient = this.patientRepository.getPatientById(patientID);
+        if (patient == null) {
+            return null;
+        }
+
+        String accessLevelName = "view";
+        // TODO: should access rights should be checked in the script service?
+        if (!this.access.hasAccess(Right.toRight(accessLevelName), this.bridge.getCurrentUserReference(),
+            patient.getDocument())) {
+            this.logger.error("Can't send outgoing matching request for patient [{}]: no access level [{}]",
+                              patientID, accessLevelName);
+            return null;
+        }
+
+        return patient;
     }
 }

@@ -19,20 +19,22 @@
  */
 package org.phenotips.remote.hibernate.internal;
 
+import java.util.Map;
+import java.util.List;
+
 import org.phenotips.remote.api.IncomingSearchRequest;
 import org.phenotips.remote.api.OutgoingSearchRequest;
+import org.phenotips.remote.api.SearchRequest;
 import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
-
 import org.xwiki.component.annotation.Component;
-
-import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.HibernateException;
+import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.store.hibernate.HibernateSessionFactory;
@@ -64,7 +66,7 @@ public class DefaultRemoteMatchingStorageManager implements RemoteMatchingStorag
         if (request.getQueryId() == null) {
             id = (Long) session.save(request);
         } else {
-            logger.error("saveIncomingPeriodicRequest: ERROR: A supposedly new request already has non-null Id set");
+            this.logger.error("saveIncomingPeriodicRequest: ERROR: A supposedly new request already has non-null Id set");
             throw new IllegalArgumentException("A supposedly new request already has non-null Id set");
         }
         t.commit();
@@ -75,7 +77,7 @@ public class DefaultRemoteMatchingStorageManager implements RemoteMatchingStorag
     public boolean updateIncomingPeriodicRequest(IncomingSearchRequest request)
     {
         if (request.getQueryId() == null) {
-            throw new IllegalArgumentException("Trying to update a request which ha snot benpreviously saved");
+            throw new IllegalArgumentException("Trying to update a request which has not been previously saved");
         }
         try {
             Session session = this.sessionFactory.getSessionFactory().openSession();
@@ -96,15 +98,47 @@ public class DefaultRemoteMatchingStorageManager implements RemoteMatchingStorag
     }
 
     @Override
-    public String saveOutgoingRequest(OutgoingSearchRequest request, String patientID)
+    public List<IncomingSearchRequest> loadAllActiveIncomingRequests()
     {
         return null;
     }
 
     @Override
+    public boolean saveOutgoingRequest(OutgoingSearchRequest request)
+    {
+        OutgoingSearchRequest existing = loadOutgoingRequest(request.getReferencePatientId(), request.getRemoteServerId());
+        boolean hadSameRequest = (existing != null);
+
+        Session session = this.sessionFactory.getSessionFactory().openSession();
+        Transaction t = session.beginTransaction();
+        if (request.getQueryId() == null) {
+            // an outgoing request should only be saved after it got a queryID from the remote server
+            throw new IllegalArgumentException("Attempting to save an outgoing request with no queryID");
+        }
+        session.save(request);
+        t.commit();
+        return hadSameRequest;
+    }
+
+    @Override
     public OutgoingSearchRequest loadOutgoingRequest(String patientID, String remoteServerId)
     {
-        return null;
+        if (patientID == null || remoteServerId == null) {
+            return null;
+        }
+        Session session = this.sessionFactory.getSessionFactory().openSession();
+        OutgoingSearchRequest data = (OutgoingSearchRequest) session.createCriteria(OutgoingSearchRequest.class)
+            .add(Restrictions.eq("localPatientId", patientID))
+            .add(Restrictions.eq("remoteServerId", remoteServerId))
+            .uniqueResult();
+
+        if (data == null) {
+            this.logger.debug("No outstanding match queries to server [{}] for patient [{}]", remoteServerId, patientID);
+            return null;
+        }
+
+        this.logger.debug("Found an outstanding query to server [{}] for patient [{}]", remoteServerId, patientID);
+        return data;
     }
 
     @Override

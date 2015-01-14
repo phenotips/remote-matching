@@ -36,9 +36,5 @@ public interface OutgoingSearchRequest extends SearchRequest
 
     void setResults(Set<MatchingPatient> results);
 
-    //void setReferencePatient(Patient patient);
-
-    //Patient getReferencePatient() throws NullPointerException;
-
-    Long getReferencePatientId();
+    String getReferencePatientId();
 }

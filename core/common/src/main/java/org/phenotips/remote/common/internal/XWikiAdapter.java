@@ -22,7 +22,6 @@ package org.phenotips.remote.common.internal;
 import org.phenotips.data.Patient;
 import org.phenotips.data.internal.PhenoTipsPatient;
 import org.phenotips.remote.common.ApplicationConfiguration;
-
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
@@ -107,19 +106,12 @@ public class XWikiAdapter
     static public BaseObject getRemoteConfigurationGivenRemoteIP(String remoteIP, XWikiContext context)
     {
         try {
-            XWikiDocument prefsDoc =
-                context.getWiki().getDocument(ApplicationConfiguration.XWIKI_PREFERENCES_DOCUMENT_REFERENCE, context);
-
-            List<BaseObject> remotes =
-                prefsDoc.getXObjects(ApplicationConfiguration.REMOTE_CONFIGURATION_OBJECT_REFERENCE);
-
+            List<BaseObject> remotes = getListOfRemotes(context);
             if (remotes == null) {
-                logger.error("Remote matching admin section is absent or empty: can not process incoming request");
                 return null;
             }
 
             logger.debug("Request IP: {}", remoteIP);
-            logger.debug("The number of remote configurations: {}", remotes.size());
 
             for (BaseObject remote : remotes) {
                 if (remote == null) {
@@ -134,14 +126,57 @@ public class XWikiAdapter
                         return remote;
                     }
                 } catch (MalformedURLException ex) {
-                    logger.error(
-                        "One of the configured remote matching servers has an incorrectly formatted URL=[{}]: {}",
+                    logger.error("One of the configured remote matching servers has an incorrectly formatted URL=[{}]: {}",
                         remote.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_BASE_URL_FIELD),
                         ex.getMessage());
                 }
             }
         } catch (Exception ex) {
             logger.warn("Error while getting server info for IP [{}]: [{}] {}", remoteIP, ex.getMessage(), ex);
+        }
+        return null;
+    }
+
+    static public BaseObject getRemoteConfigurationGivenRemoteName(String remoteName, XWikiContext context)
+    {
+        try {
+            List<BaseObject> remotes = getListOfRemotes(context);
+            if (remotes == null) {
+                return null;
+            }
+
+            logger.debug("Requested server label: {}", remoteName);
+
+            for (BaseObject remote : remotes) {
+                if (remote == null) {
+                    continue;
+                }
+                String configuredName = remote.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_NAME);
+                logger.debug("Next server: {}", configuredName);
+                if (StringUtils.equalsIgnoreCase(remoteName, configuredName)) {
+                    return remote;
+                }
+            }
+        } catch (Exception ex) {
+            logger.error("Error while getting server info for serverName [{}]: [{}] {}",
+                         remoteName, ex.getMessage(), ex);
+        }
+        return null;
+    }
+
+    static private List<BaseObject> getListOfRemotes(XWikiContext context)
+    {
+        try {
+            XWikiDocument prefsDoc =
+                context.getWiki().getDocument(ApplicationConfiguration.XWIKI_PREFERENCES_DOCUMENT_REFERENCE, context);
+
+            List<BaseObject> remotes =
+                prefsDoc.getXObjects(ApplicationConfiguration.REMOTE_CONFIGURATION_OBJECT_REFERENCE);
+
+            return remotes;
+        } catch (Exception ex) {
+            logger.error("Remote matching admin section is absent or empty - can not process request: [{}] {}",
+                         ex.getMessage(), ex);
         }
         return null;
     }

@@ -19,12 +19,13 @@
  */
 package org.phenotips.remote.hibernate;
 
+import org.xwiki.component.annotation.Role;
+
 import org.phenotips.remote.api.IncomingSearchRequest;
 import org.phenotips.remote.api.OutgoingSearchRequest;
 
-import org.xwiki.component.annotation.Role;
-
 import java.util.Map;
+import java.util.List;
 
 @Role
 public interface RemoteMatchingStorageManager
@@ -39,7 +40,8 @@ public interface RemoteMatchingStorageManager
     String saveIncomingPeriodicRequest(IncomingSearchRequest request);
 
     /**
-     * Replaces existing periodic request with the given queryID with Throws iff request has no queryID field set
+     * Replaces existing periodic request with the given queryID with the specified request.
+     * Throws iff request has no queryID field set
      *
      * @param request
      * @return true iff a request with the given ID was present in the system
@@ -48,18 +50,21 @@ public interface RemoteMatchingStorageManager
 
     boolean deleteIncomingPeriodicRequest(String queryID);
 
+    List<IncomingSearchRequest> loadAllActiveIncomingRequests();
+
     //=======================================================================
 
     /**
-     * Saves the request,
+     * Saves the request
      *
      * @param request
      * @param patientID
-     * @return
+     * @return true if a request with the same parameters already existed in the database (and got overwritten)
      */
-    String saveOutgoingRequest(OutgoingSearchRequest request, String patientID);
+    boolean saveOutgoingRequest(OutgoingSearchRequest request);
 
     /**
+     *
      * @param patientID
      * @return last request or null if none found
      */

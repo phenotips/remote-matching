@@ -62,6 +62,16 @@
     </dependency>
     <dependency>
       <groupId>org.phenotips</groupId>
+      <artifactId>patient-similarity-search</artifactId>
+      <version>${patientNetwork.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.phenotips</groupId>
+      <artifactId>patient-similarity-data-impl</artifactId>
+      <version>${patientNetwork.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.phenotips</groupId>
       <artifactId>patient-data-default-impl</artifactId>
       <version>${phenotips.version}</version>
     </dependency>

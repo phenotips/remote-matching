@@ -22,6 +22,7 @@ package org.phenotips.remote.common.internal.api;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.IncomingSearchRequest;
 import org.phenotips.remote.api.MatchingPatient;
+import org.phenotips.remote.common.internal.api.DefaultJSONToMatchingPatientConverter;
 import org.phenotips.remote.api.fromjson.IncomingJSONParser;
 import org.phenotips.remote.api.fromjson.JSONToMatchingPatientConverter;
 import org.phenotips.remote.hibernate.internal.DefaultIncomingSearchRequest;
@@ -33,7 +34,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import net.sf.json.JSONObject;
-
 /**
  * TODO
  * note: designed to be able to handle multiple (slightly different) versions of the Matching API
@@ -49,7 +49,7 @@ public class DefaultIncomingJSONParser implements IncomingJSONParser
     public DefaultIncomingJSONParser(String apiVersion, Logger logger)
     {
         this.apiVersion = apiVersion;
-        this.logger = logger;
+        this.logger     = logger;
 
         this.patientConverter = new DefaultJSONToMatchingPatientConverter(apiVersion, logger);
     }
@@ -57,14 +57,12 @@ public class DefaultIncomingJSONParser implements IncomingJSONParser
     @Override
     public IncomingSearchRequest parseIncomingRequest(JSONObject jsonRequest, String remoteServerId)
     {
-
         MatchingPatient requestPatient = this.patientConverter.convert(jsonRequest);
 
         DefaultIncomingSearchRequest request = new DefaultIncomingSearchRequest(requestPatient, remoteServerId);
 
         try {
-            request.setResponseType(jsonRequest.optString(ApiConfiguration.JSON_RESPONSE_TYPE,
-                ApiConfiguration.DEFAULT_REQUEST_RESPONSE_TYPE));
+            request.setResponseType(this.responseType(jsonRequest));
 
             request.setQueryType(this.queryType(jsonRequest));
 
@@ -78,7 +76,6 @@ public class DefaultIncomingJSONParser implements IncomingJSONParser
             // TODO: label
         } catch (Exception ex) {
             this.logger.error("Incoming request parsing error: {}", ex);
-            // request.setHTTPStatus(AppConfiguration.HTTP_BAD_REQUEST);
             return null;
         }
 
@@ -86,17 +83,24 @@ public class DefaultIncomingJSONParser implements IncomingJSONParser
         return request;
     }
 
+    private String responseType(JSONObject json)
+    {
+        String result = json.optString(ApiConfiguration.JSON_RESPONSE_TYPE, ApiConfiguration.DEFAULT_REQUEST_RESPONSE_TYPE);
+        if (!result.equals(ApiConfiguration.REQUEST_RESPONSE_TYPE_SYNCHRONOUS) &&
+            !result.equals(ApiConfiguration.REQUEST_RESPONSE_TYPE_ASYNCHRONOUS)) {
+            logger.error("Incoming matching request: unsupported response type [{}]", result);
+            result = ApiConfiguration.DEFAULT_REQUEST_RESPONSE_TYPE;
+        }
+        return result;
+    }
+
     private String queryType(JSONObject json)
     {
-        String result = ApiConfiguration.DEFAULT_REQUEST_QUERY_TYPE;
-        try {
-            result = json.getString(ApiConfiguration.JSON_QUERY_TYPE);
-            if (!result.equals(ApiConfiguration.REQUEST_QUERY_TYPE_ONCE) &&
-                !result.equals(ApiConfiguration.REQUEST_QUERY_TYPE_PERIODIC)) {
-                result = ApiConfiguration.DEFAULT_REQUEST_QUERY_TYPE;
-            }
-            return result;
-        } catch (Exception ex) {
+        String result = json.optString(ApiConfiguration.JSON_QUERY_TYPE, ApiConfiguration.DEFAULT_REQUEST_QUERY_TYPE);
+        if (!result.equals(ApiConfiguration.REQUEST_QUERY_TYPE_ONCE) &&
+            !result.equals(ApiConfiguration.REQUEST_QUERY_TYPE_PERIODIC)) {
+            logger.error("Incoming matching request: unsupported query type [{}]", result);
+            result = ApiConfiguration.DEFAULT_REQUEST_QUERY_TYPE;
         }
         return result;
     }

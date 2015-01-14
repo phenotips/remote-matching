@@ -19,6 +19,17 @@
  */
 package org.phenotips.remote.common.internal.api.v1;
 
+import java.util.List;
+import java.util.Map;
+
+import net.sf.json.JSONObject;
+import net.sf.json.JSONArray;
+
+import org.xwiki.component.phase.Initializable;
+import org.phenotips.remote.common.internal.api.DefaultIncomingJSONParser;
+import org.phenotips.remote.common.internal.api.DefaultPatientToJSONConverter;
+import org.phenotips.remote.common.internal.api.DefaultOutgoingRequestToJSONConverter;
+import org.phenotips.data.PatientRepository;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.ApiDataConverter;
@@ -26,22 +37,14 @@ import org.phenotips.remote.api.IncomingSearchRequest;
 import org.phenotips.remote.api.fromjson.IncomingJSONParser;
 import org.phenotips.remote.api.tojson.OutgoingRequestToJSONConverter;
 import org.phenotips.remote.api.tojson.PatientToJSONConverter;
-import org.phenotips.remote.common.internal.api.DefaultIncomingJSONParser;
-import org.phenotips.remote.common.internal.api.DefaultPatientToJSONConverter;
-
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.phase.Initializable;
-
-import java.util.List;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-
+import org.xwiki.security.authorization.AuthorizationManager;
+import org.xwiki.bridge.DocumentAccessBridge;
 import org.slf4j.Logger;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import javax.inject.Named;
+import javax.inject.Inject;
+
+import org.xwiki.component.annotation.Component;
 
 @Component
 @Named("api-data-converter-v1")
@@ -53,15 +56,30 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
 
     private PatientToJSONConverter patientToJSONConverter;
 
+    private OutgoingRequestToJSONConverter outgoingJSONParser;
+
     @Inject
     private Logger logger;
 
-    @Override
+    /** Provides access to patient data. */
+    @Inject
+    private PatientRepository patientRepository;
+
+    /** Used for checking access rights. */
+    @Inject
+    private AuthorizationManager access;
+
+    /** Used for obtaining the current user. */
+    @Inject
+    private DocumentAccessBridge bridge;
+
     public void initialize()
     {
-        this.incomingJSONParser = new DefaultIncomingJSONParser(getApiVersion(), this.logger);
+        incomingJSONParser = new DefaultIncomingJSONParser(getApiVersion(), logger);
 
-        this.patientToJSONConverter = new DefaultPatientToJSONConverter(getApiVersion(), this.logger);
+        patientToJSONConverter = new DefaultPatientToJSONConverter(getApiVersion(), logger);
+
+        outgoingJSONParser = new DefaultOutgoingRequestToJSONConverter(getApiVersion(), logger, patientRepository, access, bridge);
     }
 
     @Override
@@ -102,7 +120,7 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
         JSONObject reply = new JSONObject();
 
         reply.put(ApiConfiguration.JSON_RESPONSE_TYPE, ApiConfiguration.REQUEST_RESPONSE_TYPE_SYNCHRONOUS);
-        reply.put(ApiConfiguration.JSON_RESPONSE_ID, 0);
+        reply.put(ApiConfiguration.JSON_RESPONSE_ID,   0);
 
         reply.put("modelPatientLabel", request.getRemotePatient().getLabel());      // TODO: DEBUG field
         reply.put("modelPatientId",    request.getRemotePatient().getExternalId()); // TODO: DEBUG field
@@ -179,6 +197,6 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
     @Override
     public OutgoingRequestToJSONConverter getOutgoingRequestToJSONConverter()
     {
-        return null;
+        return this.outgoingJSONParser;
     }
 }

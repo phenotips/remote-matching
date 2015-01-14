@@ -19,23 +19,27 @@
  */
 package org.phenotips.remote.common.internal.api;
 
+import org.phenotips.remote.api.tojson.PatientToJSONConverter;
 import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
 import org.phenotips.data.FeatureMetadatum;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
 import org.phenotips.ontology.internal.solr.SolrOntologyTerm;
+//import org.phenotips.data.similarity.internal.PatientGenotype;
 import org.phenotips.remote.api.ApiConfiguration;
-import org.phenotips.remote.api.tojson.PatientToJSONConverter;
+import org.slf4j.Logger;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Iterator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.slf4j.Logger;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -56,25 +60,31 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
     public DefaultPatientToJSONConverter(String apiVersion, Logger logger)
     {
         this.apiVersion = apiVersion;
-        this.logger = logger;
+        this.logger     = logger;
     }
 
-    @Override
     public JSONObject convert(Patient patient, boolean removePrivateData)
     {
         JSONObject json = new JSONObject();
 
         try {
-            json.put("gender", DefaultPatientToJSONConverter.gender(patient));
+            json.put(ApiConfiguration.JSON_GENDER, DefaultPatientToJSONConverter.gender(patient));
             json.putAll(DefaultPatientToJSONConverter.globalQualifiers(patient));
         } catch (Exception ex) {
             // Do nothing. These are optional.
         }
-        json.put("disorders", DefaultPatientToJSONConverter.disorders(patient));
+        JSONArray disorders = DefaultPatientToJSONConverter.disorders(patient);
+        if (!disorders.isEmpty()) {
+            json.put(ApiConfiguration.JSON_DISORDERS, disorders);
+        }
         if (removePrivateData) {
-            json.put("features", DefaultPatientToJSONConverter.nonPersonalFeatures(patient));
+            json.put(ApiConfiguration.JSON_FEATURES, DefaultPatientToJSONConverter.nonPersonalFeatures(patient));
         } else {
-            json.put("features", DefaultPatientToJSONConverter.features(patient));
+            json.put(ApiConfiguration.JSON_FEATURES, DefaultPatientToJSONConverter.features(patient));
+        }
+        JSONArray genes = DefaultPatientToJSONConverter.genes(patient, logger);
+        if (!genes.isEmpty()) {
+            json.put(ApiConfiguration.JSON_GENES, genes);
         }
         return json;
     }
@@ -87,7 +97,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             FeatureMetadatum ageOfOnset = metadata.get(ApiConfiguration.FEATURE_AGE_OF_ONSET);
 
             JSONObject featureJson = new JSONObject();
-            featureJson.put(ApiConfiguration.REPLY_JSON_FEATURE_ID, patientFeature.getId());
+            featureJson.put(ApiConfiguration.REPLY_JSON_FEATURE_ID,       patientFeature.getId());
             featureJson.put(ApiConfiguration.REPLY_JSON_FEATURE_OBSERVED, observedStatusToJSONString(patientFeature));
 
             if (ageOfOnset != null) {
@@ -177,8 +187,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
                     obfuscatedFeatures.add(featureId);
                 }
 
-                Integer count = featureCounts.containsKey(featureId) ?
-                    featureCounts.get(featureId) : 0;
+                Integer count = featureCounts.containsKey(featureId) ? featureCounts.get(featureId) : 0;
                 featureCounts.put(featureId, count + 1);
             }
         }
@@ -219,6 +228,58 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             disorders.add(disease.getId());
         }
         return disorders;
+    }
+
+    private static JSONArray genes(Patient patient, Logger logger)
+    {
+        JSONArray genes = new JSONArray();
+        try {
+            Collection<String> candidateGeneNames = getPatientCandidateGeneNames(patient);
+            for (String geneName : candidateGeneNames) {
+                JSONObject nextGene = new JSONObject();
+                nextGene.put(ApiConfiguration.JSON_GENES_GENENAME, geneName);
+                nextGene.put(ApiConfiguration.JSON_GENES_ASSEMBLY, "GRCh37"); // TODO: pull from candidate genes/patient/vcf?
+                genes.add(nextGene);
+            }
+        } catch (Exception ex) {
+            logger.error("Error getting candidate genes for patient [{}]: [{}]", patient.getId(), ex);
+            return new JSONArray();
+        }
+        return genes;
+    }
+
+    /**
+     * TODO: this is a rip from org.phenotips.data.similarity.internal.PatientGenotype
+     *       that class was not intended to be used outside of its package, need
+     *       to review and use PatientGenotype once it is updated
+     *
+     * Return a collection of the names of candidate genes listed for the given patient.
+     * @return a (potentially-empty) unmodifiable collection of the names of candidate genes
+     */
+    private static Collection<String> getPatientCandidateGeneNames(Patient p)
+    {
+        PatientData<Map<String, String>> genesData = null;
+        if (p != null) {
+            genesData = p.getData("genes");
+        }
+        if (genesData != null) {
+            Set<String> geneNames = new HashSet<String>();
+            Iterator<Map<String, String>> iterator = genesData.iterator();
+            while (iterator.hasNext()) {
+                Map<String, String> geneInfo = iterator.next();
+                String geneName = geneInfo.get("gene");
+                if (geneName == null) {
+                    continue;
+                }
+                geneName = geneName.trim();
+                if (geneName.isEmpty()) {
+                    continue;
+                }
+                geneNames.add(geneName);
+            }
+            return Collections.unmodifiableSet(geneNames);
+        }
+        return Collections.emptySet();
     }
 
     private static String gender(Patient patient)

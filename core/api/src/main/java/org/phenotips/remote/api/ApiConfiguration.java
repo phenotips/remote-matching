@@ -29,8 +29,7 @@ public interface ApiConfiguration
     String API_VERSION_STRING = "v1";
 
     String HTTPHEADER_KEY_PARAMETER = "X-Auth-Token";
-
-    String URL_KEY_PARAMETER = "key"; // TODO: deprecated
+    String URL_KEY_PARAMETER        = "key";                // TODO: depricated
 
     // Must not contain the '/' at the beginning of the string
     String REMOTE_URL_SEARCH_ENDPOINT = "mmapi/" + API_VERSION_STRING + "/match";
@@ -46,21 +45,6 @@ public interface ApiConfiguration
 
     // Patient
     String FEATURE_AGE_OF_ONSET = "age_of_onset";
-
-    // JSON
-    String REPLY_JSON_FEATURE_AGE_OF_ONSET = "ageOfOnset";
-
-    String REPLY_JSON_FEATURE_ID = "id";
-
-    String REPLY_JSON_FEATURE_OBSERVED     = "observed";
-    String REPLY_JSON_FEATURE_OBSERVED_YES = "yes";
-    String REPLY_JSON_FEATURE_OBSERVED_NO  = "no";
-
-    String REPLY_JSON_FEATURE_COUNT        = "count";
-
-    String REPLY_JSON_FEATURE_MATCHED      = "matched";
-
-    String REPLY_JSON_FEATURE_OBFUSCATED   = "obfuscated";
 
     // used for non-matched non-disclosed featues to indicate there is an unmatched feature
     String REPLY_JSON_FEATURE_HPO_MOST_GENERIC_TERM = "HP:0000118";
@@ -81,6 +65,8 @@ public interface ApiConfiguration
 
     String JSON_PATIENT_LABEL = "label";
 
+    String JSON_GENDER = "gender";
+
     String JSON_RESPONSE_ID = "queryID";
 
     String JSON_RESPONSE_TYPE = "responseType";
@@ -89,13 +75,24 @@ public interface ApiConfiguration
 
     String JSON_FEATURES = "features";
 
+    // JSON Feature subfields
+    String REPLY_JSON_FEATURE_AGE_OF_ONSET = "ageOfOnset";
+    String REPLY_JSON_FEATURE_ID = "id";
+    String REPLY_JSON_FEATURE_OBSERVED     = "observed";
+    String REPLY_JSON_FEATURE_OBSERVED_YES = "yes";
+    String REPLY_JSON_FEATURE_OBSERVED_NO  = "no";
+    String REPLY_JSON_FEATURE_COUNT        = "count";
+    String REPLY_JSON_FEATURE_MATCHED      = "matched";
+    String REPLY_JSON_FEATURE_OBFUSCATED   = "obfuscated";
     String JSON_DISORDERS = "disorders";
 
     String JSON_GENES = "genes";
+    // JSON genes subfields
+    String JSON_GENES_GENENAME = "gene";
+    String JSON_GENES_ASSEMBLY = "assembly";
 
     String REQUEST_RESPONSE_TYPE_SYNCHRONOUS  = "inline";
     String REQUEST_RESPONSE_TYPE_ASYNCHRONOUS = "asynchronous";
-    String REQUEST_RESPONSE_TYPE_EMAIL        = "email";
     // Used when the request does not explicitly specify response type
     String DEFAULT_REQUEST_RESPONSE_TYPE = REQUEST_RESPONSE_TYPE_SYNCHRONOUS;
 

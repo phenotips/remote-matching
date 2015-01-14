@@ -19,6 +19,8 @@
  */
 package org.phenotips.remote.api;
 
+import java.sql.Timestamp;
+
 /**
  * The functions essential to the servers ability to store, track, an answer search requests.
  */
@@ -43,8 +45,8 @@ public interface SearchRequest
     String getQueryType();
 
     /**
-     * Is not mandatory for {@link org.phenotips.remote.api.OutgoingSearchRequest} as it is instantiated with the
-     * default value.
+     * Is not mandatory for {@link org.phenotips.remote.api.OutgoingSearchRequest} as it is instantiated with
+     * the default value.
      */
     String getResponseType();
 
@@ -62,4 +64,10 @@ public interface SearchRequest
      * Default: null
      */
     String getSubmitterInstitution();
+
+    /**
+     * The last time results for this query were produced (for the server) or obtained (for the client)
+     * Default: null (never)
+     */
+    Timestamp getLastResultTime();
 }

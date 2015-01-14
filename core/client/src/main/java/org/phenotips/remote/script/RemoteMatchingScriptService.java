@@ -24,7 +24,13 @@ import org.phenotips.data.PatientRepository;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.data.similarity.PatientSimilarityViewFactory;
 import org.phenotips.remote.api.ApiConfiguration;
+import org.phenotips.remote.api.ApiDataConverter;
 import org.phenotips.remote.api.OutgoingSearchRequest;
+import org.phenotips.remote.common.ApiFactory;
+import org.phenotips.remote.common.ApplicationConfiguration;
+import org.phenotips.remote.common.internal.XWikiAdapter;
+import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
+import org.phenotips.remote.hibernate.internal.DefaultOutgoingSearchRequest;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
 import org.xwiki.model.reference.DocumentReferenceResolver;
@@ -39,7 +45,13 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.Session;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWiki;
@@ -47,7 +59,6 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xpn.xwiki.store.hibernate.HibernateSessionFactory;
 
 import net.sf.json.JSONObject;
 
@@ -68,74 +79,112 @@ public class RemoteMatchingScriptService implements ScriptService
     private Execution execution;
 
     @Inject
-    @Named("restricted")
-    private PatientSimilarityViewFactory viewFactory;
+    ApiFactory apiFactory;
 
     @Inject
-    private HibernateSessionFactory sessionFactory;
+    private RemoteMatchingStorageManager requestStorageManager;
 
-    @Inject
-    @Named("current")
-    private DocumentReferenceResolver<String> resolver;
 
-    /** Wrapped trusted API, doing the actual work. */
-    @Inject
-    private PatientRepository internalPatientService;
+    public JSONObject sendRequest(String patientId, String remoteServerId, boolean async, boolean periodic)
+    {
+        XWikiContext context = this.getContext();
 
-    public boolean sendRequest(com.xpn.xwiki.api.Object xwikiObject)
-    {/*
+        BaseObject configurationObject = XWikiAdapter.getRemoteConfigurationGivenRemoteName(remoteServerId, context);
+
+        if (configurationObject == null) {
+            logger.error("Requested matching server is not configured: [{}]", remoteServerId);
+            return generateScriptReply(ApiConfiguration.HTTP_BAD_REQUEST, null);
+        }
+
+        // TODO: get API version from server configuration
+
+        String apiVersion = "v1";
+        ApiDataConverter apiVersionSpecificConverter = this.apiFactory.getApiVersion(apiVersion);
+
+        DefaultOutgoingSearchRequest request = new DefaultOutgoingSearchRequest(patientId, remoteServerId);
+        if (periodic) {
+            request.setQueryType(ApiConfiguration.REQUEST_QUERY_TYPE_PERIODIC);
+        }
+        if (async) {
+            request.setResponseType(ApiConfiguration.REQUEST_RESPONSE_TYPE_ASYNCHRONOUS);
+        }
+
+        JSONObject requestJSON = apiVersionSpecificConverter.getOutgoingRequestToJSONConverter().toJSON(request);
+        if (requestJSON == null) {
+            logger.error("Unable to convert patient to JSON: [{}]", patientId);
+            return generateScriptReply(ApiConfiguration.HTTP_SERVER_ERROR, null);
+        }
+
+        CloseableHttpClient client = HttpClients.createDefault();
+
+        StringEntity jsonEntity = new StringEntity(requestJSON.toString(), ContentType.create("application/json", "UTF-8"));
+
+        String key     = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_KEY_FIELD);
+        String baseURL = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_BASE_URL_FIELD);
+        if (baseURL.charAt(baseURL.length() - 1) != '/') {
+            baseURL += "/";
+        }
+        String targetURL = baseURL + ApiConfiguration.REMOTE_URL_SEARCH_ENDPOINT;
+
+        logger.error("Sending matching request to [" + targetURL + "]: " + requestJSON.toString());
+
+        CloseableHttpResponse httpResponse;
         try {
-            XWikiContext context = getContext();
-            XWiki wiki = getWiki(context);
+            HttpPost httpRequest = new HttpPost(targetURL);
+            httpRequest.setEntity(jsonEntity);
+            httpRequest.setHeader(ApiConfiguration.HTTPHEADER_KEY_PARAMETER, key);
+            httpResponse = client.execute(httpRequest);
+        } catch (Exception ex) {
+            logger.error("Error sending matching request to [" + targetURL + "]: [{}]", ex);
+            return generateScriptReply(ApiConfiguration.HTTP_BAD_REQUEST, null);
+        }
 
-            BaseObject xwikiRequestObject = xwikiObject.getXWikiObject();
+        try {
+            Integer httpStatus   = (Integer) httpResponse.getStatusLine().getStatusCode();
+            String stringReply   = EntityUtils.toString(httpResponse.getEntity());
 
-            OutgoingSearchRequest request = requestHandler.getRequest();
+            logger.error("Reply to matching request: STATUS: [{}], DATA: [{}]", httpStatus, stringReply);
 
-            Session session = this.sessionFactory.getSessionFactory().openSession();
-            requestHandler.saveRequest(session);
+            JSONObject replyJSON = getParsedJSON(stringReply);
 
-            String result;
-            try {
-                result = RemoteMatchingClient.sendRequest(request, context);
-
-                public static String sendRequest(OutgoingSearchRequestInterface request, XWikiContext context) throws Exception
-                {
-                    XWiki wiki = context.getWiki();
-                    OutgoingSearchRequestToJSONWrapper requestWrapper = new OutgoingSearchRequestToJSONWrapper(wiki, context);
-
-                    JSONObject json = requestWrapper.wrap(request);
-                    CloseableHttpResponse httpResponse;
-                    try {
-                        httpResponse = RemoteMatchingClient.send(request, json);
-                    } catch (Exception ex) {
-                        Logger logger = LoggerFactory.getLogger(RemoteMatchingClient.class);
-                        logger.error("Could not send request to [{}] due to the following error: {}", request.getTargetURL(),
-                            ex.getMessage(), ex);
-                        throw ex;
-                    }
-                    httpResponse.close();
-                    if (!((Integer) httpResponse.getStatusLine().getStatusCode()).equals(Configuration.HTTP_OK)) {
-                        throw new Exception("The request did not return OK status");
-                    }
-                    return EntityUtils.toString(httpResponse.getEntity());
+            if (StringUtils.equalsIgnoreCase(request.getQueryType(), ApiConfiguration.REQUEST_QUERY_TYPE_PERIODIC) ||
+                StringUtils.equalsIgnoreCase(request.getResponseType(), ApiConfiguration.REQUEST_RESPONSE_TYPE_ASYNCHRONOUS)) {
+                // get query ID assigned by the remote server and saveto DB
+                if (!replyJSON.has(ApiConfiguration.JSON_RESPONSE_ID)) {
+                    logger.error("Can not store outgoing request: no queryID is provided by remote server");
+                } else {
+                    String queruID = replyJSON.getString(ApiConfiguration.JSON_RESPONSE_ID);
+                    logger.error("Remote server assigned id to the submitted query: [{}]", queruID);
+                    request.setQueryID(replyJSON.getString(ApiConfiguration.JSON_RESPONSE_ID));
+                    requestStorageManager.saveOutgoingRequest(request);
                 }
-
-
-
-            } catch (Exception ex) {
-                return false;
             }
 
-            JSONObject json = JSONObject.fromObject(result);
-            requestHandler = new OutgoingRequestHandler(request, json);
-            requestHandler.saveRequest(session);
-
-            return true;
+            return generateScriptReply(httpStatus, replyJSON);
         } catch (Exception ex) {
-            this.logger.error("Failed to send request", ex);
-        }*/
-        return false;
+            logger.error("Error processing matching request reply to [" + targetURL + "]: [{}]", ex);
+            return generateScriptReply(ApiConfiguration.HTTP_BAD_REQUEST, null);
+        }
+    }
+
+    private JSONObject generateScriptReply(Integer httpStatusCode, JSONObject reply)
+    {
+        if (reply == null) {
+            reply = new JSONObject();
+        }
+        reply.put(ApiConfiguration.INTERNAL_JSON_STATUS, httpStatusCode);
+        return reply;
+    }
+
+    private JSONObject getParsedJSON(String stringJson)
+    {
+        JSONObject reply;
+        try {
+            reply = (stringJson == null) ? new JSONObject() : JSONObject.fromObject(stringJson);
+        } catch (Exception ex) {
+            reply = new JSONObject();
+        }
+        return reply;
     }
 
     public List<PatientSimilarityView> getSimilarityResults(Patient patient)

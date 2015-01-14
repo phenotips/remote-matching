@@ -20,10 +20,9 @@
 package org.phenotips.remote.api.tojson;
 
 import org.phenotips.remote.api.OutgoingSearchRequest;
-
 import net.sf.json.JSONObject;
 
 public interface OutgoingRequestToJSONConverter
 {
-    JSONObject toJSON(OutgoingSearchRequest request, String remoteServerId);
+    JSONObject toJSON(OutgoingSearchRequest request);
 }

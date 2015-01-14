@@ -19,21 +19,20 @@
  */
 package org.phenotips.remote.common.internal.api;
 
+import org.phenotips.remote.api.fromjson.JSONToMatchingPatientConverter;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.MatchingPatient;
 import org.phenotips.remote.api.MatchingPatientDisorder;
 import org.phenotips.remote.api.MatchingPatientFeature;
 import org.phenotips.remote.api.MatchingPatientGene;
-import org.phenotips.remote.api.fromjson.JSONToMatchingPatientConverter;
 import org.phenotips.remote.hibernate.internal.HibernatePatient;
 import org.phenotips.remote.hibernate.internal.HibernatePatientDisorder;
 import org.phenotips.remote.hibernate.internal.HibernatePatientFeature;
 import org.phenotips.remote.hibernate.internal.HibernatePatientGene;
+import org.slf4j.Logger;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import org.slf4j.Logger;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -47,7 +46,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
     public DefaultJSONToMatchingPatientConverter(String apiVersion, Logger logger)
     {
         this.apiVersion = apiVersion;
-        this.logger = logger;
+        this.logger     = logger;
     }
 
     @Override
@@ -63,12 +62,12 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
 
             MatchingPatient patient = new HibernatePatient(remotePatientId, label);
 
-            Set<MatchingPatientFeature> features = this.convertFeatures(json);
+            Set<MatchingPatientFeature> features   = this.convertFeatures(json);
             Set<MatchingPatientDisorder> disorders = this.convertDisorders(json);
-            Set<MatchingPatientGene> genes = this.convertGenes(json);
+            Set<MatchingPatientGene> genes         = this.convertGenes(json);
 
             if (features == null && genes == null) {
-                this.logger.error("Both features and genes are NULL: violates API requirements");
+                logger.error("Both features and genes are NULL: violates API requirements");
                 return null;
             }
             if (features != null) {
@@ -80,10 +79,10 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
             if (genes != null) {
                 patient.addGenes(genes);
             }
-            this.logger.debug("JSON->Patient OK");
+            this.logger.debug("Incoming matching JSON->Patient OK");
             return patient;
         } catch (Exception ex) {
-            this.logger.error("JSON->Patient: ERROR: {}", ex);
+            this.logger.error("Incoming matching JSON->Patient conversion error: [{}]", ex);
             return null;
         }
     }

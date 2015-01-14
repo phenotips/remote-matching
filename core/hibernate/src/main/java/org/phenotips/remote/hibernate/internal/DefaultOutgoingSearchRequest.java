@@ -55,17 +55,14 @@ public class DefaultOutgoingSearchRequest extends AbstractSearchRequest implemen
     String remoteQueryId;
 
     @Basic
-    private Long localPatientId;
+    private String localPatientId;
 
-    //@Transient
-    //private Patient referencePatient;
-
+    // @JoinColumn(name="RESULT_HP_ID")
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "requestentity")
     @Cascade({ CascadeType.ALL })
-    // @JoinColumn(name="RESULT_HP_ID")
     public Set<HibernatePatient> results = new HashSet<HibernatePatient>();
 
-    public DefaultOutgoingSearchRequest(Long localPatientId, String remoteServerId)
+    public DefaultOutgoingSearchRequest(String localPatientId, String remoteServerId)
     {
         this.setRemoteServerId(remoteServerId);
         this.localPatientId = localPatientId;
@@ -95,69 +92,21 @@ public class DefaultOutgoingSearchRequest extends AbstractSearchRequest implemen
     }
 
     @Override
-    public void setResults(Set<MatchingPatient> results) {
+    public void setResults(Set<MatchingPatient> results)
+    {
         this.results.clear();
+        this.setLastResultsTimeToNow();
+        if (results == null) {
+            return;
+        }
         for (MatchingPatient patient : results) {
             patient.setParent(this);
             this.results.add((HibernatePatient) patient);
         }
     }
 
-    /*@Override
-    public List<PatientSimilarityView> getResults(PatientSimilarityViewFactory viewFactory)
-    {
-        List<PatientSimilarityView> patientSimilarityViews = new LinkedList<PatientSimilarityView>();
-        for (HibernatePatient patient : this.results) {
-            patientSimilarityViews.add(viewFactory.makeSimilarPatient(new RemoteMatchingPatient(patient), getReferencePatient()));
-        }
-        return patientSimilarityViews;
-    }
-
     @Override
-    public void addResults(Set<MatchingPatient> results)
-    {
-        for (MatchingPatient patient : results) {
-            patient.setParent(this);
-            this.results.add((HibernatePatient) patient);
-        }
-    }
-    */
-
-    /*@Override
-    public void setReferencePatient(Patient referencePatient)
-    {
-        this.referencePatient = referencePatient;
-        this.referencePatientId = referencePatient.getId();
-    }
-
-    @Override
-    public Patient getReferencePatient() throws NullPointerException
-    {
-        if (this.referencePatient != null) {
-            return this.referencePatient;
-        } else {
-            throw new NullPointerException(
-                "Reference patient is not set. Likely cause is this class instance being loaded from database");
-        }
-    }*/
-
-    /*
-    public static Set<MatchingPatient> responseResults(JSONObject json)
-    {
-        Set<MatchingPatient> patients = new HashSet<MatchingPatient>();
-        WrapperInterface<JSONObject, MatchingPatient> wrapper = new JSONToHibernatePatientWrapper();
-
-        JSONArray results = json.getJSONArray(AppConfiguration.JSON_RESULTS);
-        for (Object jsonPatient : results) {
-            MatchingPatient patient = wrapper.wrap((JSONObject) jsonPatient);
-            patients.add(patient);
-        }
-
-        return patients;
-    }*/
-
-    @Override
-    public Long getReferencePatientId()
+    public String getReferencePatientId()
     {
         return this.localPatientId;
     }

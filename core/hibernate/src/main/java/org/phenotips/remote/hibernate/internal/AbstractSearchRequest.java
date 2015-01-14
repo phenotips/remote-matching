@@ -19,8 +19,8 @@
  */
 package org.phenotips.remote.hibernate.internal;
 
-import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.SearchRequest;
+import org.phenotips.remote.api.ApiConfiguration;
 
 import javax.persistence.Basic;
 import javax.persistence.DiscriminatorColumn;
@@ -29,6 +29,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.Table;
+import java.sql.Timestamp;
 
 //import static javax.persistence.GenerationType.SEQUENCE;
 
@@ -68,6 +69,9 @@ public abstract class AbstractSearchRequest implements SearchRequest
     @Basic
     private String remoteServerId;
 
+    @Basic
+    private Timestamp lastResultsTime;
+
     protected void setId(Long id)
     {
         this.id = id;
@@ -87,6 +91,16 @@ public abstract class AbstractSearchRequest implements SearchRequest
     protected void setRemoteServerId(String serverId)
     {
         this.remoteServerId = serverId;
+    }
+
+    public Timestamp getLastResultTime()
+    {
+        return this.lastResultsTime;
+    }
+
+    public void setLastResultsTimeToNow()
+    {
+        this.lastResultsTime = new Timestamp(System.currentTimeMillis());
     }
 
     public void setSubmitterName(String submitterName)
@@ -140,7 +154,6 @@ public abstract class AbstractSearchRequest implements SearchRequest
     public void setResponseType(String responseType)
     {
         if (responseType.equals(ApiConfiguration.REQUEST_RESPONSE_TYPE_SYNCHRONOUS) ||
-            responseType.equals(ApiConfiguration.REQUEST_RESPONSE_TYPE_EMAIL) ||
             responseType.equals(ApiConfiguration.REQUEST_RESPONSE_TYPE_ASYNCHRONOUS)) {
             this.responseType = responseType;
         }
