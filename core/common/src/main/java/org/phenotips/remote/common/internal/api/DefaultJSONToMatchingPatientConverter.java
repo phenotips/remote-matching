@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -43,10 +44,14 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
 
     private final String apiVersion;
 
+    private final Pattern hpoTerm; // not static: may be different from api version to api version
+
     public DefaultJSONToMatchingPatientConverter(String apiVersion, Logger logger)
     {
         this.apiVersion = apiVersion;
         this.logger     = logger;
+
+        this.hpoTerm = Pattern.compile("^HP:\\d+$");
     }
 
     @Override
@@ -96,16 +101,28 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                 for (Object jsonFeatureUncast : featuresJson) {
                     JSONObject jsonFeature = (JSONObject) jsonFeatureUncast;
                     MatchingPatientFeature feature = new HibernatePatientFeature();
-                    String id = jsonFeature.getString("id");
-                    // TODO: check if ID is properly formatted and is a supported HPO or ICHPT term
+                    String id = jsonFeature.getString("id").toUpperCase();
+                    // TODO: throw an error if a term is not a supported one (HPO).
+                    // TODO: maybe report an error, to be reviewed once spec is updated
+                    if (!this.hpoTerm.matcher(id).matches()) {
+                        logger.error("Patient feature parser: ignoring unsupported term with ID [{}]", id);
+                        continue;
+                    }
                     feature.setId(id);
-                    feature.setObserved(jsonFeature.getString("observed"));
+                    String observed = jsonFeature.getString("observed").toLowerCase();
+                    if (!observed.equals(ApiConfiguration.REPLY_JSON_FEATURE_OBSERVED_YES) &&
+                        !observed.equals(ApiConfiguration.REPLY_JSON_FEATURE_OBSERVED_NO) &&
+                        !observed.equals(ApiConfiguration.REPLY_JSON_FEATURE_OBSERVED_UNK)) {
+                        logger.error("Patient feature parser: ignoring term with unsupported observed status [{}]", observed);
+                        continue;
+                    }
+                    feature.setObserved(observed);
                     featureSet.add(feature);
                 }
                 return featureSet;
             }
         } catch (Exception ex) {  // TODO: catch only json exceptions, and throw other type upwads if feature id is unsupported
-            this.logger.error("Error converting features: {}", ex);
+            this.logger.error("Error converting features: [{}]", ex);
         }
         return null;
     }

@@ -81,6 +81,7 @@ public interface ApiConfiguration
     String REPLY_JSON_FEATURE_OBSERVED     = "observed";
     String REPLY_JSON_FEATURE_OBSERVED_YES = "yes";
     String REPLY_JSON_FEATURE_OBSERVED_NO  = "no";
+    String REPLY_JSON_FEATURE_OBSERVED_UNK = "unknown";
     String REPLY_JSON_FEATURE_COUNT        = "count";
     String REPLY_JSON_FEATURE_MATCHED      = "matched";
     String REPLY_JSON_FEATURE_OBFUSCATED   = "obfuscated";
