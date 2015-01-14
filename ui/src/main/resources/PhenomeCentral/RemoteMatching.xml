@@ -244,7 +244,7 @@
       <displayInCategory>phenotips</displayInCategory>
     </property>
     <property>
-      <displayInSection>Remote Matching</displayInSection>
+      <displayInSection>remotematchingconfig</displayInSection>
     </property>
     <property>
       <heading>Remote Matching Server Configurations</heading>
