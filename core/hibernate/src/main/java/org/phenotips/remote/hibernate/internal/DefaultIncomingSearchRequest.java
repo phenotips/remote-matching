@@ -19,19 +19,13 @@
  */
 package org.phenotips.remote.hibernate.internal;
 
-//import org.phenotips.data.similarity.PatientSimilarityView;
-//import org.phenotips.remote.api.Configuration;
 import org.phenotips.remote.api.IncomingSearchRequest;
-//import org.phenotips.similarity.SimilarPatientsFinder;
 import org.phenotips.remote.api.MatchingPatient;
 
-//import org.xwiki.model.reference.DocumentReference;
-//import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.OneToOne;
-
 //import javax.persistence.Transient;
 
 /**
@@ -88,15 +82,4 @@ public class DefaultIncomingSearchRequest extends AbstractSearchRequest implemen
     {
         return this.referencePatient;
     }
-
-    /*@Override
-    public List<PatientSimilarityView> getResults(SimilarPatientsFinder finder) throws IllegalArgumentException
-    {
-        try {
-            return finder.findSimilarPatients(new RemoteMatchingPatient(getReferencePatient()));
-        } catch (IllegalArgumentException ex) {
-            this.httpStatus = Configuration.HTTP_BAD_REQUEST;
-            return null;
-        }
-    }*/
 }

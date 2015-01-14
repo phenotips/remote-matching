@@ -23,10 +23,9 @@ import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.common.ApplicationConfiguration;
 import org.phenotips.remote.common.internal.XWikiAdapter;
 import org.phenotips.remote.server.ApiRequestHandler;
-import org.phenotips.remote.server.AsyncResponseProcessor;
 import org.phenotips.remote.server.SearchRequestProcessor;
+import org.phenotips.remote.server.AsyncResponseProcessor;
 import org.phenotips.remote.server.internal.queuetasks.ContextSetter;
-
 import org.xwiki.component.annotation.Component;
 import org.xwiki.rest.XWikiResource;
 import org.xwiki.rest.XWikiRestException;
@@ -70,8 +69,8 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
     @Override
     public Response matchPost(String json, String apiVersion) throws XWikiRestException, XWikiException
     {
-        this.logger.debug("PROCESS MATCH for version [{}]", apiVersion);
-        this.logger.debug("INPUT JSON: [{}]", json);
+        this.logger.error("PROCESS MATCH for version [{}]", apiVersion);
+        this.logger.error("INPUT JSON: [{}]", json);
 
         try {
             JSONObject jsonResponse;
@@ -106,8 +105,8 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
     @Override
     public Response matchResultsPost(String json, String apiVersion) throws XWikiRestException, XWikiException
     {
-        this.logger.debug("PROCESS MATCHRESULTS for version [{}]", apiVersion);
-        this.logger.debug("INPUT JSON: [{}]", json);
+        this.logger.error("PROCESS MATCHRESULTS for version [{}]", apiVersion);
+        this.logger.error("INPUT JSON: [{}]", json);
 
         try {
             JSONObject jsonResponse = new JSONObject();
@@ -147,7 +146,7 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
             requestKey = httpRequest.getHeader(ApiConfiguration.HTTPHEADER_KEY_PARAMETER);
         }
         String configuredKey = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_LOCAL_KEY_FIELD);
-        this.logger.debug("Remote server key validation: Key: {}, Configured: {}", requestKey, configuredKey);
+        logger.error("Remote server key validation: Key: {}, Configured: {}", requestKey, configuredKey);
         if (requestKey == null || configuredKey == null || !requestKey.equals(configuredKey)) {
             return false;
         }
