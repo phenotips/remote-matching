@@ -120,7 +120,7 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
         JSONObject reply = new JSONObject();
 
         reply.put(ApiConfiguration.JSON_RESPONSE_TYPE, ApiConfiguration.REQUEST_RESPONSE_TYPE_SYNCHRONOUS);
-        reply.put(ApiConfiguration.JSON_RESPONSE_ID,   0);
+        reply.put(ApiConfiguration.JSON_RESPONSE_ID,   "0");
 
         reply.put("modelPatientLabel", request.getRemotePatient().getLabel());      // TODO: DEBUG field
         reply.put("modelPatientId",    request.getRemotePatient().getExternalId()); // TODO: DEBUG field
@@ -147,7 +147,7 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
 
         reply.put(ApiConfiguration.JSON_RESPONSE_TYPE, request.getResponseType());
 
-        // email responses are non-inloine responses, but there will be no query ID if the request is not periodic
+        // email responses are non-inline responses, but there will be no query ID if the request is not periodic
         if (request.getQueryId() != null) {
             reply.put(ApiConfiguration.JSON_RESPONSE_ID, request.getQueryId());
         }
