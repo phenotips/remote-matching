@@ -135,6 +135,8 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
         }
         reply.put(ApiConfiguration.JSON_RESULTS, matchList);
 
+        this.logger.debug("Inline reply: [{}]", reply.toString());
+
         reply.put(ApiConfiguration.INTERNAL_JSON_STATUS, ApiConfiguration.HTTP_OK);
 
         return reply;
@@ -156,6 +158,8 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
         reply.put("modelPatientId",    request.getRemotePatient().getExternalId()); // TODO: DEBUG field
 
         reply.put(ApiConfiguration.INTERNAL_JSON_STATUS, ApiConfiguration.HTTP_OK);
+
+        this.logger.debug("Non-inline reply: [{}]", reply.toString());
 
         return reply;
     }

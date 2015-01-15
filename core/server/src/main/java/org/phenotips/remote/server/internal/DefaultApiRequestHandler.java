@@ -91,6 +91,7 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
                 status = ApiConfiguration.HTTP_SERVER_ERROR;
             }
             if (status.equals(ApiConfiguration.HTTP_OK)) {
+                this.logger.error("RESPONSE JSON: [{}]", jsonResponse.toString());
                 return Response.ok(jsonResponse.toString(), MediaType.APPLICATION_JSON).build();
             } else {
                 return Response.status(status).build();

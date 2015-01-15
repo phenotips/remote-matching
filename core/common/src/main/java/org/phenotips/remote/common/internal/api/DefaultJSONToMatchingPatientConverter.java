@@ -111,8 +111,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                     feature.setId(id);
                     String observed = jsonFeature.getString("observed").toLowerCase();
                     if (!observed.equals(ApiConfiguration.REPLY_JSON_FEATURE_OBSERVED_YES) &&
-                        !observed.equals(ApiConfiguration.REPLY_JSON_FEATURE_OBSERVED_NO) &&
-                        !observed.equals(ApiConfiguration.REPLY_JSON_FEATURE_OBSERVED_UNK)) {
+                        !observed.equals(ApiConfiguration.REPLY_JSON_FEATURE_OBSERVED_NO)) {
                         logger.error("Patient feature parser: ignoring term with unsupported observed status [{}]", observed);
                         continue;
                     }
