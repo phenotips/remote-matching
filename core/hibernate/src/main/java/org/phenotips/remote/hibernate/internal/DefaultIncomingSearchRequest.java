@@ -22,11 +22,13 @@ package org.phenotips.remote.hibernate.internal;
 import org.phenotips.remote.api.IncomingSearchRequest;
 import org.phenotips.remote.api.MatchingPatient;
 
-import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.OneToOne;
-//import javax.persistence.Transient;
+import javax.persistence.JoinColumn;
+
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 
 /**
  * Class for storing an incoming request outside the main PhenoTips database for privacy reasons.
@@ -37,7 +39,9 @@ import javax.persistence.OneToOne;
 @DiscriminatorValue("incoming")
 public class DefaultIncomingSearchRequest extends AbstractSearchRequest implements IncomingSearchRequest
 {
-    @OneToOne(mappedBy = "requestentity", cascade = CascadeType.ALL)
+    @OneToOne
+    @JoinColumn(name="REMORE_REFERENCE_PATIENT")
+    @Cascade({ CascadeType.ALL })
     private HibernatePatient referencePatient = null;
 
     public DefaultIncomingSearchRequest(MatchingPatient remoteModelPatient, String remoteServerId)
@@ -65,7 +69,6 @@ public class DefaultIncomingSearchRequest extends AbstractSearchRequest implemen
             throw new IllegalArgumentException("The reference patient for the incoming request has not been set");
         }
         this.referencePatient = (HibernatePatient) remoteModelPatient;
-        this.referencePatient.setParent(this);
     }
 
     @Override

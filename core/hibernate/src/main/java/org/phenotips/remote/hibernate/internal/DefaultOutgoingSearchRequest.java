@@ -34,7 +34,7 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
-//import javax.persistence.Transient;
+import javax.persistence.JoinColumn;
 
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
@@ -57,8 +57,8 @@ public class DefaultOutgoingSearchRequest extends AbstractSearchRequest implemen
     @Basic
     private String localPatientId;
 
-    // @JoinColumn(name="RESULT_HP_ID")
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "requestentity")
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name="REMOTE_RESULTS")
     @Cascade({ CascadeType.ALL })
     public Set<HibernatePatient> results = new HashSet<HibernatePatient>();
 
@@ -100,7 +100,6 @@ public class DefaultOutgoingSearchRequest extends AbstractSearchRequest implemen
             return;
         }
         for (MatchingPatient patient : results) {
-            patient.setParent(this);
             this.results.add((HibernatePatient) patient);
         }
     }

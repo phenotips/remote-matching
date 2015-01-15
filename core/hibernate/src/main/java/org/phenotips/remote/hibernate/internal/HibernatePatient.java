@@ -56,10 +56,6 @@ public class HibernatePatient implements MatchingPatient
     @Basic
     private String label;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "requestentity_id", nullable = false)
-    public AbstractSearchRequest requestentity;
-
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "hibernatepatient")
     @Cascade({ CascadeType.ALL })
     public Set<HibernatePatientFeature> features = new HashSet<HibernatePatientFeature>();
@@ -103,12 +99,6 @@ public class HibernatePatient implements MatchingPatient
             gene.setParent(this);
             this.genes.add((HibernatePatientGene) gene);
         }
-    }
-
-    @Override
-    public void setParent(SearchRequest request)
-    {
-        this.requestentity = (AbstractSearchRequest) request;
     }
 
     @Override

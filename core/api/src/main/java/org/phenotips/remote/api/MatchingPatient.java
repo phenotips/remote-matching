@@ -35,8 +35,6 @@ public interface MatchingPatient
 
     void addGenes(Set<MatchingPatientGene> genes);
 
-    void setParent(SearchRequest request);
-
     Set<? extends Feature> getFeatures();
 
     Set<? extends Disorder> getDisorders();

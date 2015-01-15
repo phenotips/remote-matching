@@ -72,7 +72,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
             Set<MatchingPatientGene> genes         = this.convertGenes(json);
 
             if (features == null && genes == null) {
-                logger.error("Both features and genes are NULL: violates API requirements");
+                this.logger.error("Both features and genes are NULL: violates API requirements");
                 return null;
             }
             if (features != null) {

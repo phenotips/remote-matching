@@ -36,7 +36,6 @@ import java.util.concurrent.ExecutorService;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
 import org.xwiki.context.concurrent.ExecutionContextRunnable;
-import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.component.manager.ComponentManager;
 
 import javax.inject.Inject;
