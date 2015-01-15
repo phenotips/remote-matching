@@ -57,7 +57,6 @@
   </organization>
 
   <properties>
-    <phenotips.version>1.1-SNAPSHOT</phenotips.version>
     <patientNetwork.version>1.0-SNAPSHOT</patientNetwork.version>
     <!-- Disable Clirr since this is the first version -->
     <clirr.skip>true</clirr.skip>
