@@ -23,6 +23,7 @@ import org.phenotips.remote.server.MatchingPatientsFinder;
 import org.phenotips.remote.api.IncomingSearchRequest;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.ApiDataConverter;
+import org.phenotips.remote.api.ApiViolationException;
 import org.phenotips.remote.common.ApiFactory;
 import org.phenotips.remote.common.ApplicationConfiguration;
 import org.phenotips.remote.common.internal.XWikiAdapter;
@@ -97,7 +98,9 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
             apiVersionSpecificConverter = this.apiFactory.getApiVersion(apiVersion);
         } catch (Exception ex) {
             this.logger.error("Incorrect incoming request: unsupported API version: [{}]", apiVersion);
-            return generateErrorReply(ApiConfiguration.HTTP_BAD_REQUEST, "unsupported API version");
+            JSONObject reply = new JSONObject();
+            reply.put(ApiConfiguration.INTERNAL_JSON_STATUS, ApiConfiguration.HTTP_UNSUPPORTED_API_VERSION);
+            return reply;
         }
 
         JSONObject json;
@@ -105,13 +108,19 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
             json = JSONObject.fromObject(stringJson);
         } catch (JSONException ex) {
             this.logger.error("Incorrect incoming request: misformatted JSON");
-            return generateErrorReply(ApiConfiguration.HTTP_BAD_REQUEST, "misformatted JSON");
+            return apiVersionSpecificConverter.generateWrongInputDataResponse("misformatted JSON");
         }
 
         try {
             this.logger.debug("...parsing input...");
 
-            IncomingSearchRequest request = this.createRequest(apiVersionSpecificConverter, json, configurationObject);
+            IncomingSearchRequest request;
+            try {
+                request = this.createRequest(apiVersionSpecificConverter, json, configurationObject);
+            } catch (ApiViolationException ex) {
+                this.logger.error("Error converting JSON to incoming request");
+                return apiVersionSpecificConverter.generateWrongInputDataResponse(ex.getMessage());
+            }
 
             this.logger.debug("...handling...");
 
@@ -119,7 +128,8 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
 
             if (StringUtils.equalsIgnoreCase(request.getQueryType(), ApiConfiguration.REQUEST_QUERY_TYPE_PERIODIC) &&
                 StringUtils.equalsIgnoreCase(type, ApiConfiguration.REQUEST_RESPONSE_TYPE_SYNCHRONOUS)) {
-                return generateErrorReply(ApiConfiguration.HTTP_BAD_REQUEST, "Incorrect incoming request: can't have an inline periodic request");
+                return apiVersionSpecificConverter.generateWrongInputDataResponse
+                    ("Incorrect incoming request: can't have an inline periodic request");
             }
 
             if (StringUtils.equalsIgnoreCase(request.getQueryType(), ApiConfiguration.REQUEST_QUERY_TYPE_PERIODIC) ||
@@ -146,27 +156,16 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
 
                 return apiVersionSpecificConverter.generateNonInlineResponse(request);
             }
-        } catch (IllegalArgumentException ex) {
-            this.logger.error("DATA Error: {}", ex);
-            return apiVersionSpecificConverter.generateWrongInputDataResponse();
         } catch (Exception ex) {
             this.logger.error("CODE Error: {}", ex);
-            return apiVersionSpecificConverter.generateInternalServerErrorResponse();
+            return apiVersionSpecificConverter.generateInternalServerErrorResponse(null);
         }
 
         return null;
     }
 
-    private JSONObject generateErrorReply(Integer httpStatusCode, String errorMessage)
-    {
-        JSONObject reply = new JSONObject();
-        reply.put("error", errorMessage);
-        reply.put(ApiConfiguration.INTERNAL_JSON_STATUS, httpStatusCode);
-        return reply;
-    }
-
     private IncomingSearchRequest createRequest(ApiDataConverter apiDataConverter, JSONObject json,
-        BaseObject configurationObject) throws IllegalArgumentException
+        BaseObject configurationObject)
     {
         String remoteServerId =
             configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_NAME);

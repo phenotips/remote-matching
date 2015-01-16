@@ -21,6 +21,7 @@ package org.phenotips.remote.common.internal.api;
 
 import org.phenotips.remote.api.fromjson.JSONToMatchingPatientConverter;
 import org.phenotips.remote.api.ApiConfiguration;
+import org.phenotips.remote.api.ApiViolationException;
 import org.phenotips.remote.api.MatchingPatient;
 import org.phenotips.remote.api.MatchingPatientDisorder;
 import org.phenotips.remote.api.MatchingPatientFeature;
@@ -60,7 +61,8 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
         try {
             String remotePatientId = json.optString(ApiConfiguration.JSON_PATIENT_ID, null);
             if (remotePatientId == null) {
-                throw new IllegalArgumentException("Remote patient has no id");
+                this.logger.error("Remote patient has no id: violates API requirements");
+                throw new ApiViolationException("Remote patient has no id");
             }
 
             String label = json.optString(ApiConfiguration.JSON_PATIENT_LABEL, null);
@@ -71,9 +73,10 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
             Set<MatchingPatientDisorder> disorders = this.convertDisorders(json);
             Set<MatchingPatientGene> genes         = this.convertGenes(json);
 
-            if (features == null && genes == null) {
-                this.logger.error("Both features and genes are NULL: violates API requirements");
-                return null;
+            if ((features == null || features.isEmpty()) &&
+                (genes == null || genes.isEmpty())) {
+                this.logger.error("There are no features and no genes: violates API requirements");
+                throw new ApiViolationException("There are no features and no genes");
             }
             if (features != null) {
                 patient.addFeatures(features);
@@ -86,6 +89,8 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
             }
             this.logger.debug("Incoming matching JSON->Patient OK");
             return patient;
+        } catch (ApiViolationException ex) {
+            throw ex;
         } catch (Exception ex) {
             this.logger.error("Incoming matching JSON->Patient conversion error: [{}]", ex);
             return null;

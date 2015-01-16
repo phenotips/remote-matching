@@ -101,16 +101,17 @@ public interface ApiConfiguration
     String REQUEST_QUERY_TYPE_PERIODIC = "periodic";
     String DEFAULT_REQUEST_QUERY_TYPE  = REQUEST_QUERY_TYPE_ONCE;
 
-    String INTERNAL_JSON_STATUS = "status";
+    String INTERNAL_JSON_STATUS            = "status";
+    String INTERNAL_JSON_ERROR_DESCRIPTION = "error";
 
-    // HTTP
-    Integer HTTP_BAD_REQUEST  = 400;
-    Integer HTTP_BAD_REQUEST1 = 409;  // debug
-    Integer HTTP_BAD_REQUEST2 = 410;  // debug
-
-    Integer HTTP_UNAUTHORIZED = 401;
-
+    // HTTP codes reported to the other side
     Integer HTTP_OK = 200;
-
+    Integer HTTP_BAD_REQUEST  = 400;
+    Integer HTTP_UNAUTHORIZED = 401;
     Integer HTTP_SERVER_ERROR = 500;
+    Integer HTTP_UNSUPPORTED_API_VERSION = 415;
+
+    // Local error codes consumed only internally (TODO: review local error handling)
+    Integer ERROR_NOT_SENT = -1;
+    Integer ERROR_INTERNAL = -2;
 }

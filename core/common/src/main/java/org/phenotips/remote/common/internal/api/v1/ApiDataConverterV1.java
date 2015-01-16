@@ -91,18 +91,24 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
     //================================================================
 
     @Override
-    public JSONObject generateWrongInputDataResponse()
+    public JSONObject generateWrongInputDataResponse(String reasonMsg)
     {
         JSONObject reply = new JSONObject();
         reply.put(ApiConfiguration.INTERNAL_JSON_STATUS, ApiConfiguration.HTTP_BAD_REQUEST);
+        if (reasonMsg != null && !reasonMsg.isEmpty()) {
+            reply.put(ApiConfiguration.INTERNAL_JSON_ERROR_DESCRIPTION, reasonMsg);
+        }
         return reply;
     }
 
     @Override
-    public JSONObject generateInternalServerErrorResponse()
+    public JSONObject generateInternalServerErrorResponse(String reasonMsg)
     {
         JSONObject reply = new JSONObject();
         reply.put(ApiConfiguration.INTERNAL_JSON_STATUS, ApiConfiguration.HTTP_SERVER_ERROR);
+        if (reasonMsg != null && !reasonMsg.isEmpty()) {
+            reply.put(ApiConfiguration.INTERNAL_JSON_ERROR_DESCRIPTION, reasonMsg);
+        }
         return reply;
     }
 

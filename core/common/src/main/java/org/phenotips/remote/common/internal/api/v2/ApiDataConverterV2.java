@@ -24,7 +24,6 @@ import org.phenotips.remote.api.ApiDataConverter;
 import org.phenotips.remote.api.IncomingSearchRequest;
 import org.phenotips.remote.api.fromjson.IncomingJSONParser;
 import org.phenotips.remote.api.tojson.OutgoingRequestToJSONConverter;
-
 import org.xwiki.component.annotation.Component;
 
 import java.util.List;
@@ -53,13 +52,13 @@ public class ApiDataConverterV2 implements ApiDataConverter
     //================================================================
 
     @Override
-    public JSONObject generateWrongInputDataResponse()
+    public JSONObject generateWrongInputDataResponse(String reasonMsg)
     {
         return null;
     }
 
     @Override
-    public JSONObject generateInternalServerErrorResponse()
+    public JSONObject generateInternalServerErrorResponse(String reasonMsg)
     {
         return null;
     }

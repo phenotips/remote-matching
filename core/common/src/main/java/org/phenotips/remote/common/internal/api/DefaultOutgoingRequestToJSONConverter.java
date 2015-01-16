@@ -22,6 +22,8 @@ package org.phenotips.remote.common.internal.api;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientRepository;
 import org.phenotips.remote.api.tojson.OutgoingRequestToJSONConverter;
+import org.phenotips.remote.api.ApiConfiguration;
+import org.phenotips.remote.api.ApiViolationException;
 import org.phenotips.remote.api.OutgoingSearchRequest;
 import org.phenotips.remote.api.tojson.PatientToJSONConverter;
 import org.phenotips.remote.common.internal.api.DefaultPatientToJSONConverter;
@@ -74,6 +76,14 @@ public class DefaultOutgoingRequestToJSONConverter implements OutgoingRequestToJ
         try {
             JSONObject json = this.patientToJSONConverter.convert(referencePatient, false);
 
+            if ((!json.has(ApiConfiguration.JSON_FEATURES) ||
+                  json.getJSONArray(ApiConfiguration.JSON_FEATURES).isEmpty()) &&
+                (!json.has(ApiConfiguration.JSON_GENES) ||
+                  json.getJSONArray(ApiConfiguration.JSON_GENES).isEmpty())) {
+                this.logger.error("Can't send a query for a patient with no features and no genes");
+                throw new ApiViolationException("Can't send a query for a patient with no features and no genes");
+            }
+
             json.put("id", MD5(patientId));
             json.put("queryType", request.getQueryType());
 
@@ -82,8 +92,10 @@ public class DefaultOutgoingRequestToJSONConverter implements OutgoingRequestToJ
             //submitter.put("email", request.getSubmitterEmail());
 
             return json;
+        } catch (ApiViolationException ex) {
+            throw ex;
         } catch (Exception ex) {
-            logger.error("Error converting patient to JSON: [{}]", ex);
+            this.logger.error("Error converting patient to JSON: [{}]", ex);
             return null;
         }
     }

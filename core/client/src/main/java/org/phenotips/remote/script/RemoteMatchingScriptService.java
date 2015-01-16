@@ -25,6 +25,7 @@ import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.data.similarity.PatientSimilarityViewFactory;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.ApiDataConverter;
+import org.phenotips.remote.api.ApiViolationException;
 import org.phenotips.remote.api.OutgoingSearchRequest;
 import org.phenotips.remote.common.ApiFactory;
 import org.phenotips.remote.common.ApplicationConfiguration;
@@ -87,13 +88,21 @@ public class RemoteMatchingScriptService implements ScriptService
 
     public JSONObject sendRequest(String patientId, String remoteServerId, boolean async, boolean periodic)
     {
+        this.logger.error("Sending outgoing request for patient [{}] to server [{}]", patientId, remoteServerId);
+        if (async) {
+            this.logger.error("Requesting async replies");
+        }
+        if (periodic) {
+            this.logger.error("Requesting periodic replies");
+        }
+
         XWikiContext context = this.getContext();
 
         BaseObject configurationObject = XWikiAdapter.getRemoteConfigurationGivenRemoteName(remoteServerId, context);
 
         if (configurationObject == null) {
             logger.error("Requested matching server is not configured: [{}]", remoteServerId);
-            return generateScriptReply(ApiConfiguration.HTTP_BAD_REQUEST, null);
+            return generateScriptReply(ApiConfiguration.ERROR_NOT_SENT, null);
         }
 
         // TODO: get API version from server configuration
@@ -109,10 +118,15 @@ public class RemoteMatchingScriptService implements ScriptService
             request.setResponseType(ApiConfiguration.REQUEST_RESPONSE_TYPE_ASYNCHRONOUS);
         }
 
-        JSONObject requestJSON = apiVersionSpecificConverter.getOutgoingRequestToJSONConverter().toJSON(request);
+        JSONObject requestJSON;
+        try {
+            requestJSON = apiVersionSpecificConverter.getOutgoingRequestToJSONConverter().toJSON(request);
+        } catch (ApiViolationException ex) {
+            return generateScriptReply(ApiConfiguration.ERROR_NOT_SENT, null);
+        }
         if (requestJSON == null) {
-            logger.error("Unable to convert patient to JSON: [{}]", patientId);
-            return generateScriptReply(ApiConfiguration.HTTP_SERVER_ERROR, null);
+            this.logger.error("Unable to convert patient to JSON: [{}]", patientId);
+            return generateScriptReply(ApiConfiguration.ERROR_NOT_SENT, null);
         }
 
         CloseableHttpClient client = HttpClients.createDefault();
@@ -126,7 +140,7 @@ public class RemoteMatchingScriptService implements ScriptService
         }
         String targetURL = baseURL + ApiConfiguration.REMOTE_URL_SEARCH_ENDPOINT;
 
-        logger.error("Sending matching request to [" + targetURL + "]: " + requestJSON.toString());
+        this.logger.error("Sending matching request to [" + targetURL + "]: " + requestJSON.toString());
 
         CloseableHttpResponse httpResponse;
         try {
@@ -135,8 +149,8 @@ public class RemoteMatchingScriptService implements ScriptService
             httpRequest.setHeader(ApiConfiguration.HTTPHEADER_KEY_PARAMETER, key);
             httpResponse = client.execute(httpRequest);
         } catch (Exception ex) {
-            logger.error("Error sending matching request to [" + targetURL + "]: [{}]", ex);
-            return generateScriptReply(ApiConfiguration.HTTP_BAD_REQUEST, null);
+            this.logger.error("Error sending matching request to [" + targetURL + "]: [{}]", ex);
+            return generateScriptReply(ApiConfiguration.ERROR_NOT_SENT, null);
         }
 
         try {
@@ -151,10 +165,10 @@ public class RemoteMatchingScriptService implements ScriptService
                 StringUtils.equalsIgnoreCase(request.getResponseType(), ApiConfiguration.REQUEST_RESPONSE_TYPE_ASYNCHRONOUS)) {
                 // get query ID assigned by the remote server and saveto DB
                 if (!replyJSON.has(ApiConfiguration.JSON_RESPONSE_ID)) {
-                    logger.error("Can not store outgoing request: no queryID is provided by remote server");
+                    this.logger.error("Can not store outgoing request: no queryID is provided by remote server");
                 } else {
                     String queruID = replyJSON.getString(ApiConfiguration.JSON_RESPONSE_ID);
-                    logger.error("Remote server assigned id to the submitted query: [{}]", queruID);
+                    this.logger.error("Remote server assigned id to the submitted query: [{}]", queruID);
                     request.setQueryID(replyJSON.getString(ApiConfiguration.JSON_RESPONSE_ID));
                     requestStorageManager.saveOutgoingRequest(request);
                 }
@@ -162,8 +176,8 @@ public class RemoteMatchingScriptService implements ScriptService
 
             return generateScriptReply(httpStatus, replyJSON);
         } catch (Exception ex) {
-            logger.error("Error processing matching request reply to [" + targetURL + "]: [{}]", ex);
-            return generateScriptReply(ApiConfiguration.HTTP_BAD_REQUEST, null);
+            this.logger.error("Error processing matching request reply to [" + targetURL + "]: [{}]", ex);
+            return generateScriptReply(ApiConfiguration.ERROR_INTERNAL, null);
         }
     }
 

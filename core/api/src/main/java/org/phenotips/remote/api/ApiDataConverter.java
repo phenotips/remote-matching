@@ -44,9 +44,9 @@ public interface ApiDataConverter
 
     //================================================================
 
-    JSONObject generateWrongInputDataResponse();
+    JSONObject generateWrongInputDataResponse(String reasonMsg);
 
-    JSONObject generateInternalServerErrorResponse();
+    JSONObject generateInternalServerErrorResponse(String reasonMsg);
 
     //================================================================
 
