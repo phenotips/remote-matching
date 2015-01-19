@@ -62,7 +62,7 @@ public class DefaultOutgoingRequestToJSONConverter implements OutgoingRequestToJ
     }
 
     @Override
-    public JSONObject toJSON(OutgoingSearchRequest request)
+    public JSONObject toJSON(OutgoingSearchRequest request, int includedTopGenes)
     {
         String patientId = request.getReferencePatientId();
 
@@ -74,7 +74,7 @@ public class DefaultOutgoingRequestToJSONConverter implements OutgoingRequestToJ
         }
 
         try {
-            JSONObject json = this.patientToJSONConverter.convert(referencePatient, false);
+            JSONObject json = this.patientToJSONConverter.convert(referencePatient, false, includedTopGenes);
 
             if ((!json.has(ApiConfiguration.JSON_FEATURES) ||
                   json.getJSONArray(ApiConfiguration.JSON_FEATURES).isEmpty()) &&

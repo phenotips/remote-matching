@@ -17,7 +17,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.script;
+package org.phenotips.remote.client.script;
 
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientRepository;
@@ -86,7 +86,17 @@ public class RemoteMatchingScriptService implements ScriptService
     private RemoteMatchingStorageManager requestStorageManager;
 
 
+    public JSONObject sendRequest(String patientId, String remoteServerId)
+    {
+        return sendRequest(patientId, remoteServerId, false, false, 0);
+    }
+
     public JSONObject sendRequest(String patientId, String remoteServerId, boolean async, boolean periodic)
+    {
+        return sendRequest(patientId, remoteServerId, async, periodic, 0);
+    }
+
+    public JSONObject sendRequest(String patientId, String remoteServerId, boolean async, boolean periodic, int addTopNGenes)
     {
         this.logger.error("Sending outgoing request for patient [{}] to server [{}]", patientId, remoteServerId);
         if (async) {
@@ -102,7 +112,8 @@ public class RemoteMatchingScriptService implements ScriptService
 
         if (configurationObject == null) {
             logger.error("Requested matching server is not configured: [{}]", remoteServerId);
-            return generateScriptReply(ApiConfiguration.ERROR_NOT_SENT, null);
+            return generateScriptErrorReply(ApiConfiguration.ERROR_NOT_SENT,
+                                            "requested matching server ["+remoteServerId+"] is not configured");
         }
 
         // TODO: get API version from server configuration
@@ -120,18 +131,23 @@ public class RemoteMatchingScriptService implements ScriptService
 
         JSONObject requestJSON;
         try {
-            requestJSON = apiVersionSpecificConverter.getOutgoingRequestToJSONConverter().toJSON(request);
+            requestJSON = apiVersionSpecificConverter.getOutgoingRequestToJSONConverter().toJSON(request, addTopNGenes);
         } catch (ApiViolationException ex) {
-            return generateScriptReply(ApiConfiguration.ERROR_NOT_SENT, null);
+            return generateScriptErrorReply(ApiConfiguration.ERROR_NOT_SENT, ex.getMessage());
         }
         if (requestJSON == null) {
             this.logger.error("Unable to convert patient to JSON: [{}]", patientId);
-            return generateScriptReply(ApiConfiguration.ERROR_NOT_SENT, null);
+            return generateScriptErrorReply(ApiConfiguration.ERROR_NOT_SENT,
+                                            "unable to convert patient with ID ["+patientId.toString()+"] to JSON");
         }
 
         CloseableHttpClient client = HttpClients.createDefault();
 
-        StringEntity jsonEntity = new StringEntity(requestJSON.toString(), ContentType.create("application/json", "UTF-8"));
+        StringEntity jsonEntity = new StringEntity(requestJSON.toString(), ContentType.create("application/json", "utf-8"));
+
+        // TODO: hack to make charset lower-cased so that GeneMatcher accepts it
+        jsonEntity.setContentType("application/json; charset=utf-8");
+        this.logger.error("Using content type: [{}]", jsonEntity.getContentType().toString());
 
         String key     = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_KEY_FIELD);
         String baseURL = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_BASE_URL_FIELD);
@@ -148,9 +164,13 @@ public class RemoteMatchingScriptService implements ScriptService
             httpRequest.setEntity(jsonEntity);
             httpRequest.setHeader(ApiConfiguration.HTTPHEADER_KEY_PARAMETER, key);
             httpResponse = client.execute(httpRequest);
+        } catch (javax.net.ssl.SSLHandshakeException ex) {
+            this.logger.error("Error sending matching request to ["+ targetURL +
+                              "]: SSL handshake exception: [{}]", ex);
+            return generateScriptErrorReply(ApiConfiguration.ERROR_NOT_SENT, "SSL handshake problem");
         } catch (Exception ex) {
             this.logger.error("Error sending matching request to [" + targetURL + "]: [{}]", ex);
-            return generateScriptReply(ApiConfiguration.ERROR_NOT_SENT, null);
+            return generateScriptErrorReply(ApiConfiguration.ERROR_NOT_SENT, ex.getMessage());
         }
 
         try {
@@ -178,6 +198,17 @@ public class RemoteMatchingScriptService implements ScriptService
         } catch (Exception ex) {
             this.logger.error("Error processing matching request reply to [" + targetURL + "]: [{}]", ex);
             return generateScriptReply(ApiConfiguration.ERROR_INTERNAL, null);
+        }
+    }
+
+    private JSONObject generateScriptErrorReply(Integer httpStatusCode, String errorMessage)
+    {
+        if (errorMessage == null) {
+            return generateScriptReply(httpStatusCode, null);
+        } else {
+            JSONObject errorJSON = new JSONObject();
+            errorJSON.put(ApiConfiguration.INTERNAL_JSON_ERROR_DESCRIPTION, errorMessage);
+            return generateScriptReply(httpStatusCode, errorJSON);
         }
     }
 

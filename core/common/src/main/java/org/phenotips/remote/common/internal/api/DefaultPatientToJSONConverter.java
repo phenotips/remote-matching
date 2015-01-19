@@ -26,7 +26,7 @@ import org.phenotips.data.FeatureMetadatum;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
 import org.phenotips.ontology.internal.solr.SolrOntologyTerm;
-//import org.phenotips.data.similarity.internal.PatientGenotype;
+import org.phenotips.data.similarity.internal.PatientGenotype;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.slf4j.Logger;
 
@@ -36,6 +36,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 
 import org.apache.commons.lang3.StringUtils;
@@ -65,6 +68,11 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
 
     public JSONObject convert(Patient patient, boolean removePrivateData)
     {
+        return this.convert(patient, removePrivateData, 0);
+    }
+
+    public JSONObject convert(Patient patient, boolean removePrivateData, int includedTopGenes)
+    {
         JSONObject json = new JSONObject();
 
         try {
@@ -82,7 +90,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         } else {
             json.put(ApiConfiguration.JSON_FEATURES, DefaultPatientToJSONConverter.features(patient));
         }
-        JSONArray genes = DefaultPatientToJSONConverter.genes(patient, logger);
+        JSONArray genes = DefaultPatientToJSONConverter.genes(patient, includedTopGenes, logger);
         if (!genes.isEmpty()) {
             json.put(ApiConfiguration.JSON_GENES, genes);
         }
@@ -230,11 +238,36 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         return disorders;
     }
 
-    private static JSONArray genes(Patient patient, Logger logger)
+    private static JSONArray genes(Patient patient, int includedTopGenes, Logger logger)
     {
+        PatientGenotype genotype = new PatientGenotype(patient);
+
         JSONArray genes = new JSONArray();
         try {
-            Collection<String> candidateGeneNames = getPatientCandidateGeneNames(patient);
+            Collection<String> candidateGeneNames;
+            //Collection<String> candidateGeneNames = getPatientCandidateGeneNames(patient);
+            if (includedTopGenes <= 0) {
+                candidateGeneNames = genotype.getCandidateGenes();
+            } else {
+                final Map<String, Double> genesWithScore = new HashMap<String,Double>();
+                Collection<String> allGenes = genotype.getGenes();
+                for (String gene : allGenes) {
+                    genesWithScore.put(gene, genotype.getGeneScore(gene));
+                }
+                Set<String> set = genesWithScore.keySet();
+                List<String> keys = new ArrayList<String>(set);
+                Collections.sort(keys, new Comparator<String>() {
+                    public int compare(String s1, String s2) {
+                        return Double.compare(genesWithScore.get(s1), genesWithScore.get(s2));
+                    }
+                });
+                List<String> topGenes = keys.subList(0, includedTopGenes);
+                candidateGeneNames = new HashSet<String>();
+                for (String topGene : topGenes) {
+                    candidateGeneNames.add(topGene);
+                }
+            }
+
             for (String geneName : candidateGeneNames) {
                 JSONObject nextGene = new JSONObject();
                 nextGene.put(ApiConfiguration.JSON_GENES_GENENAME, geneName);
@@ -255,7 +288,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
      *
      * Return a collection of the names of candidate genes listed for the given patient.
      * @return a (potentially-empty) unmodifiable collection of the names of candidate genes
-     */
+     *
     private static Collection<String> getPatientCandidateGeneNames(Patient p)
     {
         PatientData<Map<String, String>> genesData = null;
@@ -280,7 +313,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             return Collections.unmodifiableSet(geneNames);
         }
         return Collections.emptySet();
-    }
+    }*/
 
     private static String gender(Patient patient)
     {

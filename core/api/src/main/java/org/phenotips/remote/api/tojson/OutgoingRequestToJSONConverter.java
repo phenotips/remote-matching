@@ -24,5 +24,5 @@ import net.sf.json.JSONObject;
 
 public interface OutgoingRequestToJSONConverter
 {
-    JSONObject toJSON(OutgoingSearchRequest request);
+    JSONObject toJSON(OutgoingSearchRequest request, int includedTopGenes);
 }

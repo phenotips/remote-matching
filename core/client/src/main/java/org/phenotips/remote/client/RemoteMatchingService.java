@@ -17,15 +17,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.api.tojson;
+package org.phenotips.remote.client;
 
-import org.phenotips.data.Patient;
+import org.xwiki.component.annotation.Role;
+import org.xwiki.stability.Unstable;
 
 import net.sf.json.JSONObject;
 
-public interface PatientToJSONConverter
+/**
+ * Sends requests to remote servers supporting the specifications.
+ *
+ * FIXME Should there be an API for this?
+ */
+@Unstable
+@Role
+public interface RemoteMatchingService
 {
-    JSONObject convert(Patient patient, boolean removePrivateData);
-
-    JSONObject convert(Patient patient, boolean removePrivateData, int includedTopGenes);
+    public JSONObject sendRequest(String patientId, String remoteServerId, boolean async, boolean periodic, int addTopNGenes);
 }
