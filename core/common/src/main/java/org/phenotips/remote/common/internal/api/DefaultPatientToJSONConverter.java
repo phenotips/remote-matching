@@ -261,7 +261,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
                         return Double.compare(genesWithScore.get(s1), genesWithScore.get(s2));
                     }
                 });
-                List<String> topGenes = keys.subList(0, includedTopGenes);
+                List<String> topGenes = keys.subList(0, Math.min(keys.size(),includedTopGenes));
                 candidateGeneNames = new HashSet<String>();
                 for (String topGene : topGenes) {
                     candidateGeneNames.add(topGene);
@@ -280,40 +280,6 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         }
         return genes;
     }
-
-    /**
-     * TODO: this is a rip from org.phenotips.data.similarity.internal.PatientGenotype
-     *       that class was not intended to be used outside of its package, need
-     *       to review and use PatientGenotype once it is updated
-     *
-     * Return a collection of the names of candidate genes listed for the given patient.
-     * @return a (potentially-empty) unmodifiable collection of the names of candidate genes
-     *
-    private static Collection<String> getPatientCandidateGeneNames(Patient p)
-    {
-        PatientData<Map<String, String>> genesData = null;
-        if (p != null) {
-            genesData = p.getData("genes");
-        }
-        if (genesData != null) {
-            Set<String> geneNames = new HashSet<String>();
-            Iterator<Map<String, String>> iterator = genesData.iterator();
-            while (iterator.hasNext()) {
-                Map<String, String> geneInfo = iterator.next();
-                String geneName = geneInfo.get("gene");
-                if (geneName == null) {
-                    continue;
-                }
-                geneName = geneName.trim();
-                if (geneName.isEmpty()) {
-                    continue;
-                }
-                geneNames.add(geneName);
-            }
-            return Collections.unmodifiableSet(geneNames);
-        }
-        return Collections.emptySet();
-    }*/
 
     private static String gender(Patient patient)
     {
