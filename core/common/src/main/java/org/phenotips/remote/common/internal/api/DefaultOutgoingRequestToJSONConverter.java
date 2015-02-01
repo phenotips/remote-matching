@@ -21,16 +21,16 @@ package org.phenotips.remote.common.internal.api;
 
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientRepository;
-import org.phenotips.remote.api.tojson.OutgoingRequestToJSONConverter;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.ApiViolationException;
-import org.phenotips.remote.api.OutgoingSearchRequest;
+import org.phenotips.remote.api.tojson.OutgoingRequestToJSONConverter;
 import org.phenotips.remote.api.tojson.PatientToJSONConverter;
-import org.phenotips.remote.common.internal.api.DefaultPatientToJSONConverter;
-import org.slf4j.Logger;
+
+import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.security.authorization.AuthorizationManager;
 import org.xwiki.security.authorization.Right;
-import org.xwiki.bridge.DocumentAccessBridge;
+
+import org.slf4j.Logger;
 
 import net.sf.json.JSONObject;
 
@@ -62,10 +62,8 @@ public class DefaultOutgoingRequestToJSONConverter implements OutgoingRequestToJ
     }
 
     @Override
-    public JSONObject toJSON(OutgoingSearchRequest request, int includedTopGenes)
+    public JSONObject toJSON(String patientId, int includedTopGenes)
     {
-        String patientId = request.getReferencePatientId();
-
         Patient referencePatient = this.getPatientByID(patientId);
         if (referencePatient == null) {
             logger.error("Unable to get patient with id [{}]", patientId);
@@ -85,7 +83,7 @@ public class DefaultOutgoingRequestToJSONConverter implements OutgoingRequestToJ
             }
 
             json.put("id", MD5(patientId));
-            json.put("queryType", request.getQueryType());
+            json.put("queryType", "once");
 
             //JSONObject submitter = new JSONObject();
             //submitter.put("name",  request.getSubmitterName());
