@@ -258,7 +258,8 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
                 List<String> keys = new ArrayList<String>(set);
                 Collections.sort(keys, new Comparator<String>() {
                     public int compare(String s1, String s2) {
-                        return Double.compare(genesWithScore.get(s1), genesWithScore.get(s2));
+                        // Sort by score, descending
+                        return Double.compare(genesWithScore.get(s2), genesWithScore.get(s1));
                     }
                 });
                 List<String> topGenes = keys.subList(0, Math.min(keys.size(),includedTopGenes));
