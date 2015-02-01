@@ -33,5 +33,7 @@ import net.sf.json.JSONObject;
 @Role
 public interface RemoteMatchingService
 {
-    public JSONObject sendRequest(String patientId, String remoteServerId, boolean async, boolean periodic, int addTopNGenes);
+    public JSONObject getRequest(String patientId, int addTopNGenes);
+
+    public JSONObject sendRequest(String patientId, String remoteServerId, int addTopNGenes);
 }
