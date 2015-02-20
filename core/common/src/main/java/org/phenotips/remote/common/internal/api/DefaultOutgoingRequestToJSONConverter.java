@@ -74,22 +74,22 @@ public class DefaultOutgoingRequestToJSONConverter implements OutgoingRequestToJ
         }
 
         try {
-            JSONObject json = this.patientToJSONConverter.convert(referencePatient, false, includedTopGenes);
+            JSONObject patientJson = this.patientToJSONConverter.convert(referencePatient, false, includedTopGenes);
 
-            if ((!json.has(ApiConfiguration.JSON_FEATURES) ||
-                  json.getJSONArray(ApiConfiguration.JSON_FEATURES).isEmpty()) &&
-                (!json.has(ApiConfiguration.JSON_GENES) ||
-                  json.getJSONArray(ApiConfiguration.JSON_GENES).isEmpty())) {
+            if ((!patientJson.has(ApiConfiguration.JSON_FEATURES) ||
+                  patientJson.getJSONArray(ApiConfiguration.JSON_FEATURES).isEmpty()) &&
+                (!patientJson.has(ApiConfiguration.JSON_GENES) ||
+                  patientJson.getJSONArray(ApiConfiguration.JSON_GENES).isEmpty())) {
                 this.logger.error("Can't send a query for a patient with no features and no genes");
                 throw new ApiViolationException("Can't send a query for a patient with no features and no genes");
             }
+            patientJson.put("id", MD5(patientId));
 
-            json.put("id", MD5(patientId));
-            json.put("queryType", request.getQueryType());
+            JSONObject json = new JSONObject();
+            json.put(ApiConfiguration.JSON_PATIENT, patientJson);
 
             //JSONObject submitter = new JSONObject();
             //submitter.put("name",  request.getSubmitterName());
-            //submitter.put("email", request.getSubmitterEmail());
 
             return json;
         } catch (ApiViolationException ex) {

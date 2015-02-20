@@ -20,32 +20,35 @@
 package org.phenotips.remote.server.internal;
 
 import org.phenotips.remote.api.ApiConfiguration;
+import org.phenotips.remote.api.ApiDataConverter;
+import org.phenotips.remote.common.ApiFactory;
 import org.phenotips.remote.common.ApplicationConfiguration;
 import org.phenotips.remote.common.internal.XWikiAdapter;
 import org.phenotips.remote.server.ApiRequestHandler;
 import org.phenotips.remote.server.SearchRequestProcessor;
-import org.phenotips.remote.server.AsyncResponseProcessor;
 import org.phenotips.remote.server.internal.queuetasks.ContextSetter;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.rest.XWikiResource;
 import org.xwiki.rest.XWikiRestException;
 
+import java.util.regex.Pattern;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.inject.Inject;
 //import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.MediaType;
+//import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.objects.BaseObject;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -64,12 +67,12 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
     SearchRequestProcessor searchRequestProcessor;
 
     @Inject
-    AsyncResponseProcessor asyncReponseProcessor;
+    ApiFactory apiFactory;
 
     @Override
-    public Response matchPost(String json, String apiVersion) throws XWikiRestException, XWikiException
+    public Response matchPost(String json) throws XWikiRestException
     {
-        this.logger.error("PROCESS MATCH for version [{}]", apiVersion);
+        this.logger.error("PROCESS MME MATCH REQUEDST");
         this.logger.error("INPUT JSON: [{}]", json);
 
         try {
@@ -78,57 +81,49 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
             ContextSetter.set(context);
             HttpServletRequest httpRequest = context.getRequest().getHttpServletRequest();
 
-            if (!isRequestAuthorized(httpRequest, context)) {
-                return Response.status(ApiConfiguration.HTTP_UNAUTHORIZED).build();
+            String apiVersion = this.parseApiVersion(httpRequest.getHeader(ApiConfiguration.HTTPHEADER_API_VERSION));
+            ApiDataConverter apiVersionSpecificConverter;
+            try {
+                apiVersionSpecificConverter = this.apiFactory.getApiVersion(apiVersion);
+
+                this.logger.debug("Request version: <<{}>>", apiVersion);
+
+                if (!isRequestAuthorized(httpRequest, context)) {
+                    jsonResponse = new JSONObject();
+                    jsonResponse.put(ApiConfiguration.REPLY_JSON_HTTP_STATUS, ApiConfiguration.HTTP_UNAUTHORIZED);
+                    jsonResponse.put(ApiConfiguration.REPLY_JSON_ERROR_DESCRIPTION, "unauthorized server");
+                } else {
+                    // Using futures to queue tasks and to retrieve results.
+                    ExecutorService queue = Executors.newSingleThreadExecutor();
+                    jsonResponse = this.searchRequestProcessor.processHTTPSearchRequest(
+                                   apiVersionSpecificConverter, json, queue, httpRequest);
+                }
+            } catch (Exception ex) {
+                this.logger.error("Incorrect incoming request: unsupported API version: [{}]", apiVersion);
+                jsonResponse = new JSONObject();
+                jsonResponse.put(ApiConfiguration.REPLY_JSON_HTTP_STATUS,
+                                 ApiConfiguration.HTTP_UNSUPPORTED_API_VERSION);
+                jsonResponse.put(ApiConfiguration.REPLY_JSON_ERROR_DESCRIPTION,
+                                 "unsupported API version");
+                jsonResponse.put(ApiConfiguration.REPLY_JSON_SUPPORTEDVERSIONS,
+                                 JSONArray.fromObject(this.apiFactory.getSupportedApiVersions()));
+                apiVersion = ApiConfiguration.LATEST_API_VERSION_STRING;
             }
 
-            // Using futures to queue tasks and to retrieve results.
-            ExecutorService queue = Executors.newSingleThreadExecutor();
-            jsonResponse = this.searchRequestProcessor.processHTTPSearchRequest(apiVersion, json, queue, httpRequest);
+            this.logger.error("RESPONSE JSON: [{}]", jsonResponse.toString());
 
-            Integer status = (Integer) jsonResponse.remove("status");
+            Integer status = (Integer) jsonResponse.remove(ApiConfiguration.REPLY_JSON_HTTP_STATUS);
             if (status == null) {
                 status = ApiConfiguration.HTTP_SERVER_ERROR;
             }
-            if (status.equals(ApiConfiguration.HTTP_OK)) {
-                this.logger.error("RESPONSE JSON: [{}]", jsonResponse.toString());
-                return Response.ok(jsonResponse.toString(), MediaType.APPLICATION_JSON).build();
-            } else {
-                return Response.status(status).build();
-            }
+
+            ResponseBuilder response = Response.status(status);
+            response.entity(jsonResponse.toString());
+            response.type(this.generateContentType(apiVersion));
+            return response.build();
         } catch (Exception ex) {
             Logger logger = LoggerFactory.getLogger(DefaultApiRequestHandler.class);
             logger.error("Could not process remote matching request: {}", ex.getMessage(), ex);
-            return Response.status(ApiConfiguration.HTTP_SERVER_ERROR).build();
-        }
-    }
-
-    @Override
-    public Response matchResultsPost(String json, String apiVersion) throws XWikiRestException, XWikiException
-    {
-        this.logger.error("PROCESS MATCHRESULTS for version [{}]", apiVersion);
-        this.logger.error("INPUT JSON: [{}]", json);
-
-        try {
-            JSONObject jsonResponse = new JSONObject();
-            XWikiContext context = this.getXWikiContext();
-            ContextSetter.set(context);
-            HttpServletRequest httpRequest = context.getRequest().getHttpServletRequest();
-
-            if (!isRequestAuthorized(httpRequest, context)) {
-                return Response.status(ApiConfiguration.HTTP_UNAUTHORIZED).build();
-            }
-
-            Integer status = this.asyncReponseProcessor.processHTTPAsyncResponse(apiVersion, json, httpRequest);
-
-            if (status.equals(ApiConfiguration.HTTP_OK)) {
-                return Response.ok(jsonResponse.toString(), MediaType.APPLICATION_JSON).build();
-            } else {
-                return Response.status(status).build();
-            }
-        } catch (Exception ex) {
-            Logger logger = LoggerFactory.getLogger(DefaultApiRequestHandler.class);
-            logger.error("Could not process remote async response: {}", ex.getMessage(), ex);
             return Response.status(ApiConfiguration.HTTP_SERVER_ERROR).build();
         }
     }
@@ -140,17 +135,27 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
         if (configurationObject == null) {
             return false; // this server is not listed as an accepted server, and has no key
         }
-        // TODO: for now support both URL and 'X-Auth-Token' HTTP header;
-        //       remove URL key param support once all parties switch to X-Auth-Token
-        String requestKey = httpRequest.getParameter(ApiConfiguration.URL_KEY_PARAMETER);
-        if (requestKey == null) {
-            requestKey = httpRequest.getHeader(ApiConfiguration.HTTPHEADER_KEY_PARAMETER);
-        }
-        String configuredKey = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_LOCAL_KEY_FIELD);
+        String requestKey = httpRequest.getHeader(ApiConfiguration.HTTPHEADER_KEY_PARAMETER);
+        String configuredKey =
+            configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_LOCAL_KEY_FIELD);
         logger.error("Remote server key validation: Key: {}, Configured: {}", requestKey, configuredKey);
         if (requestKey == null || configuredKey == null || !requestKey.equals(configuredKey)) {
             return false;
         }
         return true;
+    }
+
+    private String parseApiVersion(String apiHeader)
+    {
+        String result = apiHeader.replaceAll(Pattern.quote(ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX) +
+            "(\\d+\\.\\d+)" + Pattern.quote(ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX), "$1");
+        logger.error("Request api version: [{}]", result);
+        return result;
+    }
+
+    private String generateContentType(String apiVersion)
+    {
+        return ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX + apiVersion +
+            ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX;
     }
 }

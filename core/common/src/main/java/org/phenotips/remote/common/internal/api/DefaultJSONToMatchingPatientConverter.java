@@ -46,32 +46,40 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
     private final String apiVersion;
 
     private final Pattern hpoTerm; // not static: may be different from api version to api version
+    private final Pattern disorderTerm;
 
     public DefaultJSONToMatchingPatientConverter(String apiVersion, Logger logger)
     {
         this.apiVersion = apiVersion;
         this.logger     = logger;
 
-        this.hpoTerm = Pattern.compile("^HP:\\d+$");
+        this.hpoTerm      = Pattern.compile("^HP:\\d+$");
+        this.disorderTerm = Pattern.compile("^MIM:\\d+$");  // TODO: Orphanet:#####
     }
 
     @Override
     public MatchingPatient convert(JSONObject json)
     {
         try {
-            String remotePatientId = json.optString(ApiConfiguration.JSON_PATIENT_ID, null);
+            JSONObject patientJSON = json.optJSONObject(ApiConfiguration.JSON_PATIENT);
+            if (patientJSON == null) {
+                this.logger.error("No patient object is provided in the request");
+                throw new ApiViolationException("No patient object is provided in the request");
+            }
+
+            String remotePatientId = patientJSON.optString(ApiConfiguration.JSON_PATIENT_ID, null);
             if (remotePatientId == null) {
                 this.logger.error("Remote patient has no id: violates API requirements");
                 throw new ApiViolationException("Remote patient has no id");
             }
 
-            String label = json.optString(ApiConfiguration.JSON_PATIENT_LABEL, null);
+            String label = patientJSON.optString(ApiConfiguration.JSON_PATIENT_LABEL, null);
 
             MatchingPatient patient = new HibernatePatient(remotePatientId, label);
 
-            Set<MatchingPatientFeature> features   = this.convertFeatures(json);
-            Set<MatchingPatientDisorder> disorders = this.convertDisorders(json);
-            Set<MatchingPatientGene> genes         = this.convertGenes(json);
+            Set<MatchingPatientFeature> features   = this.convertFeatures(patientJSON);
+            Set<MatchingPatientDisorder> disorders = this.convertDisorders(patientJSON);
+            Set<MatchingPatientGene> genes         = this.convertGenes(patientJSON);
 
             if ((features == null || features.isEmpty()) &&
                 (genes == null || genes.isEmpty())) {
@@ -87,7 +95,6 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
             if (genes != null) {
                 patient.addGenes(genes);
             }
-            this.logger.debug("Incoming matching JSON->Patient OK");
             return patient;
         } catch (ApiViolationException ex) {
             throw ex;
@@ -105,27 +112,30 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                 JSONArray featuresJson = (JSONArray) json.get(ApiConfiguration.JSON_FEATURES);
                 for (Object jsonFeatureUncast : featuresJson) {
                     JSONObject jsonFeature = (JSONObject) jsonFeatureUncast;
-                    MatchingPatientFeature feature = new HibernatePatientFeature();
-                    String id = jsonFeature.getString("id").toUpperCase();
+                    String id = jsonFeature.getString(ApiConfiguration.JSON_FEATURE_ID).toUpperCase();
                     // TODO: throw an error if a term is not a supported one (HPO).
                     // TODO: maybe report an error, to be reviewed once spec is updated
                     if (!this.hpoTerm.matcher(id).matches()) {
                         logger.error("Patient feature parser: ignoring unsupported term with ID [{}]", id);
                         continue;
                     }
-                    feature.setId(id);
-                    String observed = jsonFeature.getString("observed").toLowerCase();
-                    if (!observed.equals(ApiConfiguration.REPLY_JSON_FEATURE_OBSERVED_YES) &&
-                        !observed.equals(ApiConfiguration.REPLY_JSON_FEATURE_OBSERVED_NO)) {
-                        logger.error("Patient feature parser: ignoring term with unsupported observed status [{}]", observed);
+                    String observed = jsonFeature.optString(ApiConfiguration.JSON_FEATURE_OBSERVED,
+                                                            ApiConfiguration.JSON_FEATURE_OBSERVED_YES).toLowerCase();
+                    if (!observed.equals(ApiConfiguration.JSON_FEATURE_OBSERVED_YES) &&
+                        !observed.equals(ApiConfiguration.JSON_FEATURE_OBSERVED_NO)) {
+                        logger.error("Patient feature parser: ignoring term with unsupported observed status [{}]",
+                            observed);
                         continue;
                     }
+                    MatchingPatientFeature feature = new HibernatePatientFeature();
+                    feature.setId(id);
                     feature.setObserved(observed);
                     featureSet.add(feature);
                 }
                 return featureSet;
             }
-        } catch (Exception ex) {  // TODO: catch only json exceptions, and throw other type upwads if feature id is unsupported
+        } catch (Exception ex) {
+            // TODO: catch only json exceptions, and throw other type upwads if feature id is unsupported
             this.logger.error("Error converting features: [{}]", ex);
         }
         return null;
@@ -137,8 +147,13 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
             if (json.has(ApiConfiguration.JSON_DISORDERS)) {
                 Set<MatchingPatientDisorder> disorderSet = new HashSet<MatchingPatientDisorder>();
                 JSONArray disorderJson = (JSONArray) json.get(ApiConfiguration.JSON_DISORDERS);
-                for (Object idUncast : disorderJson) {
-                    String id = (String) idUncast;
+                for (Object jsonDisorderUncast : disorderJson) {
+                    JSONObject jsonDisorder = (JSONObject) jsonDisorderUncast;
+                    String id = jsonDisorder.getString(ApiConfiguration.JSON_DISORDER_ID).toUpperCase();
+                    if (!this.disorderTerm.matcher(id).matches()) {
+                        logger.error("Patient feature parser: ignoring unsupported term with ID [{}]", id);
+                        continue;
+                    }
                     MatchingPatientDisorder disorder = new HibernatePatientDisorder();
                     disorder.setId(id);
                     disorderSet.add(disorder);
@@ -158,12 +173,19 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                 Set<MatchingPatientGene> geneSet = new HashSet<MatchingPatientGene>();
                 JSONArray genesJson = (JSONArray) json.get(ApiConfiguration.JSON_GENES);
                 for (Object jsonGeneUncast : genesJson) {
-                    JSONObject jsonGene = (JSONObject) jsonGeneUncast;
+                    JSONObject jsonGenomicFeature = (JSONObject) jsonGeneUncast;
+                    JSONObject jsonGeneId = jsonGenomicFeature.optJSONObject(ApiConfiguration.JSON_GENES_GENE);
+                    String geneName = (jsonGeneId != null) ?
+                                      jsonGeneId.optString(ApiConfiguration.JSON_GENES_GENE_ID).toUpperCase() : "";
+                    if (geneName.length() == 0) {
+                        logger.error("Patient genomic features parser: gene has no id");
+                        continue;
+                    }
+                    // TODO: check if name is a valid gene symbol or ensembl id
                     MatchingPatientGene gene = new HibernatePatientGene();
-                    String geneName = jsonGene.getString("gene");
-                    // TODO: check if name is a name or ensembleID
                     gene.setName(geneName);
                     geneSet.add(gene);
+                    // TODO: variants
                 }
                 return geneSet;
             }

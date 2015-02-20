@@ -20,7 +20,6 @@
 package org.phenotips.remote.common.internal.api.v1;
 
 import java.util.List;
-import java.util.Map;
 
 import net.sf.json.JSONObject;
 import net.sf.json.JSONArray;
@@ -50,7 +49,7 @@ import org.xwiki.component.annotation.Component;
 @Named("api-data-converter-v1")
 public class ApiDataConverterV1 implements ApiDataConverter, Initializable
 {
-    private final static String VERSION_STRING = "v1";
+    private final static String VERSION_STRING = "1.0";
 
     private IncomingJSONParser incomingJSONParser;
 
@@ -94,9 +93,9 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
     public JSONObject generateWrongInputDataResponse(String reasonMsg)
     {
         JSONObject reply = new JSONObject();
-        reply.put(ApiConfiguration.INTERNAL_JSON_STATUS, ApiConfiguration.HTTP_BAD_REQUEST);
+        reply.put(ApiConfiguration.REPLY_JSON_HTTP_STATUS, ApiConfiguration.HTTP_BAD_REQUEST);
         if (reasonMsg != null && !reasonMsg.isEmpty()) {
-            reply.put(ApiConfiguration.INTERNAL_JSON_ERROR_DESCRIPTION, reasonMsg);
+            reply.put(ApiConfiguration.REPLY_JSON_ERROR_DESCRIPTION, reasonMsg);
         }
         return reply;
     }
@@ -105,9 +104,9 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
     public JSONObject generateInternalServerErrorResponse(String reasonMsg)
     {
         JSONObject reply = new JSONObject();
-        reply.put(ApiConfiguration.INTERNAL_JSON_STATUS, ApiConfiguration.HTTP_SERVER_ERROR);
+        reply.put(ApiConfiguration.REPLY_JSON_HTTP_STATUS, ApiConfiguration.HTTP_SERVER_ERROR);
         if (reasonMsg != null && !reasonMsg.isEmpty()) {
-            reply.put(ApiConfiguration.INTERNAL_JSON_ERROR_DESCRIPTION, reasonMsg);
+            reply.put(ApiConfiguration.REPLY_JSON_ERROR_DESCRIPTION, reasonMsg);
         }
         return reply;
     }
@@ -125,79 +124,32 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
     {
         JSONObject reply = new JSONObject();
 
-        reply.put(ApiConfiguration.JSON_RESPONSE_TYPE, ApiConfiguration.REQUEST_RESPONSE_TYPE_SYNCHRONOUS);
-        reply.put(ApiConfiguration.JSON_RESPONSE_ID,   "0");
-
-        reply.put("modelPatientLabel", request.getRemotePatient().getLabel());      // TODO: DEBUG field
-        reply.put("modelPatientId",    request.getRemotePatient().getExternalId()); // TODO: DEBUG field
+        //TODO:
+        //reply.put("modelPatientLabel", request.getRemotePatient().getLabel());
+        //reply.put("modelPatientId", request.getRemotePatient().getExternalId());
 
         JSONArray matchList = new JSONArray();
         for (PatientSimilarityView patient : resultList) {
             try {
-                matchList.add(this.patientToJSONConverter.convert(patient, true));
+                JSONObject matchInfo = new JSONObject();
+
+                JSONObject scoreJson = new JSONObject();
+                scoreJson.put(ApiConfiguration.REPLY_JSON_RESULTS_SCORE_PATIENT, patient.getScore());
+
+                matchInfo.put(ApiConfiguration.REPLY_JSON_RESULTS_SCORE, scoreJson);
+
+                matchInfo.put(ApiConfiguration.REPLY_JSON_RESULTS_PATIENT,
+                              this.patientToJSONConverter.convert(patient, true));
+                matchList.add(matchInfo);
             } catch (Exception ex) {
                 this.logger.error("Error converting patient to JSON: [{}]", ex);
             }
         }
-        reply.put(ApiConfiguration.JSON_RESULTS, matchList);
+        reply.put(ApiConfiguration.REPLY_JSON_RESULTS, matchList);
 
         this.logger.debug("Inline reply: [{}]", reply.toString());
 
-        reply.put(ApiConfiguration.INTERNAL_JSON_STATUS, ApiConfiguration.HTTP_OK);
-
-        return reply;
-    }
-
-    @Override
-    public JSONObject generateNonInlineResponse(IncomingSearchRequest request)
-    {
-        JSONObject reply = new JSONObject();
-
-        reply.put(ApiConfiguration.JSON_RESPONSE_TYPE, request.getResponseType());
-
-        // email responses are non-inline responses, but there will be no query ID if the request is not periodic
-        if (request.getQueryId() != null) {
-            reply.put(ApiConfiguration.JSON_RESPONSE_ID, request.getQueryId());
-        }
-
-        reply.put("modelPatientLabel", request.getRemotePatient().getLabel());      // TODO: DEBUG field
-        reply.put("modelPatientId",    request.getRemotePatient().getExternalId()); // TODO: DEBUG field
-
-        reply.put(ApiConfiguration.INTERNAL_JSON_STATUS, ApiConfiguration.HTTP_OK);
-
-        this.logger.debug("Non-inline reply: [{}]", reply.toString());
-
-        return reply;
-    }
-
-    @Override
-    public JSONObject generateAsyncResult(Map<IncomingSearchRequest, List<PatientSimilarityView>> results)
-    {
-        JSONObject reply = new JSONObject();
-
-        JSONArray resultsList = new JSONArray();
-
-        for (Map.Entry<IncomingSearchRequest, List<PatientSimilarityView>> resultSet : results.entrySet()) {
-            IncomingSearchRequest processedRequest = resultSet.getKey();
-            List<PatientSimilarityView> resultList = resultSet.getValue();
-
-            JSONObject oneResultsSet = new JSONObject();
-            oneResultsSet.put(ApiConfiguration.JSON_RESPONSE_ID, processedRequest.getQueryId());
-
-            JSONArray matchList = new JSONArray();
-            for (PatientSimilarityView patient : resultList) {
-                try {
-                    matchList.add(this.patientToJSONConverter.convert(patient, true));
-                } catch (Exception ex) {
-                    this.logger.error("Error converting patient to JSON: [{}]", ex);
-                }
-            }
-            oneResultsSet.put(ApiConfiguration.JSON_RESULTS, matchList);
-
-            resultsList.add(oneResultsSet);
-        }
-
-        reply.put(ApiConfiguration.JSON_ASYNC_RESPONSES, resultsList);
+        reply.put(ApiConfiguration.REPLY_JSON_HTTP_STATUS, ApiConfiguration.HTTP_OK);
 
         return reply;
     }

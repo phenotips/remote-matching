@@ -40,30 +40,9 @@ public interface SearchRequest
     String getQueryId();
 
     /**
-     * Either "once" or "periodic". Default: "once"
-     */
-    String getQueryType();
-
-    /**
-     * Is not mandatory for {@link org.phenotips.remote.api.OutgoingSearchRequest} as it is instantiated with
-     * the default value.
-     */
-    String getResponseType();
-
-    /**
      * Default: null
      */
-    String getSubmitterName();
-
-    /**
-     * Default: null
-     */
-    String getSubmitterEmail();
-
-    /**
-     * Default: null
-     */
-    String getSubmitterInstitution();
+    ContactInfo getContactInfo();
 
     /**
      * The last time results for this query were produced (for the server) or obtained (for the client)

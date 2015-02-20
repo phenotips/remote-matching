@@ -62,15 +62,11 @@ public class DefaultIncomingJSONParser implements IncomingJSONParser
         DefaultIncomingSearchRequest request = new DefaultIncomingSearchRequest(requestPatient, remoteServerId);
 
         try {
-            request.setResponseType(this.responseType(jsonRequest));
-
-            request.setQueryType(this.queryType(jsonRequest));
-
-            Map<String, String> submitterMap = this.submitter(jsonRequest);
-            if (submitterMap != null) {
-                request.setSubmitterEmail(submitterMap.get(ApiConfiguration.JSON_SUBMITTER_EMAIL));
-                request.setSubmitterName(submitterMap.get(ApiConfiguration.JSON_SUBMITTER_NAME));
-                request.setSubmitterInstitution(submitterMap.get(ApiConfiguration.JSON_SUBMITTER_INSTITUTION));
+            Map<String, String> contactInfoMap = this.submitter(jsonRequest);
+            if (contactInfoMap != null) {
+                request.setContact(contactInfoMap.get(ApiConfiguration.JSON_CONTACT_NAME),
+                    contactInfoMap.get(ApiConfiguration.JSON_CONTACT_INSTITUTION),
+                    contactInfoMap.get(ApiConfiguration.JSON_CONTACT_HREF));
             }
 
             // TODO: label
@@ -83,38 +79,16 @@ public class DefaultIncomingJSONParser implements IncomingJSONParser
         return request;
     }
 
-    private String responseType(JSONObject json)
-    {
-        String result = json.optString(ApiConfiguration.JSON_RESPONSE_TYPE, ApiConfiguration.DEFAULT_REQUEST_RESPONSE_TYPE);
-        if (!result.equals(ApiConfiguration.REQUEST_RESPONSE_TYPE_SYNCHRONOUS) &&
-            !result.equals(ApiConfiguration.REQUEST_RESPONSE_TYPE_ASYNCHRONOUS)) {
-            logger.error("Incoming matching request: unsupported response type [{}]", result);
-            result = ApiConfiguration.DEFAULT_REQUEST_RESPONSE_TYPE;
-        }
-        return result;
-    }
-
-    private String queryType(JSONObject json)
-    {
-        String result = json.optString(ApiConfiguration.JSON_QUERY_TYPE, ApiConfiguration.DEFAULT_REQUEST_QUERY_TYPE);
-        if (!result.equals(ApiConfiguration.REQUEST_QUERY_TYPE_ONCE) &&
-            !result.equals(ApiConfiguration.REQUEST_QUERY_TYPE_PERIODIC)) {
-            logger.error("Incoming matching request: unsupported query type [{}]", result);
-            result = ApiConfiguration.DEFAULT_REQUEST_QUERY_TYPE;
-        }
-        return result;
-    }
-
     private Map<String, String> submitter(JSONObject json) throws Exception
     {
-        JSONObject submitter = json.getJSONObject(ApiConfiguration.JSON_SUBMITTER);
+        JSONObject submitter = json.getJSONObject(ApiConfiguration.JSON_CONTACT);
         if (submitter.isEmpty()) {
             return null;
         }
 
-        String[] keys = { ApiConfiguration.JSON_SUBMITTER_NAME,
-                          ApiConfiguration.JSON_SUBMITTER_EMAIL,
-                          ApiConfiguration.JSON_SUBMITTER_INSTITUTION };
+        String[] keys = { ApiConfiguration.JSON_CONTACT_NAME,
+                          ApiConfiguration.JSON_CONTACT_HREF,
+                          ApiConfiguration.JSON_CONTACT_INSTITUTION };
         Map<String, String> submitterMap = new HashMap<String, String>();
         for (String key : keys) {
             Object valueObject = submitter.get(key);

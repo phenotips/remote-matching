@@ -19,6 +19,11 @@
  */
 package org.phenotips.remote.client;
 
+import java.util.List;
+import java.util.Map;
+
+import org.phenotips.data.similarity.PatientSimilarityView;
+import org.phenotips.remote.api.ApiViolationException;
 import org.xwiki.component.annotation.Role;
 import org.xwiki.stability.Unstable;
 
@@ -33,5 +38,15 @@ import net.sf.json.JSONObject;
 @Role
 public interface RemoteMatchingService
 {
-    public JSONObject sendRequest(String patientId, String remoteServerId, boolean async, boolean periodic, int addTopNGenes);
+    // TODO: a better split of duties between generate & send. Keeping as is for debug purposes for now
+    public JSONObject sendRequest(String patientId, String remoteServerId, int addTopNGenes);
+
+    // Note: request may differ from server to server, e.g. we may want to include more or less private
+    //       data depending on the server
+    public JSONObject generateRequestJSON(String patientId, String remoteServerId, int addTopNGenes)
+        throws ApiViolationException;
+
+    public List<PatientSimilarityView> getSimilarityResults(String patientId, String remoteServerId);
+
+    public Map<String,List<PatientSimilarityView>> getAllSimilarityResults(String patientId);
 }

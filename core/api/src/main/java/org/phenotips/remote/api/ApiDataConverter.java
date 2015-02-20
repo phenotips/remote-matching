@@ -26,7 +26,6 @@ import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.fromjson.IncomingJSONParser;
 import org.phenotips.remote.api.tojson.OutgoingRequestToJSONConverter;
 
-import java.util.Map;
 import net.sf.json.JSONObject;
 
 import org.xwiki.component.annotation.Role;
@@ -53,10 +52,6 @@ public interface ApiDataConverter
     IncomingJSONParser getIncomingJSONParser();
 
     JSONObject generateInlineResponse(IncomingSearchRequest request, List<PatientSimilarityView> resultList);
-
-    JSONObject generateNonInlineResponse(IncomingSearchRequest request);
-
-    JSONObject generateAsyncResult(Map<IncomingSearchRequest, List<PatientSimilarityView>> results);
 
     //================================================================
 

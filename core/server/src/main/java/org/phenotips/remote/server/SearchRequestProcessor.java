@@ -19,6 +19,7 @@
  */
 package org.phenotips.remote.server;
 
+import org.phenotips.remote.api.ApiDataConverter;
 import org.xwiki.component.annotation.Role;
 
 import java.util.concurrent.ExecutorService;
@@ -33,6 +34,6 @@ import net.sf.json.JSONObject;
 @Role
 public interface SearchRequestProcessor
 {
-    JSONObject processHTTPSearchRequest(String apiVersion, String json, ExecutorService queue,
-        HttpServletRequest httpRequest) throws Exception;
+    JSONObject processHTTPSearchRequest(ApiDataConverter apiVersionSpecificConverter, String json,
+        ExecutorService queue, HttpServletRequest httpRequest) throws Exception;
 }

@@ -21,6 +21,8 @@ package org.phenotips.remote.common;
 
 import org.phenotips.remote.api.ApiDataConverter;
 
+import java.util.Set;
+
 import org.xwiki.component.annotation.Role;
 
 /*
@@ -30,4 +32,6 @@ import org.xwiki.component.annotation.Role;
 public interface ApiFactory
 {
     ApiDataConverter getApiVersion(String apiVersion);
+
+    Set<String> getSupportedApiVersions();
 }

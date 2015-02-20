@@ -26,90 +26,83 @@ package org.phenotips.remote.api;
  */
 public interface ApiConfiguration
 {
-    String API_VERSION_STRING = "v1";
+    String LATEST_API_VERSION_STRING = "1.0";
+
+    String HTTPHEADER_CONTENT_TYPE_PREFIX = "application/vnd.ga4gh.matchmaker.v";
+    String HTTPHEADER_CONTENT_TYPE_SUFFIX = "+json";
+    String HTTPHEADER_CONTENT_TYPE_SIMPLE = "application/vnd.ga4gh.matchmaker" + HTTPHEADER_CONTENT_TYPE_SUFFIX;
 
     String HTTPHEADER_KEY_PARAMETER = "X-Auth-Token";
-    String URL_KEY_PARAMETER        = "key";                // TODO: depricated
+    String HTTPHEADER_API_VERSION   = "Accept";
 
     // Must not contain the '/' at the beginning of the string
-    String REMOTE_URL_SEARCH_ENDPOINT = "mmapi/" + API_VERSION_STRING + "/match";
+    String REMOTE_URL_SEARCH_ENDPOINT = "match";
 
-    String REMOTE_URL_ASYNCHRONOUS_RESULTS_ENDPOINT = "mmapi/" + API_VERSION_STRING + "/matchResults";
-
-    // TODO: get rid of "media=json"?
-    //String REMOTE_URL_SEARCH_EXTENSION = REMOTE_URL_SEARCH_ENDPOINT + "?media=json&" + URL_KEY_PARAMETER + "=";
-
-    String REMOTE_HIBERNATE_ID = "hibernateId";
-
-    String REMOTE_RESPONSE_FORMAT = "responseFormat";
-
-    // Patient
-    String FEATURE_AGE_OF_ONSET = "age_of_onset";
+    String REMOTE_URL_ASYNCHRONOUS_RESULTS_ENDPOINT = "matchResults";
 
     // used for non-matched non-disclosed featues to indicate there is an unmatched feature
     String REPLY_JSON_FEATURE_HPO_MOST_GENERIC_TERM = "HP:0000118";
 
-    String JSON_ASYNC_RESPONSES = "responses";
+    // Patient
+    String JSON_PATIENT = "patient";
 
-    String JSON_SUBMITTER = "submitter";
+    String JSON_PATIENT_AGEOFONSET = "ageOfOnset";
 
-    String JSON_SUBMITTER_NAME = "name";
+    String JSON_PATIENT_SPECIES = "species";
+    String SPECIES_HUMAN = "NCBITaxon:9606";
 
-    String JSON_SUBMITTER_EMAIL = "email";
+    String JSON_CONTACT             = "contact";
+    String JSON_CONTACT_NAME        = "name";
+    String JSON_CONTACT_INSTITUTION = "institution";
+    String JSON_CONTACT_HREF        = "href";
 
-    String JSON_SUBMITTER_INSTITUTION = "institution";
-
-    String JSON_QUERY_TYPE = "queryType";
-
-    String JSON_PATIENT_ID = "id";
-
+    String JSON_PATIENT_ID    = "id";
     String JSON_PATIENT_LABEL = "label";
 
-    String JSON_GENDER = "gender";
-
-    String JSON_RESPONSE_ID = "queryID";
-
-    String JSON_RESPONSE_TYPE = "responseType";
-
-    String JSON_RESULTS = "results";
+    String JSON_PATIENT_GENDER        = "sex";
+    String JSON_PATIENT_GENDER_MALE   = "MALE";
+    String JSON_PATIENT_GENDER_FEMALE = "FEMALE";
+    String JSON_PATIENT_GENDER_OTHER  = "OTHER";
 
     String JSON_FEATURES = "features";
-
     // JSON Feature subfields
-    String REPLY_JSON_FEATURE_AGE_OF_ONSET = "ageOfOnset";
-    String REPLY_JSON_FEATURE_ID = "id";
-    String REPLY_JSON_FEATURE_OBSERVED     = "observed";
-    String REPLY_JSON_FEATURE_OBSERVED_YES = "yes";
-    String REPLY_JSON_FEATURE_OBSERVED_NO  = "no";
-    String REPLY_JSON_FEATURE_OBSERVED_UNK = "unknown";
-    String REPLY_JSON_FEATURE_COUNT        = "count";
-    String REPLY_JSON_FEATURE_MATCHED      = "matched";
-    String REPLY_JSON_FEATURE_OBFUSCATED   = "obfuscated";
-    String JSON_DISORDERS = "disorders";
+    String JSON_FEATURE_ID           = "id";
+    String JSON_FEATURE_AGE_OF_ONSET = "ageOfOnset";
+    String JSON_FEATURE_OBSERVED     = "observed";
+    String JSON_FEATURE_OBSERVED_YES = "yes";
+    String JSON_FEATURE_OBSERVED_NO  = "no";
+    String JSON_FEATURE_COUNT        = "count";
+    String JSON_FEATURE_MATCHED      = "matched";
+    String JSON_FEATURE_OBFUSCATED   = "obfuscated";
 
-    String JSON_GENES = "genes";
+    String JSON_DISORDERS   = "disorders";
+    // JSON disorder subfields
+    String JSON_DISORDER_ID = "id";
+
+    String JSON_GENES = "genomicFeatures";
     // JSON genes subfields
-    String JSON_GENES_GENENAME = "gene";
-    String JSON_GENES_ASSEMBLY = "assembly";
+    String JSON_GENES_GENE    = "gene";
+    String JSON_GENES_GENE_ID = "id";
 
-    String REQUEST_RESPONSE_TYPE_SYNCHRONOUS  = "inline";
-    String REQUEST_RESPONSE_TYPE_ASYNCHRONOUS = "asynchronous";
-    // Used when the request does not explicitly specify response type
-    String DEFAULT_REQUEST_RESPONSE_TYPE = REQUEST_RESPONSE_TYPE_SYNCHRONOUS;
+    String JSON_GENES_VARIANT          = "variant";
+    String JSON_GENES_VARIANT_ASSEMBLY = "assembly";
 
-    String REQUEST_QUERY_TYPE_ONCE     = "once";
-    String REQUEST_QUERY_TYPE_PERIODIC = "periodic";
-    String DEFAULT_REQUEST_QUERY_TYPE  = REQUEST_QUERY_TYPE_ONCE;
+    String REPLY_JSON_RESULTS = "results";
+    String REPLY_JSON_RESULTS_PATIENT       = "patient";
+    String REPLY_JSON_RESULTS_SCORE         = "score";
+    String REPLY_JSON_RESULTS_SCORE_PATIENT = "patient";
 
-    String INTERNAL_JSON_STATUS            = "status";
-    String INTERNAL_JSON_ERROR_DESCRIPTION = "error";
+
+    String REPLY_JSON_HTTP_STATUS       = "status";
+    String REPLY_JSON_ERROR_DESCRIPTION = "message";
+    String REPLY_JSON_SUPPORTEDVERSIONS = "supportedVersions";
 
     // HTTP codes reported to the other side
     Integer HTTP_OK = 200;
     Integer HTTP_BAD_REQUEST  = 400;
     Integer HTTP_UNAUTHORIZED = 401;
     Integer HTTP_SERVER_ERROR = 500;
-    Integer HTTP_UNSUPPORTED_API_VERSION = 415;
+    Integer HTTP_UNSUPPORTED_API_VERSION = 406;
 
     // Local error codes consumed only internally (TODO: review local error handling)
     Integer ERROR_NOT_SENT = -1;

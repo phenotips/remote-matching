@@ -21,8 +21,12 @@ package org.phenotips.remote.common.internal;
 
 import org.phenotips.remote.api.ApiDataConverter;
 import org.phenotips.remote.common.ApiFactory;
-
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.phase.Initializable;
+
+import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -30,7 +34,7 @@ import javax.inject.Singleton;
 
 @Component
 @Singleton
-public class DefaultApiFactory implements ApiFactory
+public class DefaultApiFactory implements ApiFactory, Initializable
 {
     @Inject
     @Named("api-data-converter-v1")
@@ -40,18 +44,27 @@ public class DefaultApiFactory implements ApiFactory
     @Named("api-data-converter-v2")
     private ApiDataConverter apiDataConverterV2;
 
-    // TODO:
-    //@Inject
-    //private Map<String, ApiDataConverter> allApiDataConverters;  // the string is the hint
+    private Map<String, ApiDataConverter> allApiDataConverters = new HashMap<String, ApiDataConverter>();
+
+    @Override
+    public void initialize()
+    {
+        allApiDataConverters.put("1.0", this.apiDataConverterV1);
+        //allApiDataConverters.put("1.1", this.apiDataConverterV2);
+    }
 
     @Override
     public ApiDataConverter getApiVersion(String apiVersion)
     {
-        if (apiVersion.equals("v1")) {
-            return this.apiDataConverterV1;
-        } else if (apiVersion.equals("v2")) {
-            return this.apiDataConverterV2;
+        if (allApiDataConverters.containsKey(apiVersion)) {
+            return allApiDataConverters.get(apiVersion);
         }
         throw new IllegalArgumentException("Unsupported API version [" + apiVersion + "]");
+    }
+
+    @Override
+    public Set<String> getSupportedApiVersions()
+    {
+        return allApiDataConverters.keySet();
     }
 }

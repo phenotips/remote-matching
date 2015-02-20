@@ -17,17 +17,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.server;
+package org.phenotips.remote.api;
 
-import org.xwiki.component.annotation.Role;
-
-import javax.servlet.http.HttpServletRequest;
-
-/**
- * TODO fix the doc
- */
-@Role
-public interface AsyncResponseProcessor
+public interface ContactInfo
 {
-    Integer processHTTPAsyncResponse(String apiVersion, String json, HttpServletRequest httpRequest) throws Exception;
+    /**
+     */
+    String getContactName();
+
+    /**
+     */
+    String getContactInstitution();
+
+    /**
+     */
+    String getContactHREF();
+
 }

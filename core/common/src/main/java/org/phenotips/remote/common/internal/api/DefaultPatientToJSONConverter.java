@@ -27,6 +27,7 @@ import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
 import org.phenotips.ontology.internal.solr.SolrOntologyTerm;
 import org.phenotips.data.similarity.internal.PatientGenotype;
+import org.phenotips.remote.common.ApplicationConfiguration;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.slf4j.Logger;
 
@@ -39,7 +40,6 @@ import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -75,12 +75,23 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
     {
         JSONObject json = new JSONObject();
 
+        json.put(ApiConfiguration.JSON_PATIENT_ID, patient.getId());
+
+        // TODO
+        JSONObject contactJson = new JSONObject();
+        contactJson.put(ApiConfiguration.JSON_CONTACT_NAME,        "PhenomeCentral");
+        contactJson.put(ApiConfiguration.JSON_CONTACT_INSTITUTION, "PhenomeCentral");
+        contactJson.put(ApiConfiguration.JSON_CONTACT_HREF,        "mailto:matchmaker@phenomecentral.org");
+        json.put(ApiConfiguration.JSON_CONTACT, contactJson);
+
         try {
-            json.put(ApiConfiguration.JSON_GENDER, DefaultPatientToJSONConverter.gender(patient));
-            json.putAll(DefaultPatientToJSONConverter.globalQualifiers(patient));
+            json.put(ApiConfiguration.JSON_PATIENT_GENDER, DefaultPatientToJSONConverter.gender(patient));
+            // TODO
+            //json.putAll(DefaultPatientToJSONConverter.globalQualifiers(patient));
         } catch (Exception ex) {
             // Do nothing. These are optional.
         }
+
         JSONArray disorders = DefaultPatientToJSONConverter.disorders(patient);
         if (!disorders.isEmpty()) {
             json.put(ApiConfiguration.JSON_DISORDERS, disorders);
@@ -102,14 +113,14 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         JSONArray features = new JSONArray();
         for (Feature patientFeature : patient.getFeatures()) {
             Map<String, ? extends FeatureMetadatum> metadata = patientFeature.getMetadata();
-            FeatureMetadatum ageOfOnset = metadata.get(ApiConfiguration.FEATURE_AGE_OF_ONSET);
 
             JSONObject featureJson = new JSONObject();
-            featureJson.put(ApiConfiguration.REPLY_JSON_FEATURE_ID,       patientFeature.getId());
-            featureJson.put(ApiConfiguration.REPLY_JSON_FEATURE_OBSERVED, observedStatusToJSONString(patientFeature));
+            featureJson.put(ApiConfiguration.JSON_FEATURE_ID,       patientFeature.getId());
+            featureJson.put(ApiConfiguration.JSON_FEATURE_OBSERVED, observedStatusToJSONString(patientFeature));
 
+            FeatureMetadatum ageOfOnset = metadata.get(ApplicationConfiguration.FEATURE_METADATA_AGEOFONSET);
             if (ageOfOnset != null) {
-                featureJson.put(ApiConfiguration.REPLY_JSON_FEATURE_AGE_OF_ONSET, ageOfOnset.getId());
+                featureJson.put(ApiConfiguration.JSON_FEATURE_AGE_OF_ONSET, ageOfOnset.getId());
             }
             features.add(featureJson);
         }
@@ -119,9 +130,9 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
     private static String observedStatusToJSONString(Feature feature)
     {
         if (feature.isPresent()) {
-            return ApiConfiguration.REPLY_JSON_FEATURE_OBSERVED_YES;
+            return ApiConfiguration.JSON_FEATURE_OBSERVED_YES;
         }
-        return ApiConfiguration.REPLY_JSON_FEATURE_OBSERVED_NO;
+        return ApiConfiguration.JSON_FEATURE_OBSERVED_NO;
     }
 
     private static JSONArray nonPersonalFeatures(Patient patient)
@@ -207,13 +218,13 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         for (String featureId : featureCounts.keySet()) {
 
             JSONObject featureJson = new JSONObject();
-            featureJson.put(ApiConfiguration.REPLY_JSON_FEATURE_ID,         featureId);
-            featureJson.put(ApiConfiguration.REPLY_JSON_FEATURE_OBSERVED,   ApiConfiguration.REPLY_JSON_FEATURE_OBSERVED_YES);
-            featureJson.put(ApiConfiguration.REPLY_JSON_FEATURE_MATCHED,    !notMatchedFeatures.contains(featureId));
-            featureJson.put(ApiConfiguration.REPLY_JSON_FEATURE_OBFUSCATED, obfuscatedFeatures.contains(featureId));
+            featureJson.put(ApiConfiguration.JSON_FEATURE_ID,         featureId);
+            featureJson.put(ApiConfiguration.JSON_FEATURE_OBSERVED,   ApiConfiguration.JSON_FEATURE_OBSERVED_YES);
+            featureJson.put(ApiConfiguration.JSON_FEATURE_MATCHED,    !notMatchedFeatures.contains(featureId));
+            featureJson.put(ApiConfiguration.JSON_FEATURE_OBFUSCATED, obfuscatedFeatures.contains(featureId));
             int count = featureCounts.get(featureId);
             if (count > 1) {
-                featureJson.put(ApiConfiguration.REPLY_JSON_FEATURE_COUNT, count);
+                featureJson.put(ApiConfiguration.JSON_FEATURE_COUNT, count);
             }
             features.add(featureJson);
         }
@@ -233,7 +244,9 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
     {
         JSONArray disorders = new JSONArray();
         for (Disorder disease : patient.getDisorders()) {
-            disorders.add(disease.getId());
+            JSONObject disorderJson = new JSONObject();
+            disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, disease.getId());
+            disorders.add(disorderJson);
         }
         return disorders;
     }
@@ -270,9 +283,12 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             }
 
             for (String geneName : candidateGeneNames) {
+                JSONObject gene = new JSONObject();
+                gene.put(ApiConfiguration.JSON_GENES_GENE_ID, geneName);
+
                 JSONObject nextGene = new JSONObject();
-                nextGene.put(ApiConfiguration.JSON_GENES_GENENAME, geneName);
-                nextGene.put(ApiConfiguration.JSON_GENES_ASSEMBLY, "GRCh37"); // TODO: pull from candidate genes/patient/vcf?
+                nextGene.put(ApiConfiguration.JSON_GENES_GENE, gene);
+
                 genes.add(nextGene);
             }
         } catch (Exception ex) {
@@ -284,7 +300,13 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
 
     private static String gender(Patient patient)
     {
-        return patient.<ImmutablePair<String, String>>getData("sex").get(0).getRight();
+        String rawSex = patient.<ImmutablePair<String, String>>getData("sex").get(0).getRight();
+        if (rawSex.toUpperCase().equals("M")) {
+            return ApiConfiguration.JSON_PATIENT_GENDER_MALE;
+        } if (rawSex.toUpperCase().equals("F")) {
+            return ApiConfiguration.JSON_PATIENT_GENDER_FEMALE;
+        }
+        return ApiConfiguration.JSON_PATIENT_GENDER_OTHER;
     }
 
     private static Map<String, String> globalQualifiers(Patient patient)

@@ -65,4 +65,6 @@ public interface ApplicationConfiguration
     String REST_DEFAULT_USER_SPACE = "PhenomeCentral";
 
     String REST_DEFAULT_USER_NAME = "DefaultRemoteUser";
+
+    String FEATURE_METADATA_AGEOFONSET = "age_of_onset";
 }

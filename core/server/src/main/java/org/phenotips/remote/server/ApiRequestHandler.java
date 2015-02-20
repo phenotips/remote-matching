@@ -19,17 +19,17 @@
  */
 package org.phenotips.remote.server;
 
+import org.phenotips.remote.api.ApiConfiguration;
+
 import org.xwiki.rest.XWikiRestException;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 //import org.xwiki.component.annotation.Role;
-import com.xpn.xwiki.XWikiException;
 
 /**
  * Interface for the /match endpoint. This is where a remote request would send the request to.
@@ -37,7 +37,7 @@ import com.xpn.xwiki.XWikiException;
  * @version $Id$
  */
 //@Role
-@Path("/remoteMatcher/mmapi")
+@Path("/remoteMatcher")
 public interface ApiRequestHandler
 {
     /**
@@ -45,20 +45,13 @@ public interface ApiRequestHandler
      *
      * TODO fix the doc.
      */
-    @Path("{version}/match")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("match")
+    @Consumes({MediaType.APPLICATION_JSON,
+              ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX +
+              ApiConfiguration.LATEST_API_VERSION_STRING +
+              ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX,
+              ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SIMPLE,
+              "application/*+json"})
     @POST
-    Response matchPost(String json, @PathParam("version") String apiVersion)
-        throws XWikiRestException, XWikiException;
-
-    /**
-     * Post search results to this server.
-     *
-     * TODO fix the doc.
-     */
-    @Path("{version}/matchResults")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @POST
-    Response matchResultsPost(String json, @PathParam("version") String apiVersion)
-        throws XWikiRestException, XWikiException;
+    Response matchPost(String json) throws XWikiRestException;
 }

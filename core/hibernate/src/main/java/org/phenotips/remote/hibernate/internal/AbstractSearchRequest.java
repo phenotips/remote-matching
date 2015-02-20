@@ -19,6 +19,7 @@
  */
 package org.phenotips.remote.hibernate.internal;
 
+import org.phenotips.remote.api.ContactInfo;
 import org.phenotips.remote.api.SearchRequest;
 import org.phenotips.remote.api.ApiConfiguration;
 
@@ -29,6 +30,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.Table;
+
 import java.sql.Timestamp;
 
 //import static javax.persistence.GenerationType.SEQUENCE;
@@ -50,21 +52,13 @@ public abstract class AbstractSearchRequest implements SearchRequest
     private Long id;
 
     @Basic
-    private String submitterName;
+    private String contactName;
 
     @Basic
-    private String submitterEmail;
+    private String contactInstitution;
 
     @Basic
-    private String submitterInstitution;
-
-    /** Could be either inline, asynchronous, or email */
-    @Basic
-    private String responseType = ApiConfiguration.DEFAULT_REQUEST_RESPONSE_TYPE;
-
-    /** Could be either once or periodic */
-    @Basic
-    private String queryType = ApiConfiguration.DEFAULT_REQUEST_QUERY_TYPE;
+    private String contactHREF;
 
     @Basic
     private String remoteServerId;
@@ -103,66 +97,15 @@ public abstract class AbstractSearchRequest implements SearchRequest
         this.lastResultsTime = new Timestamp(System.currentTimeMillis());
     }
 
-    public void setSubmitterName(String submitterName)
+    public void setContact(String name, String institution, String href)
     {
-        this.submitterName = submitterName;
+        this.contactName = name;
+        this.contactInstitution = institution;
+        this.contactHREF = href;
     }
 
-    @Override
-    public String getSubmitterName()
+    public ContactInfo getContactInfo()
     {
-        return this.submitterName;
-    }
-
-    public void setSubmitterEmail(String email)
-    {
-        this.submitterEmail = email;
-    }
-
-    @Override
-    public String getSubmitterEmail()
-    {
-        return this.submitterEmail;
-    }
-
-    public void setSubmitterInstitution(String institution)
-    {
-        this.submitterInstitution = institution;
-    }
-
-    @Override
-    public String getSubmitterInstitution()
-    {
-        return this.submitterInstitution;
-    }
-
-    @Override
-    public String getQueryType()
-    {
-        return this.queryType;
-    }
-
-    public void setQueryType(String queryType)
-    {
-        if (queryType.equals(ApiConfiguration.REQUEST_QUERY_TYPE_ONCE) ||
-            queryType.equals(ApiConfiguration.REQUEST_QUERY_TYPE_PERIODIC)) {
-            this.queryType = queryType;
-        }
-        // TODO: else: throw ?
-    }
-
-    public void setResponseType(String responseType)
-    {
-        if (responseType.equals(ApiConfiguration.REQUEST_RESPONSE_TYPE_SYNCHRONOUS) ||
-            responseType.equals(ApiConfiguration.REQUEST_RESPONSE_TYPE_ASYNCHRONOUS)) {
-            this.responseType = responseType;
-        }
-        // TODO: else: throw ?
-    }
-
-    @Override
-    public String getResponseType()
-    {
-        return this.responseType;
+        return null;
     }
 }

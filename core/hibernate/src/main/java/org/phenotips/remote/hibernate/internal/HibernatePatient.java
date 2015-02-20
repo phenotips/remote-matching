@@ -25,7 +25,6 @@ import org.phenotips.remote.api.MatchingPatient;
 import org.phenotips.remote.api.MatchingPatientDisorder;
 import org.phenotips.remote.api.MatchingPatientFeature;
 import org.phenotips.remote.api.MatchingPatientGene;
-import org.phenotips.remote.api.SearchRequest;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -35,10 +34,7 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-//import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;

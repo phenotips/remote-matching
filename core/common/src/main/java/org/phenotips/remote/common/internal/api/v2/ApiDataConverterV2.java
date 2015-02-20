@@ -27,7 +27,6 @@ import org.phenotips.remote.api.tojson.OutgoingRequestToJSONConverter;
 import org.xwiki.component.annotation.Component;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Named;
 
@@ -73,18 +72,6 @@ public class ApiDataConverterV2 implements ApiDataConverter
 
     @Override
     public JSONObject generateInlineResponse(IncomingSearchRequest request, List<PatientSimilarityView> resultList)
-    {
-        return null;
-    }
-
-    @Override
-    public JSONObject generateNonInlineResponse(IncomingSearchRequest request)
-    {
-        return null;
-    }
-
-    @Override
-    public JSONObject generateAsyncResult(Map<IncomingSearchRequest, List<PatientSimilarityView>> results)
     {
         return null;
     }
