@@ -147,8 +147,8 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
 
     private String parseApiVersion(String apiHeader)
     {
-        String result = apiHeader.replaceAll(Pattern.quote(ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX) +
-            "(\\d+\\.\\d+)" + Pattern.quote(ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX), "$1");
+        String result = apiHeader.replaceAll("^" + Pattern.quote(ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX) +
+            "(\\d+\\.\\d+)" + Pattern.quote(ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX) + "(.*)$", "$1");
         logger.error("Request api version: [{}]", result);
         return result;
     }
