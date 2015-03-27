@@ -25,8 +25,9 @@ import org.phenotips.data.Feature;
 import org.phenotips.data.FeatureMetadatum;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
+import org.phenotips.data.similarity.PatientGenotype;
+import org.phenotips.data.similarity.internal.DefaultPatientGenotype;
 import org.phenotips.ontology.internal.solr.SolrOntologyTerm;
-import org.phenotips.data.similarity.internal.PatientGenotype;
 import org.phenotips.remote.common.ApplicationConfiguration;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.slf4j.Logger;
@@ -253,7 +254,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
 
     private static JSONArray genes(Patient patient, int includedTopGenes, Logger logger)
     {
-        PatientGenotype genotype = new PatientGenotype(patient);
+        PatientGenotype genotype = new DefaultPatientGenotype(patient);
 
         JSONArray genes = new JSONArray();
         try {
@@ -262,20 +263,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             if (includedTopGenes <= 0) {
                 candidateGeneNames = genotype.getCandidateGenes();
             } else {
-                final Map<String, Double> genesWithScore = new HashMap<String,Double>();
-                Collection<String> allGenes = genotype.getGenes();
-                for (String gene : allGenes) {
-                    genesWithScore.put(gene, genotype.getGeneScore(gene));
-                }
-                Set<String> set = genesWithScore.keySet();
-                List<String> keys = new ArrayList<String>(set);
-                Collections.sort(keys, new Comparator<String>() {
-                    public int compare(String s1, String s2) {
-                        // Sort by score, descending
-                        return Double.compare(genesWithScore.get(s2), genesWithScore.get(s1));
-                    }
-                });
-                List<String> topGenes = keys.subList(0, Math.min(keys.size(),includedTopGenes));
+                List<String> topGenes = genotype.getTopGenes(includedTopGenes);
                 candidateGeneNames = new HashSet<String>();
                 for (String topGene : topGenes) {
                     candidateGeneNames.add(topGene);
