@@ -463,9 +463,8 @@ td input[type="text"]:focus {
         #if ($config.getProperty('remoteAuthToken').getValue() != "")
           #set ($serverName = $config.getProperty('humanReadableName').getValue())
           {{html clean=false}}<br><br>Remote server: <b>$serverName</b>{{/html}}
-          #set ($patient = "$doc.getName()")
-          #set ($resultsURL = $xwiki.getURL('PhenomeCentral.RemoteResults', 'get', "server=$serverName&patientId=$patient"))
-          (% class="similarity-results-container" id="similar-remote-patients-container-$serverName" %)((({{html clean=false}}<input type="hidden" name="service" value="$resultsURL">{{/html}})))##        
+          #set ($resultsURL = $xwiki.getURL('PhenomeCentral.RemoteResults', 'get', ""))
+          (% class="similarity-results-container" id="similar-remote-patients-container-$serverName" %)((({{html clean=false}}<input type="hidden" name="service" value="$resultsURL"><input type="hidden" name="mmeServer" value="$serverName">{{/html}})))##        
         #end
       #end
       ##{{html clean=false}}&lt;/div&gt;{{/html}}##

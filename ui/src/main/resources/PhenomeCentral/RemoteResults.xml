@@ -56,7 +56,7 @@ $response.setContentType('application/json')##
   $jsontool.serialize($result)
   #break
 #end
-#if ($request.sendNewRequest)
+#if ("$!{request.sendNewRequest}" == "true")
   #set ($lastRequest = $services.remoteMatching.sendRequest("$!{request.patientId}", "$!{request.server}"))
 #else
   #set ($lastRequest = $services.remoteMatching.getDetailedResponse("$!{request.patientId}", "$!{request.server}"))
