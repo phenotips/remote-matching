@@ -21,10 +21,9 @@ package org.phenotips.remote.common.internal.api;
 
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientRepository;
-import org.phenotips.remote.api.tojson.OutgoingRequestToJSONConverter;
+import org.phenotips.remote.api.tojson.OutgoingJSONGenerator;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.ApiViolationException;
-import org.phenotips.remote.api.OutgoingSearchRequest;
 import org.phenotips.remote.api.tojson.PatientToJSONConverter;
 import org.phenotips.remote.common.internal.api.DefaultPatientToJSONConverter;
 import org.slf4j.Logger;
@@ -34,7 +33,7 @@ import org.xwiki.bridge.DocumentAccessBridge;
 
 import net.sf.json.JSONObject;
 
-public class DefaultOutgoingRequestToJSONConverter implements OutgoingRequestToJSONConverter
+public class DefaultOutgoingJSONGenerator implements OutgoingJSONGenerator
 {
     private Logger logger;
 
@@ -48,8 +47,8 @@ public class DefaultOutgoingRequestToJSONConverter implements OutgoingRequestToJ
 
     private final String apiVersion;
 
-    public DefaultOutgoingRequestToJSONConverter(String apiVersion, Logger logger, PatientRepository patientRepository,
-                                                 AuthorizationManager access, DocumentAccessBridge bridge)
+    public DefaultOutgoingJSONGenerator(String apiVersion, Logger logger, PatientRepository patientRepository,
+                                        AuthorizationManager access, DocumentAccessBridge bridge)
     {
         this.apiVersion = apiVersion;
 
@@ -62,13 +61,11 @@ public class DefaultOutgoingRequestToJSONConverter implements OutgoingRequestToJ
     }
 
     @Override
-    public JSONObject toJSON(OutgoingSearchRequest request, int includedTopGenes)
+    public JSONObject generateRequestJSON(String remoteServerID, String localPatientId, int includedTopGenes)
     {
-        String patientId = request.getReferencePatientId();
-
-        Patient referencePatient = this.getPatientByID(patientId);
+        Patient referencePatient = this.getPatientByID(localPatientId);
         if (referencePatient == null) {
-            logger.error("Unable to get patient with id [{}]", patientId);
+            logger.error("Unable to get patient with id [{}]", localPatientId);
             // can't access the requested patient
             return null;
         }
@@ -83,7 +80,7 @@ public class DefaultOutgoingRequestToJSONConverter implements OutgoingRequestToJ
                 this.logger.error("Can't send a query for a patient with no features and no genes");
                 throw new ApiViolationException("Can't send a query for a patient with no features and no genes");
             }
-            patientJson.put("id", MD5(patientId));
+            patientJson.put("id", localPatientId);
 
             JSONObject json = new JSONObject();
             json.put(ApiConfiguration.JSON_PATIENT, patientJson);
@@ -99,20 +96,6 @@ public class DefaultOutgoingRequestToJSONConverter implements OutgoingRequestToJ
             return null;
         }
     }
-
-    private String MD5(String md5) {
-        try {
-             java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
-             byte[] array = md.digest(md5.getBytes());
-             StringBuffer sb = new StringBuffer();
-             for (int i = 0; i < array.length; ++i) {
-               sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1,3));
-            }
-             return sb.toString();
-         } catch (java.security.NoSuchAlgorithmException e) {
-         }
-         return null;
-     }
 
     private Patient getPatientByID(String patientID)
     {

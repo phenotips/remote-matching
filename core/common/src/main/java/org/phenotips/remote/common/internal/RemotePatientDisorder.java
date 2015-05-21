@@ -17,21 +17,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.server.internal.queuetasks;
+package org.phenotips.remote.common.internal;
 
-import org.phenotips.remote.common.ApplicationConfiguration;
+import org.phenotips.data.Disorder;
+import org.phenotips.data.internal.AbstractPhenoTipsOntologyProperty;
 
-import com.xpn.xwiki.XWiki;
-import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.XWikiException;
-import com.xpn.xwiki.doc.XWikiDocument;
-
-public class ContextSetter
+public class RemotePatientDisorder extends AbstractPhenoTipsOntologyProperty implements Disorder
 {
-    public static void set(XWikiContext context) throws XWikiException
+    private String value;
+
+    public RemotePatientDisorder(String id, String value)
     {
-        XWiki wiki = context.getWiki();
-        XWikiDocument currentDoc = wiki.getDocument(ApplicationConfiguration.ABSOLUTE_DOCUMENT_REFERENCE, context);
-        context.setDoc(currentDoc);
+        super(id);
+        this.value = value;
+    }
+
+    @Override
+    public String getId()
+    {
+        return this.id;
+    }
+
+    @Override
+    public String getValue()
+    {
+        return this.value;
     }
 }

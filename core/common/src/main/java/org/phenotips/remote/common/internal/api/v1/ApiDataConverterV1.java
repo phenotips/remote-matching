@@ -27,14 +27,14 @@ import net.sf.json.JSONArray;
 import org.xwiki.component.phase.Initializable;
 import org.phenotips.remote.common.internal.api.DefaultIncomingJSONParser;
 import org.phenotips.remote.common.internal.api.DefaultPatientToJSONConverter;
-import org.phenotips.remote.common.internal.api.DefaultOutgoingRequestToJSONConverter;
+import org.phenotips.remote.common.internal.api.DefaultOutgoingJSONGenerator;
 import org.phenotips.data.PatientRepository;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.ApiDataConverter;
-import org.phenotips.remote.api.IncomingSearchRequest;
+import org.phenotips.remote.api.IncomingMatchRequest;
 import org.phenotips.remote.api.fromjson.IncomingJSONParser;
-import org.phenotips.remote.api.tojson.OutgoingRequestToJSONConverter;
+import org.phenotips.remote.api.tojson.OutgoingJSONGenerator;
 import org.phenotips.remote.api.tojson.PatientToJSONConverter;
 import org.xwiki.security.authorization.AuthorizationManager;
 import org.xwiki.bridge.DocumentAccessBridge;
@@ -55,7 +55,7 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
 
     private PatientToJSONConverter patientToJSONConverter;
 
-    private OutgoingRequestToJSONConverter outgoingJSONParser;
+    private OutgoingJSONGenerator outgoingJSONGenerator;
 
     @Inject
     private Logger logger;
@@ -78,7 +78,7 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
 
         patientToJSONConverter = new DefaultPatientToJSONConverter(getApiVersion(), logger);
 
-        outgoingJSONParser = new DefaultOutgoingRequestToJSONConverter(getApiVersion(), logger, patientRepository, access, bridge);
+        outgoingJSONGenerator = new DefaultOutgoingJSONGenerator(getApiVersion(), logger, patientRepository, access, bridge);
     }
 
     @Override
@@ -120,7 +120,7 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
     }
 
     @Override
-    public JSONObject generateInlineResponse(IncomingSearchRequest request, List<PatientSimilarityView> resultList)
+    public JSONObject generateServerResponse(IncomingMatchRequest request, List<PatientSimilarityView> resultList)
     {
         JSONObject reply = new JSONObject();
 
@@ -157,8 +157,8 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
     //================================================================
 
     @Override
-    public OutgoingRequestToJSONConverter getOutgoingRequestToJSONConverter()
+    public OutgoingJSONGenerator getOutgoingJSONGenerator()
     {
-        return this.outgoingJSONParser;
+        return this.outgoingJSONGenerator;
     }
 }

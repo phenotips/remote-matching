@@ -19,14 +19,21 @@
  */
 package org.phenotips.remote.api;
 
-import org.phenotips.data.Disorder;
+import net.sf.json.JSONObject;
 
-/**
- * TODO.
- */
-public interface MatchingPatientDisorder extends Disorder
+import org.phenotips.remote.api.MatchRequest;
+
+public interface IncomingMatchRequest extends MatchRequest
 {
-    void setId(String id);
+    /**
+     *
+     * @return
+     */
+    MatchingPatient getModelPatient();
 
-    void setParent(MatchingPatient patient);
+    /**
+     *
+     * @param response
+     */
+    void addResponse(JSONObject response);
 }

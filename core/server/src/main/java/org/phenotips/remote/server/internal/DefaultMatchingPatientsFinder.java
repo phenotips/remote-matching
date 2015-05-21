@@ -23,7 +23,6 @@ import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.MatchingPatient;
 import org.phenotips.remote.server.MatchingPatientsFinder;
 import org.phenotips.similarity.SimilarPatientsFinder;
-
 import org.xwiki.component.annotation.Component;
 
 import java.util.List;
@@ -41,7 +40,7 @@ public class DefaultMatchingPatientsFinder implements MatchingPatientsFinder
     @Override
     public List<PatientSimilarityView> findMatchingPatients(MatchingPatient modelPatient)
     {
-        return this.patientsFinder.findSimilarPatients(new RemoteMatchingPatient(modelPatient));
+        return this.patientsFinder.findSimilarPatients(modelPatient);
     }
 
 }

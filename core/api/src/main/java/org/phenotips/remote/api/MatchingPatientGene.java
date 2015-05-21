@@ -24,9 +24,5 @@ package org.phenotips.remote.api;
  */
 public interface MatchingPatientGene
 {
-    void setParent(MatchingPatient patient);
-
-    void setName(String geneName);
-
     String getName();
 }

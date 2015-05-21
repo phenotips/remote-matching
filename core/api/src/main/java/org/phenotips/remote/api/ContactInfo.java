@@ -32,5 +32,4 @@ public interface ContactInfo
     /**
      */
     String getContactHREF();
-
 }

@@ -17,24 +17,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.api;
+package org.phenotips.remote.api.tojson;
 
-//import org.phenotips.data.Patient;
-//import org.phenotips.data.similarity.PatientSimilarityView;
-//import org.phenotips.data.similarity.PatientSimilarityViewFactory;
+import net.sf.json.JSONObject;
 
-import java.util.Set;
+import org.phenotips.remote.api.ApiViolationException;
 
-/**
- * The functions essential to the servers ability to track outgoing search requests.
- */
-public interface OutgoingSearchRequest extends SearchRequest
+public interface OutgoingJSONGenerator
 {
-    void setQueryID(String id);
-
-    Set<MatchingPatient> getResults();
-
-    void setResults(Set<MatchingPatient> results);
-
-    String getReferencePatientId();
+    JSONObject generateRequestJSON(String remoteServerID, String localPatientId, int includedTopGenes)
+        throws ApiViolationException;
 }

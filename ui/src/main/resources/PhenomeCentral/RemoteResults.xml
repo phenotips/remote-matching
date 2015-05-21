@@ -42,34 +42,55 @@
   <minorEdit>false</minorEdit>
   <syntaxId>xwiki/2.1</syntaxId>
   <hidden>false</hidden>
-  <content>{{velocity}}
-#if ($xcontext.action == 'get')
-  $response.setContentType('application/json')
+  <content>{{velocity wwiki="false"}}
+$response.setContentType('application/json')##
+##{{html wiki="false" clean="false"}}
+#set($result = {"resultsCount" : 0, "results" : []})
+#if (!$request.patientId)
+  #set($result.error = "patient is not specified")
+  $jsontool.serialize($result)
+  #break
 #end
-#if ($request.query)
-  #set ($patient = $services.patients.getPatientById("$!{request.query}"))
-  #set ($matches = $services.remoteMatching.getSimilarityResults($patient))
-    #if ("$!matches" == '')
-      #set ($matches = [])
-    #end
-  #set ($patientJSON = $patient.toJSON())
-{
-    "query": $patientJSON,
-    "resultsCount" : $matches.size(),
-    "results" : [
-    #foreach ($p in $matches)
-      $p.toJSON()
-      #if ($foreach.hasNext()),
-      #end
-    #end
-    ]
-}
+#if (!$request.server)
+  #set($result.error = "server is not specified")
+  $jsontool.serialize($result)
+  #break
+#end
+#if ($request.sendNewRequest)
+  #set ($lastRequest = $services.remoteMatching.sendRequest("$!{request.patientId}", "$!{request.server}"))
 #else
-{
-    "error": "patient is not specified"
-    "resultsCount" : 0,
-    "results" : []
-}
+  #set ($lastRequest = $services.remoteMatching.getDetailedResponse("$!{request.patientId}", "$!{request.server}"))
 #end
+#if ($request.raw)
+  $jsontool.serialize($lastRequest)
+  #break
+#end
+#if (!$lastRequest)
+  #set($result.error = "request was never initiated")
+  $jsontool.serialize($result)
+  #break
+#end
+#set ($wasSent = $lastRequest.get("requestSent"))
+#set ($matches = $lastRequest.optJSONArray("matches"))
+#if (!$wasSent || !$matches)
+  #if (!$wasSent)
+    #set($result.error = "request was initiated but was not sent")
+  #else
+    #set($result.error = "request was sent but the reply did not contain a valid list of matches")
+  #end
+  #set($result.errorCode = $lastRequest.get("errorCode"))
+  #set($result.errorDetails = $lastRequest.get("errorDetails"))
+  $jsontool.serialize($result)
+  #break
+#end
+#set ($query = $lastRequest.get("queryJSON"))
+#set ($queryPatient = $query.patient)
+{
+  "replyHTTPCode": $lastRequest.get("responseHTTPCode"),
+  "resultsCount" : $matches.size(),
+  "results" : $matches,
+  "query": $queryPatient,
+  "reply": $lastRequest.get("responseJSON")    
+}
 {{/velocity}}</content>
 </xwikidoc>

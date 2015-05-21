@@ -19,17 +19,14 @@
  */
 package org.phenotips.remote.client.script;
 
-import org.phenotips.remote.api.ApiConfiguration;
-import org.phenotips.remote.api.ApiViolationException;
-import org.phenotips.remote.client.RemoteMatchingService;
-import org.phenotips.data.Patient;
+import java.util.List;
+
 import org.phenotips.data.similarity.PatientSimilarityView;
+import org.phenotips.remote.api.OutgoingMatchRequest;
+import org.phenotips.remote.client.RemoteMatchingService;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.script.service.ScriptService;
 import org.xwiki.stability.Unstable;
-
-import java.util.LinkedList;
-import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -37,6 +34,7 @@ import javax.inject.Singleton;
 
 import org.slf4j.Logger;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -55,23 +53,6 @@ public class RemoteMatchingScriptService implements ScriptService
     @Inject
     RemoteMatchingService matchingService;
 
-    public JSONObject generateRequestJSON(String patientId, String remoteServerId)
-    {
-        return this.generateRequestJSON(patientId, remoteServerId, 0);
-    }
-
-    public JSONObject generateRequestJSON(String patientId, String remoteServerId, int addTopNGenes)
-    {
-        try {
-            JSONObject result = this.matchingService.generateRequestJSON(patientId, remoteServerId, addTopNGenes);
-            return result;
-        } catch (ApiViolationException ex) {
-            JSONObject error = new JSONObject();
-            error.put("error", ex.getMessage());
-            return error;
-        }
-    }
-
     public JSONObject sendRequest(String patientId, String remoteServerId)
     {
         return this.sendRequest(patientId, remoteServerId, 0);
@@ -81,6 +62,60 @@ public class RemoteMatchingScriptService implements ScriptService
     {
         this.logger.error("Sending outgoing request for patient [{}] to server [{}]", patientId, remoteServerId);
 
-        return this.matchingService.sendRequest(patientId, remoteServerId, addTopNGenes);
+        OutgoingMatchRequest request =  this.matchingService.sendRequest(patientId, remoteServerId, addTopNGenes);
+
+        return this.processRequest(request);
+    }
+
+    public JSONObject getDetailedResponse(String patientId, String remoteServerId)
+    {
+        this.logger.error("Getting processed response for the last request for patient [{}] to server [{}]", patientId, remoteServerId);
+
+        OutgoingMatchRequest request = this.matchingService.getLastRequestSent(patientId, remoteServerId);
+
+        return this.processRequest(request);
+    }
+
+    public OutgoingMatchRequest getLastRequest(String patientId, String remoteServerId)
+    {
+        return this.matchingService.getLastRequestSent(patientId, remoteServerId);
+    }
+
+    private JSONObject processRequest(OutgoingMatchRequest request)
+    {
+        if (request == null) {
+            return null;
+        }
+
+        JSONObject result = new JSONObject();
+
+        result.element("requestSent", request.wasSent());
+
+        if (request.gotValidReply()) {
+            result.element("remoteResponseReceived", true);
+            result.element("queryJSON", request.getRequestJSON());
+            result.element("responseJSON", request.getResponseJSON());
+            result.element("responseHTTPCode", request.getRequestStatusCode());
+
+            try {
+                JSONArray matches = new JSONArray();
+
+                List<PatientSimilarityView> parsedResults = this.matchingService.getSimilarityResults(request);
+
+                for (PatientSimilarityView patient : parsedResults) {
+                    matches.add(patient.toJSON());
+                }
+
+                result.element("matches", matches);
+            } catch (Exception ex) {
+                result.element("errorDetails", ex.getMessage());
+            }
+        } else {
+            result.element("remoteResponseReceived", false);
+            result.element("errorCode", request.getRequestStatusCode());
+            result.element("errorDetails", request.getRequestJSON());
+        }
+
+        return result;
     }
 }

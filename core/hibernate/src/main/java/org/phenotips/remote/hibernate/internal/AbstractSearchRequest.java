@@ -19,61 +19,63 @@
  */
 package org.phenotips.remote.hibernate.internal;
 
-import org.phenotips.remote.api.ContactInfo;
-import org.phenotips.remote.api.SearchRequest;
-import org.phenotips.remote.api.ApiConfiguration;
+import net.sf.json.JSONException;
+import net.sf.json.JSONObject;
+
+import org.hibernate.annotations.Type;
+import org.phenotips.remote.api.MatchRequest;
 
 import javax.persistence.Basic;
-import javax.persistence.DiscriminatorColumn;
-import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.Table;
+import javax.persistence.MappedSuperclass;
 
 import java.sql.Timestamp;
 
-//import static javax.persistence.GenerationType.SEQUENCE;
-
 /**
  * This class combines shared functions between the different search request types (
- * {@link org.phenotips.remote.hibernate.internal.DefaultOutgoingSearchRequest},
- * {@link org.phenotips.remote.hibernate.internal.DefaultIncomingSearchRequest}). The children of this class are made
+ * {@link org.phenotips.remote.hibernate.internal.DefaultOutgoingMatchRequest},
+ * {@link org.phenotips.remote.hibernate.internal.DefaultIncomingMatchRequest}). The children of this class are made
  * persistent by Hibernate.
  */
-@Entity
-@Inheritance
-@DiscriminatorColumn(name = "request_type")
-@Table(name = "remote_matching_requests")
-public abstract class AbstractSearchRequest implements SearchRequest
+@MappedSuperclass()
+public abstract class AbstractSearchRequest implements MatchRequest
 {
     @Id
     @GeneratedValue
     private Long id;
 
     @Basic
-    private String contactName;
-
-    @Basic
-    private String contactInstitution;
-
-    @Basic
-    private String contactHREF;
-
-    @Basic
     private String remoteServerId;
 
     @Basic
-    private Timestamp lastResultsTime;
+    private Timestamp requestTime;
 
-    protected void setId(Long id)
+    @Type(type="text")
+    private String request;
+
+    @Type(type="text")
+    private String response;
+
+    @Basic
+    private String apiVersionUsed;
+
+    /**
+     * Hibernate requires a no-args constructor
+     */
+    protected AbstractSearchRequest()
     {
-        this.id = id;
     }
 
-    protected Long getId()
+    public AbstractSearchRequest(String remoteServerId, String apiVersionUsed, String request, String response)
     {
-        return this.id;
+        this.remoteServerId = remoteServerId;
+        this.apiVersionUsed = apiVersionUsed;
+
+        this.setRequest(request);
+        this.setResponse(response);
+
+        this.requestTime = new Timestamp(System.currentTimeMillis());
     }
 
     @Override
@@ -82,30 +84,45 @@ public abstract class AbstractSearchRequest implements SearchRequest
         return this.remoteServerId;
     }
 
-    protected void setRemoteServerId(String serverId)
+    @Override
+    public String getApiVersionUsed()
     {
-        this.remoteServerId = serverId;
+        return this.apiVersionUsed;
     }
 
-    public Timestamp getLastResultTime()
+    @Override
+    public Timestamp getRequestTime()
     {
-        return this.lastResultsTime;
+        return this.requestTime;
     }
 
-    public void setLastResultsTimeToNow()
+    @Override
+    public JSONObject getRequestJSON()
     {
-        this.lastResultsTime = new Timestamp(System.currentTimeMillis());
+        try {
+            return JSONObject.fromObject(request);
+        } catch (JSONException ex) {
+            return null;
+        }
     }
 
-    public void setContact(String name, String institution, String href)
+    @Override
+    public JSONObject getResponseJSON()
     {
-        this.contactName = name;
-        this.contactInstitution = institution;
-        this.contactHREF = href;
+        try {
+            return JSONObject.fromObject(response);
+        } catch (JSONException ex) {
+            return null;
+        }
     }
 
-    public ContactInfo getContactInfo()
+    protected void setRequest(String request)
     {
-        return null;
+        this.request = request;
+    }
+
+    protected void setResponse(String response)
+    {
+        this.response = response;
     }
 }

@@ -19,29 +19,26 @@
  */
 package org.phenotips.remote.api;
 
-import org.phenotips.data.Disorder;
-import org.phenotips.data.Feature;
+//import org.phenotips.data.Disorder;
+//import org.phenotips.data.Feature;
+import org.phenotips.data.Patient;
 
-import java.util.Set;
+//import java.util.Set;
 
 /**
  * TODO.
  */
-public interface MatchingPatient
+public interface MatchingPatient extends Patient
 {
-    void addFeatures(Set<MatchingPatientFeature> features);
+    // Inherited from Patient:
+    //  Set<? extends Feature> getFeatures();
+    //  Set<? extends Disorder> getDisorders();
+    //  String getId();
+    //  getExternalId();
 
-    void addDisorders(Set<MatchingPatientDisorder> disorders);
-
-    void addGenes(Set<MatchingPatientGene> genes);
-
-    Set<? extends Feature> getFeatures();
-
-    Set<? extends Disorder> getDisorders();
-
-    Set<? extends MatchingPatientGene> getGenes(); // TODO: Use VariantClass or similar instead of MatchingPatientGene?
-
-    String getExternalId();
+    //Set<? extends MatchingPatientGene> getGenes(); // TODO: Use VariantClass or similar instead of MatchingPatientGene?
 
     String getLabel();
+
+    ContactInfo getContactInfo();
 }

@@ -17,70 +17,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.hibernate.internal;
+package org.phenotips.remote.common.internal;
 
-import org.phenotips.remote.api.MatchingPatient;
 import org.phenotips.remote.api.MatchingPatientGene;
 
-import javax.persistence.Basic;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-
-/**
- * Hibernate entity for storing patient candidate genes.
- */
-@Entity
-public class HibernatePatientGene implements MatchingPatientGene
+public class RemotePatientGene implements MatchingPatientGene
 {
-    @Id
-    @GeneratedValue
-    private long hibernateId;
-
-    @Basic
     private String geneName;
 
-    @Basic
-    private String assembly;
+    /*private String assembly;
 
-    @Basic
     private String referenceName;
 
-    @Basic
     private Long start;
 
-    @Basic
     private Long end;
 
-    @Basic
-    private String mutationType;
+    private String mutationType;*/
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "hibernatepatient_id", nullable = false)
-    public HibernatePatient hibernatepatient;
-
-    public HibernatePatientGene()
+    public RemotePatientGene(String geneName)
     {
+        this.geneName = geneName;
     }
 
     @Override
     public String getName()
     {
         return this.geneName;
-    }
-
-    @Override
-    public void setParent(MatchingPatient patient)
-    {
-        this.hibernatepatient = (HibernatePatient) patient;
-    }
-
-    @Override
-    public void setName(String geneName)
-    {
-        this.geneName = geneName;
     }
 }

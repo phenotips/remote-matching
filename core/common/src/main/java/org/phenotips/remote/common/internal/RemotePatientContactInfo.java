@@ -17,18 +17,39 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.api;
+package org.phenotips.remote.common.internal;
 
-import org.phenotips.data.Feature;
+import org.phenotips.remote.api.ContactInfo;
 
-/**
- * TODO.
- */
-public interface MatchingPatientFeature extends Feature
+public class RemotePatientContactInfo implements ContactInfo
 {
-    void setId(String id);
+    private String contactName;
+    private String contactInstitution;
+    private String contactHREF;
 
-    void setObserved(String observedStatus);
+    public RemotePatientContactInfo(String contactName, String contactInstitution, String contactHREF)
+    {
+        this.contactName = contactName;
+        this.contactInstitution = contactInstitution;
+        this.contactHREF = contactHREF;
+    }
 
-    void setParent(MatchingPatient patient);
+    @Override
+    public String getContactName()
+    {
+        return this.contactName;
+    }
+
+    @Override
+    public String getContactInstitution()
+    {
+        return this.contactInstitution;
+    }
+
+    @Override
+    public String getContactHREF()
+    {
+        return this.contactHREF;
+    }
+
 }

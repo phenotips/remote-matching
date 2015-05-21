@@ -67,11 +67,7 @@ public class ORMRegistrationHandler implements EventListener
     public void onEvent(Event event, Object source, Object data)
     {
         Configuration configuration = this.sessionFactory.getConfiguration();
-        configuration.addAnnotatedClass(DefaultIncomingSearchRequest.class);
-        configuration.addAnnotatedClass(DefaultOutgoingSearchRequest.class);
-        configuration.addAnnotatedClass(HibernatePatientFeature.class);
-        configuration.addAnnotatedClass(HibernatePatientDisorder.class);
-        configuration.addAnnotatedClass(HibernatePatientGene.class);
-        configuration.addAnnotatedClass(HibernatePatient.class);
+        configuration.addAnnotatedClass(DefaultIncomingMatchRequest.class);
+        configuration.addAnnotatedClass(DefaultOutgoingMatchRequest.class);
     }
 }

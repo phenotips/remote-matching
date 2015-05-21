@@ -26,7 +26,6 @@ import org.phenotips.remote.common.ApplicationConfiguration;
 import org.phenotips.remote.common.internal.XWikiAdapter;
 import org.phenotips.remote.server.ApiRequestHandler;
 import org.phenotips.remote.server.SearchRequestProcessor;
-import org.phenotips.remote.server.internal.queuetasks.ContextSetter;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.rest.XWikiResource;
 import org.xwiki.rest.XWikiRestException;
@@ -36,16 +35,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.inject.Inject;
-//import javax.inject.Singleton;
+import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
-//import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 
 import net.sf.json.JSONArray;
@@ -56,7 +56,7 @@ import net.sf.json.JSONObject;
  *
  * @version $Id$
  */
-//@Singleton
+@Singleton
 @Component("org.phenotips.remote.server.internal.DefaultApiRequestHandler")
 public class DefaultApiRequestHandler extends XWikiResource implements ApiRequestHandler
 {
@@ -77,8 +77,13 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
 
         try {
             JSONObject jsonResponse;
+
+            // XWiki boilerplate
             XWikiContext context = this.getXWikiContext();
-            ContextSetter.set(context);
+            XWiki wiki = context.getWiki();
+            XWikiDocument currentDoc = wiki.getDocument(ApplicationConfiguration.ABSOLUTE_DOCUMENT_REFERENCE, context);
+            context.setDoc(currentDoc);
+
             HttpServletRequest httpRequest = context.getRequest().getHttpServletRequest();
 
             String apiVersion = this.parseApiVersion(httpRequest.getHeader(ApiConfiguration.HTTPHEADER_API_VERSION));

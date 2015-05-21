@@ -19,15 +19,43 @@
  */
 package org.phenotips.remote.api;
 
-//import org.phenotips.data.similarity.PatientSimilarityView;
-//import org.phenotips.similarity.SimilarPatientsFinder;
+import java.util.Date;
 
-//import java.util.List;
+import net.sf.json.JSONObject;
 
 /**
- * The functions essential to the servers ability to track outgoing search requests.
+ *
  */
-public interface IncomingSearchRequest extends SearchRequest
+public interface MatchRequest
 {
-    MatchingPatient getRemotePatient();
+    /**
+     * The id of the other server (for both incoming and outgoing requests)
+     *
+     * @return
+     */
+    String getRemoteServerId();
+
+    /**
+     *
+     * @return
+     */
+    JSONObject getRequestJSON();
+
+    /**
+     *
+     * @return
+     */
+    JSONObject getResponseJSON();
+
+    /**
+     *
+     * @return
+     */
+    Date getRequestTime();
+
+    /**
+     *
+     * @return
+     */
+    String getApiVersionUsed();
 }

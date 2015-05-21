@@ -24,10 +24,8 @@ import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
 import org.phenotips.data.FeatureMetadatum;
 import org.phenotips.data.Patient;
-import org.phenotips.data.PatientData;
 import org.phenotips.data.similarity.PatientGenotype;
 import org.phenotips.data.similarity.internal.DefaultPatientGenotype;
-import org.phenotips.ontology.internal.solr.SolrOntologyTerm;
 import org.phenotips.remote.common.ApplicationConfiguration;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.slf4j.Logger;
@@ -42,7 +40,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-import org.apache.commons.lang3.StringUtils;
+//import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import net.sf.json.JSONArray;
@@ -106,6 +104,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         if (!genes.isEmpty()) {
             json.put(ApiConfiguration.JSON_GENES, genes);
         }
+
         return json;
     }
 
@@ -297,7 +296,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         return ApiConfiguration.JSON_PATIENT_GENDER_OTHER;
     }
 
-    private static Map<String, String> globalQualifiers(Patient patient)
+    /*private static Map<String, String> globalQualifiers(Patient patient)
     {
         Map<String, String> globalQualifiers = new HashMap<String, String>();
         Map<String, String> remappedGlobalQualifierStrings = new HashMap<String, String>();
@@ -319,5 +318,5 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             }
         }
         return globalQualifiers;
-    }
+    }*/
 }

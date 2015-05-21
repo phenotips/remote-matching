@@ -20,13 +20,14 @@
 package org.phenotips.remote.server.internal;
 
 import org.phenotips.remote.server.MatchingPatientsFinder;
-import org.phenotips.remote.api.IncomingSearchRequest;
+import org.phenotips.remote.api.IncomingMatchRequest;
 import org.phenotips.remote.api.ApiDataConverter;
 import org.phenotips.remote.api.ApiViolationException;
 import org.phenotips.remote.common.ApplicationConfiguration;
 import org.phenotips.remote.common.internal.XWikiAdapter;
 import org.phenotips.remote.server.SearchRequestProcessor;
 import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
+import org.phenotips.remote.hibernate.internal.DefaultIncomingMatchRequest;
 import org.phenotips.data.similarity.PatientSimilarityView;
 
 import java.util.concurrent.ExecutorService;
@@ -70,7 +71,6 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
     @Override
     public JSONObject processHTTPSearchRequest(ApiDataConverter apiVersionSpecificConverter, String stringJson,
         ExecutorService queue, HttpServletRequest httpRequest)
-        throws Exception
     {
         this.logger.debug("Received JSON search request: <<{}>>", stringJson);
 
@@ -78,52 +78,53 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
         BaseObject configurationObject =
             XWikiAdapter.getRemoteConfigurationGivenRemoteIP(httpRequest.getRemoteAddr(), context);
 
-        // FIXME? Is there other way to access all the necessary patients/data?
-        // context.setUserReference(new DocumentReference(context.getMainXWiki(), "XWiki", "Admin"));
-
-        JSONObject json;
-        try {
-            json = JSONObject.fromObject(stringJson);
-        } catch (JSONException ex) {
-            this.logger.error("Incorrect incoming request: misformatted JSON");
-            return apiVersionSpecificConverter.generateWrongInputDataResponse("misformatted JSON");
-        }
+        // Note: authorization hapens before this point, configurationObject should exist and be valid
+        String remoteServerId =
+                configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_NAME);
 
         try {
+            // FIXME? Is there other way to access all the necessary patients/data?
+            // context.setUserReference(new DocumentReference(context.getMainXWiki(), "XWiki", "Admin"));
+
+            JSONObject json = JSONObject.fromObject(stringJson);
+
             this.logger.debug("...parsing input...");
 
-            IncomingSearchRequest request;
-            try {
-                request = this.createRequest(apiVersionSpecificConverter, json, configurationObject);
-            } catch (ApiViolationException ex) {
-                this.logger.error("Error converting JSON to incoming request");
-                return apiVersionSpecificConverter.generateWrongInputDataResponse(ex.getMessage());
-            }
+            IncomingMatchRequest request =
+                    apiVersionSpecificConverter.getIncomingJSONParser().parseIncomingRequest(json, remoteServerId);
 
             this.logger.debug("...handling...");
 
-            //TODO: save for audit purposes
-            //requestStorageManager.saveIncomingPeriodicRequest(request);
-            //logger.error("Assigned request ID: {}", request.getQueryId());
+            List<PatientSimilarityView> matches = patientsFinder.findMatchingPatients(request.getModelPatient());
 
-            List<PatientSimilarityView> matches = patientsFinder.findMatchingPatients(request.getRemotePatient());
+            JSONObject responseJSON = apiVersionSpecificConverter.generateServerResponse(request, matches);
 
-            return apiVersionSpecificConverter.generateInlineResponse(request, matches);
+            request.addResponse(responseJSON);
+
+            // save for audit purposes only
+            requestStorageManager.saveIncomingRequest(request);
+
+            return responseJSON;
+        } catch (JSONException ex) {
+            this.logger.error("Incorrect incoming request: misformatted JSON");
+            return apiVersionSpecificConverter.generateWrongInputDataResponse("misformatted JSON");
+        } catch (ApiViolationException ex) {
+            this.logger.error("Error converting JSON to incoming request");
+            return apiVersionSpecificConverter.generateWrongInputDataResponse(ex.getMessage());
         } catch (Exception ex) {
             this.logger.error("CODE Error: {}", ex);
             return apiVersionSpecificConverter.generateInternalServerErrorResponse(null);
+        } finally {
+            // save raw request data for audit purposes only
+            this.saveUnprocessedRequest(stringJson, remoteServerId, apiVersionSpecificConverter.getApiVersion());
         }
     }
 
-    private IncomingSearchRequest createRequest(ApiDataConverter apiDataConverter, JSONObject json,
-        BaseObject configurationObject)
+    public void saveUnprocessedRequest(String requestString, String remoteServerId, String apiVersion)
     {
-        String remoteServerId =
-            configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_NAME);
+        IncomingMatchRequest request =
+                new DefaultIncomingMatchRequest(remoteServerId, apiVersion, requestString, null);
 
-        IncomingSearchRequest request =
-            apiDataConverter.getIncomingJSONParser().parseIncomingRequest(json, remoteServerId);
-
-        return request;
+        requestStorageManager.saveIncomingRequest(request);
     }
 }

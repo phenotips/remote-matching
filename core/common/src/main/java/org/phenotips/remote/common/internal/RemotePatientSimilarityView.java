@@ -17,12 +17,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.api.tojson;
+package org.phenotips.remote.common.internal;
 
-import org.phenotips.remote.api.OutgoingSearchRequest;
 import net.sf.json.JSONObject;
 
-public interface OutgoingRequestToJSONConverter
+import org.phenotips.data.Patient;
+import org.phenotips.data.similarity.AccessType;
+import org.phenotips.data.similarity.internal.DefaultPatientSimilarityView;
+import org.phenotips.remote.api.MatchingPatient;
+
+public class RemotePatientSimilarityView extends DefaultPatientSimilarityView
 {
-    JSONObject toJSON(OutgoingSearchRequest request, int includedTopGenes);
+    /** Score as reposted by the remote server. */
+    private Double remoteScore;
+
+    public RemotePatientSimilarityView(MatchingPatient match, Patient reference, AccessType access, Double remoteScore)
+            throws IllegalArgumentException
+    {
+        super(match, reference, access);
+
+        this.remoteScore = remoteScore;
+    }
+
+    @Override
+    public JSONObject toJSON()
+    {
+        JSONObject result = super.toJSON();
+
+        result.element("remoteScore", this.remoteScore);
+
+        return result;
+    }
 }

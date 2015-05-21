@@ -17,29 +17,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.hibernate.internal;
+package org.phenotips.remote.common.internal;
 
 import org.phenotips.components.ComponentManagerRegistry;
+import org.phenotips.data.Feature;
 import org.phenotips.data.FeatureMetadatum;
-import org.phenotips.ontology.OntologyManager;
-import org.phenotips.ontology.OntologyTerm;
-import org.phenotips.remote.api.MatchingPatient;
-import org.phenotips.remote.api.MatchingPatientFeature;
-
+import org.phenotips.vocabulary.VocabularyManager;
+import org.phenotips.vocabulary.VocabularyTerm;
 import org.xwiki.component.manager.ComponentLookupException;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
-
-import javax.persistence.Basic;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Transient;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -47,37 +36,23 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
- * Hibernate entity for storing patient features.
- *
  * FIXME. Must extends the AbstractPhenoTipsOntologyProperty
  */
-@Entity
-public class HibernatePatientFeature implements MatchingPatientFeature
+public class RemotePatientFeature implements Feature
 {
-    @Id
-    @GeneratedValue
-    private long hibernateId;
-
-    @Basic
     private String id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "hibernatepatient_id", nullable = false)
-    public HibernatePatient hibernatepatient;
+    private String observedStatus = "unknown";
 
-    @Basic
-    private String present = "unknown";
-
-    @Basic
     private String name;
 
-    @Transient
     private Map<String, FeatureMetadatum> metadata = new TreeMap<String, FeatureMetadatum>();
 
-    @Override
-    public void setParent(MatchingPatient patient)
+    public RemotePatientFeature(String id, String observedStatus)
     {
-        this.hibernatepatient = (HibernatePatient) patient;
+        this.id = id;
+        this.observedStatus = observedStatus;
+        this.name = null;
     }
 
     @Override
@@ -93,9 +68,9 @@ public class HibernatePatientFeature implements MatchingPatientFeature
             return this.name;
         }
         try {
-            OntologyManager om =
-                ComponentManagerRegistry.getContextComponentManager().getInstance(OntologyManager.class);
-            OntologyTerm term = om.resolveTerm(this.id);
+            VocabularyManager om =
+                ComponentManagerRegistry.getContextComponentManager().getInstance(VocabularyManager.class);
+            VocabularyTerm term = om.resolveTerm(this.id);
             if (term != null && StringUtils.isNotEmpty(term.getName())) {
                 this.name = term.getName();
                 return this.name;
@@ -109,9 +84,9 @@ public class HibernatePatientFeature implements MatchingPatientFeature
     @Override
     public String getType()
     {
-        if (this.present.equals("yes")) {
+        if (this.observedStatus.equals("yes")) {
             return "phenotype";
-        } else if (this.present.equals("no")) {
+        } else if (this.observedStatus.equals("no")) {
             return "negative_phenotype";
         } else {
             return "";
@@ -121,7 +96,7 @@ public class HibernatePatientFeature implements MatchingPatientFeature
     @Override
     public boolean isPresent()
     {
-        return this.present.equals("yes");
+        return this.observedStatus.equals("yes");
     }
 
     @Override
@@ -147,21 +122,9 @@ public class HibernatePatientFeature implements MatchingPatientFeature
         return result;
     }
 
-    @Override
-    public void setId(String newId)
-    {
-        this.id = newId;
-    }
-
-    @Override
-    public void setObserved(String observedStatus)
-    {
-        this.present = observedStatus;
-    }
-
     public String getObserved()
     {
-        return this.present;
+        return this.observedStatus;
     }
 
     @Override

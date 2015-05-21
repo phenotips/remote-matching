@@ -17,20 +17,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.phenotips.remote.server.internal;
+package org.phenotips.remote.common.internal;
 
 import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
 import org.phenotips.data.IndexedPatientData;
-import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
 import org.phenotips.remote.api.MatchingPatient;
 import org.phenotips.remote.api.MatchingPatientGene;
-
+import org.phenotips.remote.api.ContactInfo;
 import org.xwiki.model.reference.DocumentReference;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,27 +46,43 @@ import net.sf.json.JSONObject;
  * @version $Id$
  * @since 1.0M8
  */
-public class RemoteMatchingPatient implements Patient
+public class RemoteMatchingPatient implements MatchingPatient
 {
-    final MatchingPatient modelRemotePatient;
+    final private String remotePatientId;
+
+    final private String label;
+
+    final private Set<? extends Feature> features;
+
+    final private Set<? extends Disorder> disorders;
+
+    final private Set<MatchingPatientGene> genes;
+
+    final private ContactInfo contactInfo;
 
     final private Map<String, PatientData<?>> extraData = new HashMap<String, PatientData<?>>();
 
-    public RemoteMatchingPatient(MatchingPatient modelRemotePatient)
+    public RemoteMatchingPatient(String remotePatientId, String label, Set<Feature> features,
+                                 Set<Disorder> disorders, Set<MatchingPatientGene> genes, ContactInfo contactInfo)
     {
-        this.modelRemotePatient = modelRemotePatient;
+        this.remotePatientId = remotePatientId;
+        this.label = label;
+        this.features = (features != null) ? features : new HashSet<Feature>();
+        this.disorders = (disorders != null) ? disorders : new HashSet<Disorder>();
+        this.genes = (genes != null) ? genes : new HashSet<MatchingPatientGene>();
+        this.contactInfo = contactInfo;
     }
 
     @Override
     public String getId()
     {
-        return null;
+        return remotePatientId;
     }
 
     @Override
     public String getExternalId()
     {
-        return null;
+        return remotePatientId;
     }
 
     @Override
@@ -84,13 +100,25 @@ public class RemoteMatchingPatient implements Patient
     @Override
     public Set<? extends Feature> getFeatures()
     {
-        return this.modelRemotePatient.getFeatures();
+        return this.features;
     }
 
     @Override
     public Set<? extends Disorder> getDisorders()
     {
-        return this.modelRemotePatient.getDisorders();
+        return this.disorders;
+    }
+
+    @Override
+    public String getLabel()
+    {
+        return this.label;
+    }
+
+    @Override
+    public ContactInfo getContactInfo()
+    {
+        return this.contactInfo;
     }
 
     @SuppressWarnings("unchecked")
@@ -99,7 +127,7 @@ public class RemoteMatchingPatient implements Patient
     {
         // TODO: somehow reuse GeneController.load()?
         if (name == "genes") {
-            Set<? extends MatchingPatientGene> genes = this.modelRemotePatient.getGenes();
+            Set<? extends MatchingPatientGene> genes = this.genes;
 
             List<Map<String, String>> allGenes = new LinkedList<Map<String, String>>();
 

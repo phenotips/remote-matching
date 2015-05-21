@@ -19,17 +19,19 @@
  */
 package org.phenotips.remote.common.internal.api;
 
+import org.phenotips.data.Disorder;
+import org.phenotips.data.Feature;
 import org.phenotips.remote.api.fromjson.JSONToMatchingPatientConverter;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.ApiViolationException;
 import org.phenotips.remote.api.MatchingPatient;
-import org.phenotips.remote.api.MatchingPatientDisorder;
-import org.phenotips.remote.api.MatchingPatientFeature;
+import org.phenotips.remote.api.ContactInfo;
 import org.phenotips.remote.api.MatchingPatientGene;
-import org.phenotips.remote.hibernate.internal.HibernatePatient;
-import org.phenotips.remote.hibernate.internal.HibernatePatientDisorder;
-import org.phenotips.remote.hibernate.internal.HibernatePatientFeature;
-import org.phenotips.remote.hibernate.internal.HibernatePatientGene;
+import org.phenotips.remote.common.internal.RemoteMatchingPatient;
+import org.phenotips.remote.common.internal.RemotePatientDisorder;
+import org.phenotips.remote.common.internal.RemotePatientFeature;
+import org.phenotips.remote.common.internal.RemotePatientGene;
+import org.phenotips.remote.common.internal.RemotePatientContactInfo;
 import org.slf4j.Logger;
 
 import java.util.HashSet;
@@ -58,10 +60,9 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
     }
 
     @Override
-    public MatchingPatient convert(JSONObject json)
+    public MatchingPatient convert(JSONObject patientJSON)
     {
         try {
-            JSONObject patientJSON = json.optJSONObject(ApiConfiguration.JSON_PATIENT);
             if (patientJSON == null) {
                 this.logger.error("No patient object is provided in the request");
                 throw new ApiViolationException("No patient object is provided in the request");
@@ -73,28 +74,21 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                 throw new ApiViolationException("Remote patient has no id");
             }
 
-            String label = patientJSON.optString(ApiConfiguration.JSON_PATIENT_LABEL, null);
-
-            MatchingPatient patient = new HibernatePatient(remotePatientId, label);
-
-            Set<MatchingPatientFeature> features   = this.convertFeatures(patientJSON);
-            Set<MatchingPatientDisorder> disorders = this.convertDisorders(patientJSON);
-            Set<MatchingPatientGene> genes         = this.convertGenes(patientJSON);
+            Set<Feature> features = this.convertFeatures(patientJSON);
+            Set<Disorder> disorders = this.convertDisorders(patientJSON);
+            Set<MatchingPatientGene> genes = this.convertGenes(patientJSON);
 
             if ((features == null || features.isEmpty()) &&
                 (genes == null || genes.isEmpty())) {
                 this.logger.error("There are no features and no genes: violates API requirements");
                 throw new ApiViolationException("There are no features and no genes");
             }
-            if (features != null) {
-                patient.addFeatures(features);
-            }
-            if (disorders != null) {
-                patient.addDisorders(disorders);
-            }
-            if (genes != null) {
-                patient.addGenes(genes);
-            }
+
+            ContactInfo contactInfo = this.parseContactInfo(patientJSON);
+            String label = patientJSON.optString(ApiConfiguration.JSON_PATIENT_LABEL, null);
+
+            MatchingPatient patient = new RemoteMatchingPatient(remotePatientId, label, features, disorders, genes, contactInfo);
+
             return patient;
         } catch (ApiViolationException ex) {
             throw ex;
@@ -104,11 +98,11 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
         }
     }
 
-    private Set<MatchingPatientFeature> convertFeatures(JSONObject json)
+    private Set<Feature> convertFeatures(JSONObject json)
     {
         try {
             if (json.has(ApiConfiguration.JSON_FEATURES)) {
-                Set<MatchingPatientFeature> featureSet = new HashSet<MatchingPatientFeature>();
+                Set<Feature> featureSet = new HashSet<Feature>();
                 JSONArray featuresJson = (JSONArray) json.get(ApiConfiguration.JSON_FEATURES);
                 for (Object jsonFeatureUncast : featuresJson) {
                     JSONObject jsonFeature = (JSONObject) jsonFeatureUncast;
@@ -127,9 +121,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                             observed);
                         continue;
                     }
-                    MatchingPatientFeature feature = new HibernatePatientFeature();
-                    feature.setId(id);
-                    feature.setObserved(observed);
+                    Feature feature = new RemotePatientFeature(id, observed);
                     featureSet.add(feature);
                 }
                 return featureSet;
@@ -141,11 +133,11 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
         return null;
     }
 
-    private Set<MatchingPatientDisorder> convertDisorders(JSONObject json)
+    private Set<Disorder> convertDisorders(JSONObject json)
     {
         try {
             if (json.has(ApiConfiguration.JSON_DISORDERS)) {
-                Set<MatchingPatientDisorder> disorderSet = new HashSet<MatchingPatientDisorder>();
+                Set<Disorder> disorderSet = new HashSet<Disorder>();
                 JSONArray disorderJson = (JSONArray) json.get(ApiConfiguration.JSON_DISORDERS);
                 for (Object jsonDisorderUncast : disorderJson) {
                     JSONObject jsonDisorder = (JSONObject) jsonDisorderUncast;
@@ -154,8 +146,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                         logger.error("Patient feature parser: ignoring unsupported term with ID [{}]", id);
                         continue;
                     }
-                    MatchingPatientDisorder disorder = new HibernatePatientDisorder();
-                    disorder.setId(id);
+                    Disorder disorder = new RemotePatientDisorder(id, null);
                     disorderSet.add(disorder);
                 }
                 return disorderSet;
@@ -182,8 +173,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                         continue;
                     }
                     // TODO: check if name is a valid gene symbol or ensembl id
-                    MatchingPatientGene gene = new HibernatePatientGene();
-                    gene.setName(geneName);
+                    MatchingPatientGene gene = new RemotePatientGene(geneName);
                     geneSet.add(gene);
                     // TODO: variants
                 }
@@ -193,5 +183,21 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
             this.logger.error("Error converting genes: {}", ex);
         }
         return null;
+    }
+
+    private ContactInfo parseContactInfo(JSONObject json)
+    {
+        JSONObject submitter = json.getJSONObject(ApiConfiguration.JSON_CONTACT);
+        if (submitter.isEmpty()) {
+            return null;
+        }
+
+        String name = submitter.optString(ApiConfiguration.JSON_CONTACT_NAME, null);
+        String href = submitter.optString(ApiConfiguration.JSON_CONTACT_HREF, null);
+        String institution = submitter.optString(ApiConfiguration.JSON_CONTACT_INSTITUTION , null);
+
+        ContactInfo contact = new RemotePatientContactInfo(name, institution, href);
+
+        return contact;
     }
 }

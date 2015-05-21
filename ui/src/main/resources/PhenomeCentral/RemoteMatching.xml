@@ -449,8 +449,6 @@ td input[type="text"]:focus {
     <guid>a7c27acb-19f4-4e13-9182-2579f52a70e0</guid>
     <property>
       <content>{{velocity}}
-$xwiki.jsfx.use('js/remote-matching/main.js')
-
       ## Can see similar cases for this patient
       ##{{html clean=false}}&lt;div data-bind="" class="clear clinical-info similarity-info chapter"&gt;{{/html}}##
       === Remote Databases ===
@@ -458,60 +456,19 @@ $xwiki.jsfx.use('js/remote-matching/main.js')
       ## Get list of remote configurations. Filter by mutuallyAccepted.
       ## Then display list with checkboxes.
       ## Custom javascript will take care of sending the request, and changing the page display.
-      ##=======================================
-      #set ($remoteRequestClass = "PhenomeCentral.RemoteRequest")
+      ##=======================================     
       #set ($preferenceDoc = $xwiki.getDocumentAsAuthor("XWiki.XWikiPreferences"))
       #set ($allRemotes = $preferenceDoc.getObjects("PhenomeCentral.RemoteMatchingServiceConfiguration"))
-      #set ($allRequests = $doc.getObjects($remoteRequestClass))
-      #set ($remotes = {}) ##These are filtered
       #foreach ($config in $allRemotes)
-        $config
-        #if ($config.getProperty('mutuallyAccepted').getValue() == 1)
-          $config.get("baseURL").toString()
-          #set ($requests = [])
-          #set ($baseURL = $config.get("baseURL").toString())
-          #foreach ($r in $allRequests)
-            $r.get("baseURL").toString()
-            #if ($r.get("baseURL").toString() == $baseURL)
-              #set($discard = $requests.add($r))
-            #end
-          #end
-          $requests
-          ##====================================
-          ## If there are no existing request objects for this remote server, create an empty one.
-          ## If it is decided that several requests (and subsequent results) to the same server are compounded,
-          ## create a new object for each request.
-          ##====================================
-          #if ($requests.size() == 0)
-            #set ($newRequest = $doc.newObject($remoteRequestClass))
-            $newRequest.set("baseURL", $baseURL)
-            $newRequest.set("id", $newRequest.getGuid())
-            #set($discard = $requests.add($newRequest))
-          #end
-          #set ($discard = $remotes.put($config, $requests))
+        #if ($config.getProperty('remoteAuthToken').getValue() != "")
+          #set ($serverName = $config.getProperty('humanReadableName').getValue())
+          {{html clean=false}}<br><br>Remote server: <b>$serverName</b>{{/html}}
+          #set ($patient = "$doc.getName()")
+          #set ($resultsURL = $xwiki.getURL('PhenomeCentral.RemoteResults', 'get', "server=$serverName&patientId=$patient"))
+          (% class="similarity-results-container" id="similar-remote-patients-container-$serverName" %)((({{html clean=false}}<input type="hidden" name="service" value="$resultsURL">{{/html}})))##        
         #end
       #end
-      #set ($discard = $doc.save())
-      #foreach ($remote in $remotes.keySet())
-         ## This will also need to be changed in case there are more than one request ##
-         #set($guid = $remotes.get($remote).get(0).getGuid())
-         {{html clean=false}}&lt;div class="remoteSearch" id="$!{guid}"&gt;
-           &lt;input type="hidden" id="userId" value="$xwiki.getUser().getUser().getUser()"&gt;
-           &lt;input type="hidden" id="patientId" value="$doc.getName()"&gt;
-           &lt;input type="hidden" id="url" value="$xwiki.getURL("PhenomeCentral.RemoteMatchingSendRequest", "get")"&gt;
-           &lt;span&gt;$remote.getProperty("humanReadableName").getValue()&lt;/span&gt;
-           &lt;span class="buttonwrapper"&gt;&lt;a class="button" href="#"&gt;Look for matches&lt;/a&gt;
-         &lt;/div&gt;{{/html}}
-      #end
-      ##=======================================
-      ## [TODO]
-      ## Display the results of the searches.
-      ##=======================================      
-      ===== Matches =====
-      (% class="similarity-results-container" id="similar-remote-patients-container" %)((({{html clean=false}}&lt;input type="hidden" name="service" value="$xwiki.getURL('PhenomeCentral.RemoteResults', 'get')"&gt;{{/html}})))##
       ##{{html clean=false}}&lt;/div&gt;{{/html}}##
-
-
 {{/velocity}}</content>
     </property>
     <property>

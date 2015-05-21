@@ -19,60 +19,29 @@
  */
 package org.phenotips.remote.hibernate;
 
+import org.phenotips.remote.api.IncomingMatchRequest;
+import org.phenotips.remote.api.OutgoingMatchRequest;
+
 import org.xwiki.component.annotation.Role;
-
-import org.phenotips.remote.api.IncomingSearchRequest;
-import org.phenotips.remote.api.OutgoingSearchRequest;
-
-import java.util.Map;
-import java.util.List;
 
 @Role
 public interface RemoteMatchingStorageManager
 {
-    // =======================================================================
     /**
-     * Saves a new incoming periodic request or updates an existing request
-     *
-     * @param request
-     * @return queryID assigned to this request
+     * Stores the incoming request and the generated reply for audit purposes
      */
-    String saveIncomingPeriodicRequest(IncomingSearchRequest request);
+    void saveIncomingRequest(IncomingMatchRequest request);
+
+    //=========================================================================
 
     /**
-     * Replaces existing periodic request with the given queryID with the specified request.
-     * Throws iff request has no queryID field set
-     *
-     * @param request
-     * @return true iff a request with the given ID was present in the system
+     * Stores the incoming request and the generated reply for audit purposes
      */
-    boolean updateIncomingPeriodicRequest(IncomingSearchRequest request);
-
-    boolean deleteIncomingPeriodicRequest(String queryID);
-
-    List<IncomingSearchRequest> loadAllActiveIncomingRequests();
-
-    //=======================================================================
+    void saveOutgoingRequest(OutgoingMatchRequest request);
 
     /**
-     * Saves the request
-     *
-     * @param request
-     * @param patientID
-     * @return true if a request with the same parameters already existed in the database (and got overwritten)
+     * Returns the last request+response received form the given server when quering for the given patient.
+     * Returns null if no responses are currently cached.
      */
-    boolean saveOutgoingRequest(OutgoingSearchRequest request);
-
-    /**
-     *
-     * @param patientID
-     * @return last request or null if none found
-     */
-    OutgoingSearchRequest loadOutgoingRequest(String patientID, String remoteServerId);
-
-    Map<OutgoingSearchRequest, String> loadAllOutgoingRequests(String patientID);
-
-    void deleteAllOutgoingRequestsForPatient(String patientID);
-
-    //=======================================================================
+    OutgoingMatchRequest loadCachedOutgoingRequest(String remoteServerId, String patientId);
 }

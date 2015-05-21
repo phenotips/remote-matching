@@ -21,9 +21,9 @@ package org.phenotips.remote.common.internal.api.v2;
 
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.ApiDataConverter;
-import org.phenotips.remote.api.IncomingSearchRequest;
+import org.phenotips.remote.api.IncomingMatchRequest;
 import org.phenotips.remote.api.fromjson.IncomingJSONParser;
-import org.phenotips.remote.api.tojson.OutgoingRequestToJSONConverter;
+import org.phenotips.remote.api.tojson.OutgoingJSONGenerator;
 import org.xwiki.component.annotation.Component;
 
 import java.util.List;
@@ -71,7 +71,7 @@ public class ApiDataConverterV2 implements ApiDataConverter
     }
 
     @Override
-    public JSONObject generateInlineResponse(IncomingSearchRequest request, List<PatientSimilarityView> resultList)
+    public JSONObject generateServerResponse(IncomingMatchRequest request, List<PatientSimilarityView> resultList)
     {
         return null;
     }
@@ -79,7 +79,7 @@ public class ApiDataConverterV2 implements ApiDataConverter
     //================================================================
 
     @Override
-    public OutgoingRequestToJSONConverter getOutgoingRequestToJSONConverter()
+    public OutgoingJSONGenerator getOutgoingJSONGenerator()
     {
         return null;
     }

@@ -20,17 +20,13 @@
 package org.phenotips.remote.common.internal.api;
 
 import org.phenotips.remote.api.ApiConfiguration;
-import org.phenotips.remote.api.IncomingSearchRequest;
+import org.phenotips.remote.api.IncomingMatchRequest;
 import org.phenotips.remote.api.MatchingPatient;
 import org.phenotips.remote.common.internal.api.DefaultJSONToMatchingPatientConverter;
 import org.phenotips.remote.api.fromjson.IncomingJSONParser;
 import org.phenotips.remote.api.fromjson.JSONToMatchingPatientConverter;
-import org.phenotips.remote.hibernate.internal.DefaultIncomingSearchRequest;
+import org.phenotips.remote.hibernate.internal.DefaultIncomingMatchRequest;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import net.sf.json.JSONObject;
@@ -55,51 +51,17 @@ public class DefaultIncomingJSONParser implements IncomingJSONParser
     }
 
     @Override
-    public IncomingSearchRequest parseIncomingRequest(JSONObject jsonRequest, String remoteServerId)
+    public IncomingMatchRequest parseIncomingRequest(JSONObject jsonRequest, String remoteServerId)
     {
-        MatchingPatient requestPatient = this.patientConverter.convert(jsonRequest);
+        JSONObject patientJSON = jsonRequest.optJSONObject(ApiConfiguration.JSON_PATIENT);
 
-        DefaultIncomingSearchRequest request = new DefaultIncomingSearchRequest(requestPatient, remoteServerId);
+        MatchingPatient requestPatient = this.patientConverter.convert(patientJSON);
 
-        try {
-            Map<String, String> contactInfoMap = this.submitter(jsonRequest);
-            if (contactInfoMap != null) {
-                request.setContact(contactInfoMap.get(ApiConfiguration.JSON_CONTACT_NAME),
-                    contactInfoMap.get(ApiConfiguration.JSON_CONTACT_INSTITUTION),
-                    contactInfoMap.get(ApiConfiguration.JSON_CONTACT_HREF));
-            }
-
-            // TODO: label
-        } catch (Exception ex) {
-            this.logger.error("Incoming request parsing error: {}", ex);
-            return null;
-        }
+        DefaultIncomingMatchRequest request =
+               new DefaultIncomingMatchRequest(remoteServerId, this.apiVersion, jsonRequest.toString(), requestPatient);
 
         this.logger.debug("JSON->IncomingRequest done");
+
         return request;
-    }
-
-    private Map<String, String> submitter(JSONObject json) throws Exception
-    {
-        JSONObject submitter = json.getJSONObject(ApiConfiguration.JSON_CONTACT);
-        if (submitter.isEmpty()) {
-            return null;
-        }
-
-        String[] keys = { ApiConfiguration.JSON_CONTACT_NAME,
-                          ApiConfiguration.JSON_CONTACT_HREF,
-                          ApiConfiguration.JSON_CONTACT_INSTITUTION };
-        Map<String, String> submitterMap = new HashMap<String, String>();
-        for (String key : keys) {
-            Object valueObject = submitter.get(key);
-            if (valueObject == null) {
-                continue;
-            }
-            String value = valueObject.toString();
-            if (StringUtils.isNotBlank(value)) {
-                submitterMap.put(key, value);
-            }
-        }
-        return submitterMap;
     }
 }
