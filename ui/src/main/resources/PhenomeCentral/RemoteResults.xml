@@ -57,9 +57,10 @@ $response.setContentType('application/json')##
   #break
 #end
 #if ("$!{request.sendNewRequest}" == "true")
-  #set ($lastRequest = $services.remoteMatching.sendRequest("$!{request.patientId}", "$!{request.server}"))
+  ## REVIEW MAGIC NUMBER: send up to 5 top genes according to exomiser in outgoing requests
+  #set ($lastRequest = $services.remoteMatching.sendRequest("$!{request.patientId}", "$!{request.server}", 5))
 #else
-  #set ($lastRequest = $services.remoteMatching.getDetailedResponse("$!{request.patientId}", "$!{request.server}"))
+  #set ($lastRequest = $services.remoteMatching.getLastRequest("$!{request.patientId}", "$!{request.server}"))
 #end
 #if ($request.raw)
   $jsontool.serialize($lastRequest)
@@ -83,14 +84,14 @@ $response.setContentType('application/json')##
   $jsontool.serialize($result)
   #break
 #end
-#set ($query = $lastRequest.get("queryJSON"))
-#set ($queryPatient = $query.patient)
+#set ($patient = $services.patients.getPatientById("$!{request.patientId}"))
 {
   "replyHTTPCode": $lastRequest.get("responseHTTPCode"),
   "resultsCount" : $matches.size(),
   "results" : $matches,
-  "query": $queryPatient,
-  "reply": $lastRequest.get("responseJSON")    
+  "query":  $patient.toJSON(),
+  "request": $lastRequest.get("queryJSON"),
+  "response": $lastRequest.get("responseJSON")
 }
 {{/velocity}}</content>
 </xwikidoc>
