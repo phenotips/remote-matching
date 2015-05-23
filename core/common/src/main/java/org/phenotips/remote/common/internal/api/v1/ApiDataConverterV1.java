@@ -51,6 +51,8 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
 {
     private final static String VERSION_STRING = "1.0";
 
+    private final static Integer DEFAULT_NUMBER_OF_GENES_IN_REPLIES = 5;
+
     private IncomingJSONParser incomingJSONParser;
 
     private PatientToJSONConverter patientToJSONConverter;
@@ -139,7 +141,7 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
                 matchInfo.put(ApiConfiguration.REPLY_JSON_RESULTS_SCORE, scoreJson);
 
                 matchInfo.put(ApiConfiguration.REPLY_JSON_RESULTS_PATIENT,
-                              this.patientToJSONConverter.convert(patient, true));
+                              this.patientToJSONConverter.convert(patient, true, DEFAULT_NUMBER_OF_GENES_IN_REPLIES));
                 matchList.add(matchInfo);
             } catch (Exception ex) {
                 this.logger.error("Error converting patient to JSON: [{}]", ex);

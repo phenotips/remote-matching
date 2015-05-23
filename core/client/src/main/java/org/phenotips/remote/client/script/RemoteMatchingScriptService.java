@@ -67,7 +67,7 @@ public class RemoteMatchingScriptService implements ScriptService
         return this.processRequest(request);
     }
 
-    public JSONObject getDetailedResponse(String patientId, String remoteServerId)
+    public JSONObject getLastRequest(String patientId, String remoteServerId)
     {
         this.logger.error("Getting processed response for the last request for patient [{}] to server [{}]", patientId, remoteServerId);
 
@@ -76,7 +76,7 @@ public class RemoteMatchingScriptService implements ScriptService
         return this.processRequest(request);
     }
 
-    public OutgoingMatchRequest getLastRequest(String patientId, String remoteServerId)
+    public OutgoingMatchRequest getLastRequestObject(String patientId, String remoteServerId)
     {
         return this.matchingService.getLastRequestSent(patientId, remoteServerId);
     }

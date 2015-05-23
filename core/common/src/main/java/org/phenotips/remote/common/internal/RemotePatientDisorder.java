@@ -33,12 +33,6 @@ public class RemotePatientDisorder extends AbstractPhenoTipsOntologyProperty imp
     }
 
     @Override
-    public String getId()
-    {
-        return this.id;
-    }
-
-    @Override
     public String getValue()
     {
         return this.value;

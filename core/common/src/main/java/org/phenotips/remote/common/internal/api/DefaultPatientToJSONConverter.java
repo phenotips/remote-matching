@@ -30,15 +30,12 @@ import org.phenotips.remote.common.ApplicationConfiguration;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.slf4j.Logger;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Comparator;
+
 
 //import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -95,12 +92,17 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         if (!disorders.isEmpty()) {
             json.put(ApiConfiguration.JSON_DISORDERS, disorders);
         }
+
+        // TODO: rework this part, as Patient may be an instance of a Patient (for outgoing requests) or
+        //       RestrictedSimilarityView (for returning replies to incoming requests), and the two
+        //       behave differently
         if (removePrivateData) {
             json.put(ApiConfiguration.JSON_FEATURES, DefaultPatientToJSONConverter.nonPersonalFeatures(patient));
         } else {
             json.put(ApiConfiguration.JSON_FEATURES, DefaultPatientToJSONConverter.features(patient));
         }
-        JSONArray genes = DefaultPatientToJSONConverter.genes(patient, includedTopGenes, logger);
+        JSONArray genes = removePrivateData ? DefaultPatientToJSONConverter.restrictedGenes(patient, includedTopGenes, logger) :
+                                              DefaultPatientToJSONConverter.genes(patient, includedTopGenes, logger);
         if (!genes.isEmpty()) {
             json.put(ApiConfiguration.JSON_GENES, genes);
         }
@@ -253,19 +255,24 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
 
     private static JSONArray genes(Patient patient, int includedTopGenes, Logger logger)
     {
-        PatientGenotype genotype = new DefaultPatientGenotype(patient);
+        //logger.error("[request] Getting candidate genes for patient [{}]", patient.getId());
 
         JSONArray genes = new JSONArray();
         try {
-            Collection<String> candidateGeneNames;
-            //Collection<String> candidateGeneNames = getPatientCandidateGeneNames(patient);
-            if (includedTopGenes <= 0) {
-                candidateGeneNames = genotype.getCandidateGenes();
-            } else {
+            PatientGenotype genotype = new DefaultPatientGenotype(patient);
+
+            Set<String> candidateGeneNames = new HashSet<String>(genotype.getCandidateGenes());
+
+            if (includedTopGenes > 0 && candidateGeneNames.size() < includedTopGenes) {
+                // keep adding top exomiser genes until we have more than we want. Some of those may
+                // overlap with explicit candidate genes, Set will take care of that, but we don't
+                // know if the size of the collection grew or not without checking
                 List<String> topGenes = genotype.getTopGenes(includedTopGenes);
-                candidateGeneNames = new HashSet<String>();
                 for (String topGene : topGenes) {
                     candidateGeneNames.add(topGene);
+                    if (candidateGeneNames.size() >= includedTopGenes) {
+                        break;
+                    }
                 }
             }
 
@@ -279,9 +286,46 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
                 genes.add(nextGene);
             }
         } catch (Exception ex) {
-            logger.error("Error getting candidate genes for patient [{}]: [{}]", patient.getId(), ex);
+            logger.error("Error getting genes for patient [{}]: [{}]", patient.getId(), ex);
             return new JSONArray();
         }
+        return genes;
+    }
+
+    private static JSONArray restrictedGenes(Patient patient, int includedTopGenes, Logger logger)
+    {
+        //logger.error("[reply] Getting candidate genes for patient [{}]", patient.getId());
+
+        JSONArray genes = new JSONArray();
+
+        try {
+            JSONArray orderedPatientGenes = patient.toJSON().optJSONArray("genes");
+
+            if (orderedPatientGenes == null || includedTopGenes <= 0) {
+                return genes;
+            }
+
+            int useGenes = Math.min(orderedPatientGenes.size(), includedTopGenes);
+            for(int i = 0; i < useGenes; ++i){
+                JSONObject nextGeneInfo = orderedPatientGenes.optJSONObject(i);
+                // no check for null so that if nextGeneInfo is not a JSONObject an error will be logged
+                String geneName = nextGeneInfo.optString("gene", null);
+                if (geneName != null) {
+                    JSONObject gene = new JSONObject();
+                    gene.put(ApiConfiguration.JSON_GENES_GENE_ID, geneName);
+
+                    JSONObject nextGene = new JSONObject();
+                    nextGene.put(ApiConfiguration.JSON_GENES_GENE, gene);
+
+                    genes.add(nextGene);
+                }
+          }
+
+        } catch (Exception ex) {
+            logger.error("Error getting genes for patient [{}]: [{}]", patient.getId(), ex);
+            return new JSONArray();
+        }
+
         return genes;
     }
 

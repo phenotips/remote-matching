@@ -19,18 +19,13 @@
  */
 package org.phenotips.remote.common.internal;
 
-import org.phenotips.components.ComponentManagerRegistry;
 import org.phenotips.data.Feature;
 import org.phenotips.data.FeatureMetadatum;
-import org.phenotips.vocabulary.VocabularyManager;
-import org.phenotips.vocabulary.VocabularyTerm;
-import org.xwiki.component.manager.ComponentLookupException;
+import org.phenotips.data.internal.AbstractPhenoTipsOntologyProperty;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
-
-import org.apache.commons.lang3.StringUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -38,47 +33,16 @@ import net.sf.json.JSONObject;
 /**
  * FIXME. Must extends the AbstractPhenoTipsOntologyProperty
  */
-public class RemotePatientFeature implements Feature
+public class RemotePatientFeature extends AbstractPhenoTipsOntologyProperty implements Feature
 {
-    private String id;
-
     private String observedStatus = "unknown";
-
-    private String name;
 
     private Map<String, FeatureMetadatum> metadata = new TreeMap<String, FeatureMetadatum>();
 
     public RemotePatientFeature(String id, String observedStatus)
     {
-        this.id = id;
+        super(id);
         this.observedStatus = observedStatus;
-        this.name = null;
-    }
-
-    @Override
-    public String getId()
-    {
-        return this.id;
-    }
-
-    @Override
-    public String getName()
-    {
-        if (this.name != null) {
-            return this.name;
-        }
-        try {
-            VocabularyManager om =
-                ComponentManagerRegistry.getContextComponentManager().getInstance(VocabularyManager.class);
-            VocabularyTerm term = om.resolveTerm(this.id);
-            if (term != null && StringUtils.isNotEmpty(term.getName())) {
-                this.name = term.getName();
-                return this.name;
-            }
-        } catch (ComponentLookupException ex) {
-            // Shouldn't happen
-        }
-        return this.id;
     }
 
     @Override
@@ -108,9 +72,9 @@ public class RemotePatientFeature implements Feature
     @Override
     public JSONObject toJSON()
     {
-        JSONObject result = new JSONObject();
-        result.element("id", getId());
+        JSONObject result = super.toJSON();
         result.element("observed", getObserved());
+        result.element("type", "phenotype");
         // TODO: get ageOfOnset out of metadata
         if (!this.metadata.isEmpty()) {
             JSONArray metadataList = new JSONArray();

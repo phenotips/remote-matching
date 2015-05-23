@@ -115,11 +115,9 @@ public class DefaultRemoteMatchingStorageManager implements RemoteMatchingStorag
 
             if (data == null) {
                 this.logger.info("No outstanding match queries to server [{}] for patient [{}]", remoteServerId, patientId);
-                return null;
+            } else {
+                this.logger.info("Found an outstanding query to server [{}] for patient [{}]", remoteServerId, patientId);
             }
-
-            this.logger.error("Found an outstanding query to server [{}] for patient [{}]", remoteServerId, patientId);
-            this.logger.error("Query reply: [{}]", data.getResponseJSON().toString());
             return data;
         } catch (HibernateException ex) {
             this.logger.error("loadOutgoingRequest: ERROR: [{}]", ex);
