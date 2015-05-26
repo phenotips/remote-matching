@@ -68,6 +68,7 @@ $response.setContentType('application/json')##
 #end
 #if (!$lastRequest)
   #set($result.error = "request was never initiated")
+  #set($result.nodata = true)
   $jsontool.serialize($result)
   #break
 #end
