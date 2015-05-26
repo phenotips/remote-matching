@@ -35,7 +35,7 @@ import javax.persistence.Table;
  * @version $Id$
  */
 @Entity
-@Table(name = "remote_matching_outgoing_requests_2")
+@Table(name = "remote_matching_outgoing_requests")
 public class DefaultOutgoingMatchRequest extends AbstractSearchRequest implements OutgoingMatchRequest
 {
     @Basic

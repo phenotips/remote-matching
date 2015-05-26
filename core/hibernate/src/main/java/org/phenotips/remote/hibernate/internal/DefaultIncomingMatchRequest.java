@@ -32,7 +32,7 @@ import javax.persistence.Transient;
  * @version $Id$
  */
 @Entity
-@Table(name = "remote_matching_incoming_requests_2")
+@Table(name = "remote_matching_incoming_requests")
 public class DefaultIncomingMatchRequest extends AbstractSearchRequest implements IncomingMatchRequest
 {
     @Transient
