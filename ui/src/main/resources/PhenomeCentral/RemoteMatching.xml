@@ -462,6 +462,10 @@ td input[type="text"]:focus {
           #set ($serverName = $config.getProperty('humanReadableName').getValue())
           {{html clean=false}}<br/><br/>Remote server: <b>$serverName</b>{{/html}}
           #set ($resultsURL = $xwiki.getURL('PhenomeCentral.RemoteResults', 'get', ""))
+          #set ($disclaimer = $config.getProperty('disclaimer').getValue())
+          #if ($disclaimer &amp;&amp; $disclaimer != "")
+            {{html clean=false}}<p class="hint">$disclaimer<br/></p>{{/html}}##
+          #end
           (% class="similarity-results-container" id="similar-remote-patients-container-$serverName" %)((({{html clean=false}}<input type="hidden" name="service" value="$resultsURL"/><input type="hidden" name="mmeServer" value="$serverName"/>{{/html}})))##        
         #end
       #end
