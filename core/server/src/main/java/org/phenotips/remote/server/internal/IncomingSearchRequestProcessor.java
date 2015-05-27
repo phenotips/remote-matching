@@ -40,8 +40,11 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.objects.PropertyInterface;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import net.sf.json.JSONObject;
@@ -95,7 +98,28 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
 
             List<PatientSimilarityView> matches = patientsFinder.findMatchingPatients(request.getModelPatient());
 
-            JSONObject responseJSON = apiVersionSpecificConverter.generateServerResponse(request, matches);
+            // check consent level for each of the patient: exclude patients without explicit MME consent
+            //
+            // TODO: use CollectionUtils.filter once a) updated Apache Commons that support parametrized types are used
+            //       and b) a workaround for anonymous classes only being able to use final local variables is testd
+
+            List<PatientSimilarityView> filteredMatches = new LinkedList<PatientSimilarityView>();
+
+            for (PatientSimilarityView match : matches) {
+                XWikiDocument patientDoc = XWikiAdapter.getPatientDoc(match.getId(), context);
+                if (patientDoc != null) {
+                    BaseObject consent = patientDoc.getXObject(ApplicationConfiguration.PATIENT_CONSENT_OBJECT_REFERENCE);
+                    if (consent != null) {
+                        String consentValue = consent.getStringValue("matching");
+                        logger.error("Consent value: [{}]", consentValue);
+                        if (consentValue != null && consentValue.equals("1")) {
+                            filteredMatches.add(match);
+                        }
+                    }
+                }
+            }
+
+            JSONObject responseJSON = apiVersionSpecificConverter.generateServerResponse(request, filteredMatches);
 
             request.addResponse(responseJSON);
 

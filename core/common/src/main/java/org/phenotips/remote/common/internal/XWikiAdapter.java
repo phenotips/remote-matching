@@ -88,17 +88,18 @@ public class XWikiAdapter
         return new PhenoTipsPatient(doc);
     }
 
-    static public Patient getPatient(String patientId, XWiki wiki, XWikiContext context) throws XWikiException
+    static public XWikiDocument getPatientDoc(String patientId, XWikiContext context)
     {
-        return new PhenoTipsPatient(getPatientDoc(patientId, wiki, context));
-    }
+        try {
+            EntityReference patientReference =
+                new EntityReference(patientId, EntityType.DOCUMENT, Patient.DEFAULT_DATA_SPACE);
 
-    static public XWikiDocument getPatientDoc(String patientId, XWiki wiki, XWikiContext context) throws XWikiException
-    {
-        EntityReference patientReference =
-            new EntityReference(patientId, EntityType.DOCUMENT, Patient.DEFAULT_DATA_SPACE);
+            XWiki wiki = context.getWiki();
 
-        return wiki.getDocument(patientReference, context);
+            return wiki.getDocument(patientReference, context);
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     static public BaseObject getRemoteConfigurationGivenRemoteIP(String remoteIP, XWikiContext context)
