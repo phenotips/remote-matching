@@ -454,7 +454,7 @@ td input[type="text"]:focus {
       ## Get list of remote configurations. Filter by mutuallyAccepted.
       ## Then display list with checkboxes.
       ## Custom javascript will take care of sending the request, and changing the page display.
-      ##=======================================     
+      ##=======================================
       #set ($preferenceDoc = $xwiki.getDocumentAsAuthor("XWiki.XWikiPreferences"))
       #set ($allRemotes = $preferenceDoc.getObjects("PhenomeCentral.RemoteMatchingServiceConfiguration"))
       #foreach ($config in $allRemotes)
@@ -466,7 +466,7 @@ td input[type="text"]:focus {
           #if ($disclaimer &amp;&amp; $disclaimer != "")
             {{html clean=false}}&lt;p class="hint"&gt;$disclaimer&lt;br/&gt;&lt;/p&gt;{{/html}}##
           #end
-          (% class="similarity-results-container" id="similar-remote-patients-container-$serverName" %)((({{html clean=false}}&lt;input type="hidden" name="service" value="$resultsURL"/&gt;&lt;input type="hidden" name="mmeServer" value="$serverName"/&gt;{{/html}})))##        
+          (% class="similarity-results-container" id="similar-remote-patients-container-$serverName" %)((({{html clean=false}}&lt;input type="hidden" name="service" value="$resultsURL"/&gt;&lt;input type="hidden" name="mmeServer" value="$serverName"/&gt;{{/html}})))##
         #end
       #end
       ##{{html clean=false}}&lt;/div&gt;{{/html}}##
