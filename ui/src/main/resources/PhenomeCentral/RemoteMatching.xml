@@ -458,7 +458,7 @@ td input[type="text"]:focus {
       #set ($preferenceDoc = $xwiki.getDocumentAsAuthor("XWiki.XWikiPreferences"))
       #set ($allRemotes = $preferenceDoc.getObjects("PhenomeCentral.RemoteMatchingServiceConfiguration"))
       #foreach ($config in $allRemotes)
-        #if ($config.getProperty('remoteAuthToken').getValue() != "")
+        #if ($config.getProperty('remoteAuthToken').getValue() != "" &amp;&amp; $config.getProperty('includeInUI').getValue() == 1)
           #set ($serverName = $config.getProperty('humanReadableName').getValue())
           {{html clean=false}}<br/><br/>Remote server: <b>$serverName</b>{{/html}}
           #set ($resultsURL = $xwiki.getURL('PhenomeCentral.RemoteResults', 'get', ""))
