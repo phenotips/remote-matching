@@ -469,7 +469,6 @@ td input[type="text"]:focus {
           (% class="similarity-results-container" id="similar-remote-patients-container-$serverName" %)((({{html clean=false}}&lt;input type="hidden" name="service" value="$resultsURL"/&gt;&lt;input type="hidden" name="mmeServer" value="$serverName"/&gt;{{/html}})))##
         #end
       #end
-      ##{{html clean=false}}&lt;/div&gt;{{/html}}##
 {{/velocity}}</content>
     </property>
     <property>
