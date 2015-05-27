@@ -66,7 +66,7 @@
     </dependency>
     <dependency>
       <groupId>org.phenotips</groupId>
-      <artifactId>ontology-access-api</artifactId>
+      <artifactId>vocabularies-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
