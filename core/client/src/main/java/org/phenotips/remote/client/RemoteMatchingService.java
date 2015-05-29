@@ -40,5 +40,5 @@ public interface RemoteMatchingService
 
     public OutgoingMatchRequest getLastRequestSent(String patientId, String remoteServerId);
 
-    public List<PatientSimilarityView> getSimilarityResults(OutgoingMatchRequest request) throws ApiViolationException;
+    public List<PatientSimilarityView> getSimilarityResults(OutgoingMatchRequest request);
 }

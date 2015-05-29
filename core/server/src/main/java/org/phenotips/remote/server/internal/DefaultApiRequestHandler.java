@@ -101,7 +101,7 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
                     jsonResponse = this.searchRequestProcessor.processHTTPSearchRequest(
                                    apiVersionSpecificConverter, json, queue, httpRequest);
                 }
-            } catch (Exception ex) {
+            } catch (IllegalArgumentException ex) {
                 this.logger.error("Incorrect incoming request: unsupported API version: [{}]", apiVersion);
                 jsonResponse = new JSONObject();
                 jsonResponse.put(ApiConfiguration.REPLY_JSON_HTTP_STATUS,
@@ -110,6 +110,11 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
                                  "unsupported API version");
                 jsonResponse.put(ApiConfiguration.REPLY_JSON_SUPPORTEDVERSIONS,
                                  JSONArray.fromObject(this.apiFactory.getSupportedApiVersions()));
+                apiVersion = ApiConfiguration.LATEST_API_VERSION_STRING;
+            } catch (Exception ex) {
+                jsonResponse = new JSONObject();
+                jsonResponse.put(ApiConfiguration.REPLY_JSON_HTTP_STATUS,
+                                 ApiConfiguration.HTTP_SERVER_ERROR);
                 apiVersion = ApiConfiguration.LATEST_API_VERSION_STRING;
             }
 

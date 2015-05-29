@@ -42,7 +42,7 @@
   <hidden>false</hidden>
   <content>{{velocity wwiki="false"}}
 $response.setContentType('application/json')##
-##{{html wiki="false" clean="false"}}
+{{html wiki="false" clean="false"}}
 #set($result = {"resultsCount" : 0, "results" : []})
 #if (!$request.patientId)
   #set($result.error = "patient is not specified")

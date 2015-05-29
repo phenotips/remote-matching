@@ -42,7 +42,6 @@ import org.slf4j.Logger;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xpn.xwiki.objects.PropertyInterface;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -84,9 +83,6 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
                 configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_NAME);
 
         try {
-            // FIXME? Is there other way to access all the necessary patients/data?
-            // context.setUserReference(new DocumentReference(context.getMainXWiki(), "XWiki", "Admin"));
-
             JSONObject json = JSONObject.fromObject(stringJson);
 
             this.logger.debug("...parsing input...");

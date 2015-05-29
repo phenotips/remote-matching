@@ -206,7 +206,7 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
     }
 
     @Override
-    public List<PatientSimilarityView> getSimilarityResults(OutgoingMatchRequest request) throws ApiViolationException
+    public List<PatientSimilarityView> getSimilarityResults(OutgoingMatchRequest request)
     {
         List<PatientSimilarityView> resultsList = new LinkedList<PatientSimilarityView>();
 
@@ -257,7 +257,7 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
 
                 resultsList.add(similarityView);
             } catch (ApiViolationException ex) {
-                throw ex;
+                this.logger.error("Parsing incoming patients: one of the patients did not satisfy API requirements: [{}]", ex.getMessage());
             } catch (Exception ex) {
                 this.logger.error("Error parsing one of the patients from JSON: [{}]", ex);
             }

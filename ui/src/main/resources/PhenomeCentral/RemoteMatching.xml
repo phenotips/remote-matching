@@ -447,13 +447,11 @@ td input[type="text"]:focus {
     <guid>a7c27acb-19f4-4e13-9182-2579f52a70e0</guid>
     <property>
       <content>{{velocity}}
-      ## Can see similar cases for this patient
-      ##{{html clean=false}}&lt;div data-bind="" class="clear clinical-info similarity-info chapter"&gt;{{/html}}##
+    #if ($services.remoteMatching)
       === Remote Databases ===
       ##=======================================
-      ## Get list of remote configurations. Filter by mutuallyAccepted.
-      ## Then display list with checkboxes.
-      ## Custom javascript will take care of sending the request, and changing the page display.
+      ## Get list of remote configurations and
+      ## only display those which have a non-empty token and the checkbox to show in UI is checked
       ##=======================================
       #set ($preferenceDoc = $xwiki.getDocumentAsAuthor("XWiki.XWikiPreferences"))
       #set ($allRemotes = $preferenceDoc.getObjects("PhenomeCentral.RemoteMatchingServiceConfiguration"))
@@ -469,6 +467,7 @@ td input[type="text"]:focus {
           (% class="similarity-results-container" id="similar-remote-patients-container-$serverName" %)((({{html clean=false}}&lt;input type="hidden" name="service" value="$resultsURL"/&gt;&lt;input type="hidden" name="mmeServer" value="$serverName"/&gt;{{/html}})))##
         #end
       #end
+    #end
 {{/velocity}}</content>
     </property>
     <property>

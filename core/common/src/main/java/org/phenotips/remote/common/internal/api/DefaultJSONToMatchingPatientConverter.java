@@ -78,7 +78,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
 
             if ((features == null || features.isEmpty()) &&
                 (genes == null || genes.isEmpty())) {
-                this.logger.error("There are no features and no genes: violates API requirements");
+                this.logger.error("There are no features and no genes: violates API requirements (patient JSON: [{}])", patientJSON.toString());
                 throw new ApiViolationException("There are no features and no genes");
             }
 
@@ -161,6 +161,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
             if (json.has(ApiConfiguration.JSON_GENES)) {
                 Set<MatchingPatientGene> geneSet = new HashSet<MatchingPatientGene>();
                 JSONArray genesJson = (JSONArray) json.get(ApiConfiguration.JSON_GENES);
+
                 for (Object jsonGeneUncast : genesJson) {
                     JSONObject jsonGenomicFeature = (JSONObject) jsonGeneUncast;
                     JSONObject jsonGeneId = jsonGenomicFeature.optJSONObject(ApiConfiguration.JSON_GENES_GENE);
