@@ -34,8 +34,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.List;
 
+import java.util.regex.Pattern;
 
-//import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import net.sf.json.JSONArray;
@@ -54,10 +54,14 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
 
     private final String apiVersion;
 
+    private final Pattern hpoTerm; // not static: may be different from api version to api version
+
     public DefaultPatientToJSONConverter(String apiVersion, Logger logger)
     {
         this.apiVersion = apiVersion;
         this.logger     = logger;
+
+        this.hpoTerm = Pattern.compile("^HP:\\d+$");
     }
 
     public JSONObject convert(Patient patient, boolean removePrivateData)
@@ -95,9 +99,9 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         //       RestrictedSimilarityView (for returning replies to incoming requests), and the two
         //       behave differently
         if (removePrivateData) {
-            json.put(ApiConfiguration.JSON_FEATURES, DefaultPatientToJSONConverter.nonPersonalFeatures(patient));
+            json.put(ApiConfiguration.JSON_FEATURES, this.nonPersonalFeatures(patient));
         } else {
-            json.put(ApiConfiguration.JSON_FEATURES, DefaultPatientToJSONConverter.features(patient));
+            json.put(ApiConfiguration.JSON_FEATURES, this.features(patient));
         }
         JSONArray genes = removePrivateData ? DefaultPatientToJSONConverter.restrictedGenes(patient, includedTopGenes, logger) :
                                               DefaultPatientToJSONConverter.genes(patient, includedTopGenes, logger);
@@ -108,16 +112,20 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         return json;
     }
 
-    private static JSONArray features(Patient patient)
+    private JSONArray features(Patient patient)
     {
         JSONArray features = new JSONArray();
         for (Feature patientFeature : patient.getFeatures()) {
-            Map<String, ? extends FeatureMetadatum> metadata = patientFeature.getMetadata();
-
+            String featureId = patientFeature.getId();
+            if (featureId.isEmpty() || !this.hpoTerm.matcher(featureId).matches()) {
+                logger.error("Patient feature parser: ignoring term with non-HPO id [{}]", featureId);
+                continue;
+            }
             JSONObject featureJson = new JSONObject();
-            featureJson.put(ApiConfiguration.JSON_FEATURE_ID,       patientFeature.getId());
+            featureJson.put(ApiConfiguration.JSON_FEATURE_ID,       featureId);
             featureJson.put(ApiConfiguration.JSON_FEATURE_OBSERVED, observedStatusToJSONString(patientFeature));
 
+            Map<String, ? extends FeatureMetadatum> metadata = patientFeature.getMetadata();
             FeatureMetadatum ageOfOnset = metadata.get(ApplicationConfiguration.FEATURE_METADATA_AGEOFONSET);
             if (ageOfOnset != null) {
                 featureJson.put(ApiConfiguration.JSON_FEATURE_AGE_OF_ONSET, ageOfOnset.getId());
@@ -135,7 +143,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         return ApiConfiguration.JSON_FEATURE_OBSERVED_NO;
     }
 
-    private static JSONArray nonPersonalFeatures(Patient patient)
+    private JSONArray nonPersonalFeatures(Patient patient)
     {
         /* Example of a expected reply which should be parsed for features:
          *
@@ -216,6 +224,10 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         JSONArray features = new JSONArray();
 
         for (String featureId : featureCounts.keySet()) {
+            if (featureId.isEmpty() || !this.hpoTerm.matcher(featureId).matches()) {
+                logger.error("Patient feature parser: ignoring term with non-HPO id [{}]", featureId);
+                continue;
+            }
 
             JSONObject featureJson = new JSONObject();
             featureJson.put(ApiConfiguration.JSON_FEATURE_ID,         featureId);
