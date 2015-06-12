@@ -130,7 +130,6 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
             response.type(this.generateContentType(apiVersion));
             return response.build();
         } catch (Exception ex) {
-            Logger logger = LoggerFactory.getLogger(DefaultApiRequestHandler.class);
             logger.error("Could not process remote matching request: {}", ex.getMessage(), ex);
             return Response.status(ApiConfiguration.HTTP_SERVER_ERROR).build();
         }
