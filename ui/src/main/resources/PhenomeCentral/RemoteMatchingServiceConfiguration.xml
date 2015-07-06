@@ -53,7 +53,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>baseURL</name>
-      <number>3</number>
+      <number>4</number>
       <picker>0</picker>
       <prettyName>Base URL (include /)</prettyName>
       <size>30</size>
@@ -79,7 +79,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>remoteAuthToken</name>
-      <number>2</number>
+      <number>3</number>
       <picker>0</picker>
       <prettyName>Remote Authentication Token (for sending requests to the server)</prettyName>
       <size>30</size>
@@ -130,6 +130,20 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
     </includeInUI>
+    <limitAcceptedIPs>
+      <customDisplay/>
+      <defaultValue/>
+      <disabled>0</disabled>
+      <displayFormType>checkbox</displayFormType>
+      <displayType/>
+      <name>limitAcceptedIPs</name>
+      <number>6</number>
+      <prettyName>Only accept incoming requests form the listed IP</prettyName>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </limitAcceptedIPs>
   </class>
   <content/>
 </xwikidoc>

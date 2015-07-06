@@ -91,15 +91,22 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
 
                 this.logger.debug("Request version: <<{}>>", apiVersion);
 
-                if (!isRequestAuthorized(httpRequest, context)) {
+                String requestKey = httpRequest.getHeader(ApiConfiguration.HTTPHEADER_KEY_PARAMETER);
+                BaseObject remoteServerConfiguration = XWikiAdapter.
+                        getRemoteConfigurationGivenRemoteIPAndToken(httpRequest.getRemoteAddr(), requestKey, context);
+
+                if (remoteServerConfiguration == null) {
                     jsonResponse = new JSONObject();
                     jsonResponse.put(ApiConfiguration.REPLY_JSON_HTTP_STATUS, ApiConfiguration.HTTP_UNAUTHORIZED);
                     jsonResponse.put(ApiConfiguration.REPLY_JSON_ERROR_DESCRIPTION, "unauthorized server");
                 } else {
+                    String remoteServerId =
+                            remoteServerConfiguration.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_NAME);
+
                     // Using futures to queue tasks and to retrieve results.
                     ExecutorService queue = Executors.newSingleThreadExecutor();
                     jsonResponse = this.searchRequestProcessor.processHTTPSearchRequest(
-                                   apiVersionSpecificConverter, json, queue, httpRequest);
+                                   apiVersionSpecificConverter, json, queue, remoteServerId, httpRequest);
                 }
             } catch (IllegalArgumentException ex) {
                 this.logger.error("Incorrect incoming request: unsupported API version: [{}]", apiVersion);
@@ -130,26 +137,10 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
             response.type(this.generateContentType(apiVersion));
             return response.build();
         } catch (Exception ex) {
+            Logger logger = LoggerFactory.getLogger(DefaultApiRequestHandler.class);
             logger.error("Could not process remote matching request: {}", ex.getMessage(), ex);
             return Response.status(ApiConfiguration.HTTP_SERVER_ERROR).build();
         }
-    }
-
-    private boolean isRequestAuthorized(HttpServletRequest httpRequest, XWikiContext context)
-    {
-        BaseObject configurationObject =
-            XWikiAdapter.getRemoteConfigurationGivenRemoteIP(httpRequest.getRemoteAddr(), context);
-        if (configurationObject == null) {
-            return false; // this server is not listed as an accepted server, and has no key
-        }
-        String requestKey = httpRequest.getHeader(ApiConfiguration.HTTPHEADER_KEY_PARAMETER);
-        String configuredKey =
-            configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_LOCAL_KEY_FIELD);
-        logger.error("Remote server key validation: Key: {}, Configured: {}", requestKey, configuredKey);
-        if (requestKey == null || configuredKey == null || !requestKey.equals(configuredKey)) {
-            return false;
-        }
-        return true;
     }
 
     private String parseApiVersion(String apiHeader)

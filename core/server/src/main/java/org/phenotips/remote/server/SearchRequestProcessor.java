@@ -33,5 +33,5 @@ import net.sf.json.JSONObject;
 public interface SearchRequestProcessor
 {
     JSONObject processHTTPSearchRequest(ApiDataConverter apiVersionSpecificConverter, String json,
-        ExecutorService queue, HttpServletRequest httpRequest) throws Exception;
+        ExecutorService queue, String remoteServerId, HttpServletRequest httpRequest) throws Exception;
 }

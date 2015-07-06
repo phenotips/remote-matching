@@ -47,7 +47,8 @@ public interface ApplicationConfiguration
     String CONFIGDOC_REMOTE_KEY_FIELD = "remoteAuthToken";     // used for accessing remote server
     String CONFIGDOC_LOCAL_KEY_FIELD  = "localAuthToken";      // used for accessing this server
 
-    String CONFIGDOC_REMOTE_BASE_URL_FIELD = "baseURL";
+    String CONFIGDOC_REMOTE_BASE_URL_FIELD  = "baseURL";
+    String CONFIGDOC_REMOTE_SERVER_LIMIT_IP = "limitAcceptedIPs";
 
     /** Document which can be relied upon to exist at all times. Needed for the REST server to work */
     EntityReference ABSOLUTE_DOCUMENT_REFERENCE =

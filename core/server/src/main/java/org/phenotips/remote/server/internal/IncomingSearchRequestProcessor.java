@@ -70,17 +70,11 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
 
     @Override
     public JSONObject processHTTPSearchRequest(ApiDataConverter apiVersionSpecificConverter, String stringJson,
-        ExecutorService queue, HttpServletRequest httpRequest)
+        ExecutorService queue, String remoteServerId, HttpServletRequest httpRequest)
     {
         this.logger.debug("Received JSON search request: <<{}>>", stringJson);
 
         XWikiContext context = (XWikiContext) this.execution.getContext().getProperty("xwikicontext");
-        BaseObject configurationObject =
-            XWikiAdapter.getRemoteConfigurationGivenRemoteIP(httpRequest.getRemoteAddr(), context);
-
-        // Note: authorization hapens before this point, configurationObject should exist and be valid
-        String remoteServerId =
-                configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_NAME);
 
         try {
             JSONObject json = JSONObject.fromObject(stringJson);

@@ -26,6 +26,7 @@ import org.xwiki.model.reference.EntityReference;
 
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.UnknownHostException;
 import java.net.URL;
 import java.util.List;
 
@@ -102,37 +103,59 @@ public class XWikiAdapter
         }
     }
 
-    static public BaseObject getRemoteConfigurationGivenRemoteIP(String remoteIP, XWikiContext context)
+    static public BaseObject getRemoteConfigurationGivenRemoteIPAndToken(String remoteIP, String providedToken, XWikiContext context)
     {
         try {
             List<BaseObject> remotes = getListOfRemotes(context);
             if (remotes == null) {
                 return null;
             }
-
-            logger.debug("Request IP: {}", remoteIP);
-
             for (BaseObject remote : remotes) {
                 if (remote == null) {
                     continue;
                 }
-                try {
-                    String configuredURL =
-                        remote.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_BASE_URL_FIELD);
-                    String configuredIP = InetAddress.getByName(new URL(configuredURL).getHost()).getHostAddress();
-                    logger.debug("Next server: {},  ip: {}", configuredURL, configuredIP);
-                    if (StringUtils.equalsIgnoreCase(remoteIP, configuredIP)) {
+
+                String configuredToken = remote.getStringValue(ApplicationConfiguration.CONFIGDOC_LOCAL_KEY_FIELD);
+
+                String remoteServerName = remote.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_NAME);
+
+                boolean limitIPs = (remote.getIntValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_LIMIT_IP) == 1);
+
+                if (limitIPs) {
+                    String configuredURL = remote.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_BASE_URL_FIELD);
+                    try {
+                        String configuredIP = InetAddress.getByName(new URL(configuredURL).getHost()).getHostAddress();
+                        if (!StringUtils.equalsIgnoreCase(remoteIP, configuredIP)) {
+                            continue;
+                        }
+                    } catch (MalformedURLException ex) {
+                        logger.error("One of the configured remote matching servers has an incorrectly formatted: URL = [{}]: {}",
+                            configuredURL, ex.getMessage());
+                    } catch (UnknownHostException ex) {
+                        logger.error("One of the configured remote matching server URLs has no valid DNS record: URL = [{}]: {}",
+                                configuredURL, ex.getMessage());
+                    }
+
+                    if (!StringUtils.equalsIgnoreCase(providedToken, configuredToken)) {
+                        logger.error("Remote server token validation failed for server [{}]: Provided: {}, Configured: {}",
+                                remoteServerName, providedToken, configuredToken);
+                        return null;
+                    }
+                    logger.error("Remote server IP and token validated OK for server [{}] (remote IP {})",
+                            remoteServerName, remoteIP);
+                    return remote;
+                } else {
+                    if (StringUtils.equalsIgnoreCase(providedToken, configuredToken)) {
+                        logger.error("Remote server token validated OK for server [{}] (remote IP {})",
+                                remoteServerName, remoteIP);
                         return remote;
                     }
-                } catch (MalformedURLException ex) {
-                    logger.error("One of the configured remote matching servers has an incorrectly formatted URL=[{}]: {}",
-                        remote.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_BASE_URL_FIELD),
-                        ex.getMessage());
                 }
             }
         } catch (Exception ex) {
             logger.warn("Error while getting server info for IP [{}]: [{}] {}", remoteIP, ex.getMessage(), ex);
         }
+        logger.error("Remote server token validation failed for remote IP {}", remoteIP);
         return null;
     }
 
@@ -143,15 +166,11 @@ public class XWikiAdapter
             if (remotes == null) {
                 return null;
             }
-
-            logger.debug("Requested server label: {}", remoteName);
-
             for (BaseObject remote : remotes) {
                 if (remote == null) {
                     continue;
                 }
                 String configuredName = remote.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_NAME);
-                logger.debug("Next server: {}", configuredName);
                 if (StringUtils.equalsIgnoreCase(remoteName, configuredName)) {
                     return remote;
                 }
