@@ -19,7 +19,7 @@ package org.phenotips.remote.common.internal;
 
 import org.phenotips.data.Feature;
 import org.phenotips.data.FeatureMetadatum;
-import org.phenotips.data.internal.AbstractPhenoTipsOntologyProperty;
+import org.phenotips.data.internal.AbstractPhenoTipsVocabularyProperty;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +31,7 @@ import net.sf.json.JSONObject;
 /**
  * FIXME. Must extends the AbstractPhenoTipsOntologyProperty
  */
-public class RemotePatientFeature extends AbstractPhenoTipsOntologyProperty implements Feature
+public class RemotePatientFeature extends AbstractPhenoTipsVocabularyProperty implements Feature
 {
     private String observedStatus = "unknown";
 

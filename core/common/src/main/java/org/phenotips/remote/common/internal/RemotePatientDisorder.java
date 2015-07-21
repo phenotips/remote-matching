@@ -18,9 +18,9 @@
 package org.phenotips.remote.common.internal;
 
 import org.phenotips.data.Disorder;
-import org.phenotips.data.internal.AbstractPhenoTipsOntologyProperty;
+import org.phenotips.data.internal.AbstractPhenoTipsVocabularyProperty;
 
-public class RemotePatientDisorder extends AbstractPhenoTipsOntologyProperty implements Disorder
+public class RemotePatientDisorder extends AbstractPhenoTipsVocabularyProperty implements Disorder
 {
     private String value;
 
