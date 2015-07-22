@@ -169,7 +169,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                                       jsonGeneId.optString(ApiConfiguration.JSON_GENES_GENE_ID).toUpperCase() : "";
                     if (geneName.length() == 0) {
                         logger.error("Patient genomic features parser: gene has no id");
-                        continue;
+                        throw new ApiViolationException("A gene has no id");
                     }
                     // TODO: check if name is a valid gene symbol or ensembl id
                     MatchingPatientGene gene = new RemotePatientGene(geneName);
