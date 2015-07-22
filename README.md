@@ -5,9 +5,10 @@ Remote matching module [VERSION 1.0]
 
 #####Installation (some experience with PhenoTips/XWiki required):
  - Install Java 1.7 or higher.
- - Build PhenomeCentral.org.
- - Manunally "mvn install" in the ```standalone-patch``` directory to get all the jars in one place; copy all the separate jars from the ```standalone-patch/patch```.
- - Import the UI (```ui/```).
+ - Build [PhenomeCentral.org](https://github.com/phenotips/phenomecentral.org/).
+ - Build this project with `mvn install`
+ - Manually run `mvn install` in the `standalone-patch` directory to get all the jars in one place; copy all the separate jars from the ```standalone-patch/patch```.
+ - Import the UI (```ui/target/*.xar```).
  - Configure a remote server in the administration. To communicate with self, ```http://localhost:8080/rest/remoteMatcher/```.
 
 #####Folder structure
