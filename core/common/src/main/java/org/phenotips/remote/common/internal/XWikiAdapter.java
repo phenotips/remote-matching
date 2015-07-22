@@ -129,16 +129,16 @@ public class XWikiAdapter
                             continue;
                         }
                     } catch (MalformedURLException ex) {
-                        logger.error("One of the configured remote matching servers has an incorrectly formatted: URL = [{}]: {}",
+                        logger.error("One of the configured remote matching servers has an incorrectly formatted URL [{}]: {}",
                             configuredURL, ex.getMessage());
                     } catch (UnknownHostException ex) {
-                        logger.error("One of the configured remote matching server URLs has no valid DNS record: URL = [{}]: {}",
+                        logger.error("One of the configured remote matching server URLs has no valid DNS record [{}]: {}",
                                 configuredURL, ex.getMessage());
                     }
 
                     if (!StringUtils.equalsIgnoreCase(providedToken, configuredToken)) {
-                        logger.error("Remote server token validation failed for server [{}]: Provided: {}, Configured: {}",
-                                remoteServerName, providedToken, configuredToken);
+                        logger.error("Remote server token validation failed for server [{}]: Provided: {}",
+                                remoteServerName, providedToken);
                         return null;
                     }
                     logger.error("Remote server IP and token validated OK for server [{}] (remote IP {})",
