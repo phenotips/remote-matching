@@ -138,7 +138,7 @@
       <displayType/>
       <name>limitAcceptedIPs</name>
       <number>6</number>
-      <prettyName>Only accept incoming requests form the listed IP</prettyName>
+      <prettyName>Only accept incoming requests from the listed IP</prettyName>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
       <validationRegExp/>
