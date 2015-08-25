@@ -54,6 +54,7 @@ import org.phenotips.remote.common.internal.XWikiAdapter;
 import org.phenotips.remote.common.internal.api.DefaultJSONToMatchingPatientConverter;
 import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
 import org.phenotips.remote.hibernate.internal.DefaultOutgoingMatchRequest;
+import org.phenotips.vocabulary.Vocabulary;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
@@ -83,6 +84,10 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
     @Inject
     @Named("match")
     protected AccessLevel matchAccess;
+
+    @Inject
+    @Named("hgnc")
+    private Vocabulary ontologyService;
 
     @Inject
     PatientRepository patientRepository;
@@ -229,7 +234,7 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
         }
 
         DefaultJSONToMatchingPatientConverter patientConverter =
-                new DefaultJSONToMatchingPatientConverter(ApiConfiguration.LATEST_API_VERSION_STRING, logger);
+                new DefaultJSONToMatchingPatientConverter(ApiConfiguration.LATEST_API_VERSION_STRING, logger, ontologyService);
 
         //JSONArray processedResults = new JSONArray();
 

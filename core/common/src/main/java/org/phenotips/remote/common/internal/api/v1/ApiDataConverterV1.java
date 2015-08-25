@@ -34,6 +34,7 @@ import org.phenotips.remote.api.IncomingMatchRequest;
 import org.phenotips.remote.api.fromjson.IncomingJSONParser;
 import org.phenotips.remote.api.tojson.OutgoingJSONGenerator;
 import org.phenotips.remote.api.tojson.PatientToJSONConverter;
+import org.phenotips.vocabulary.Vocabulary;
 import org.xwiki.security.authorization.AuthorizationManager;
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.slf4j.Logger;
@@ -72,9 +73,14 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
     @Inject
     private DocumentAccessBridge bridge;
 
+    /** Used for converting gene ID between different id schemas */
+    @Inject
+    @Named("hgnc")
+    private Vocabulary ontologyService;
+
     public void initialize()
     {
-        incomingJSONParser = new DefaultIncomingJSONParser(getApiVersion(), logger);
+        incomingJSONParser = new DefaultIncomingJSONParser(getApiVersion(), logger, ontologyService);
 
         patientToJSONConverter = new DefaultPatientToJSONConverter(getApiVersion(), logger);
 

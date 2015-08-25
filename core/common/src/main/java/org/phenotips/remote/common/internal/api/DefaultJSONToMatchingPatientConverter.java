@@ -30,11 +30,16 @@ import org.phenotips.remote.common.internal.RemotePatientDisorder;
 import org.phenotips.remote.common.internal.RemotePatientFeature;
 import org.phenotips.remote.common.internal.RemotePatientGene;
 import org.phenotips.remote.common.internal.RemotePatientContactInfo;
+import org.phenotips.vocabulary.Vocabulary;
+import org.phenotips.vocabulary.VocabularyTerm;
 import org.slf4j.Logger;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -48,10 +53,13 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
     private final Pattern hpoTerm; // not static: may be different from api version to api version
     private final Pattern disorderTerm;
 
-    public DefaultJSONToMatchingPatientConverter(String apiVersion, Logger logger)
+    private final Vocabulary ontologyService;
+
+    public DefaultJSONToMatchingPatientConverter(String apiVersion, Logger logger, Vocabulary ontologyService)
     {
         this.apiVersion = apiVersion;
-        this.logger     = logger;
+        this.logger = logger;
+        this.ontologyService = ontologyService;
 
         this.hpoTerm      = Pattern.compile("^HP:\\d+$");
         this.disorderTerm = Pattern.compile("^MIM:\\d+$");  // TODO: Orphanet:#####
@@ -172,12 +180,29 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                         throw new ApiViolationException("A gene has no id");
                     }
                     // TODO: check if name is a valid gene symbol or ensembl id
-                    MatchingPatientGene gene = new RemotePatientGene(geneName);
+                    VocabularyTerm geneTerm = this.ontologyService.getTerm(geneName);
+                    if (geneTerm == null) {
+                        logger.error("Patient genomic features parser: gene id [{}] was not found in the vocabulary", geneName);
+                        throw new ApiViolationException("A gene has unsupported id [" + geneName + "]");
+                    }
+                    String symbol;
+                    try {
+                        symbol = (String)(geneTerm.get("symbol"));
+                        if (!geneName.equals(symbol)) {
+                            this.logger.debug("Converted incoming gene id [{}] to symbol [{}]", geneName, symbol);
+                        }
+                    } catch (Exception ex) {
+                        logger.error("Patient genomic features parser: can not obtain gene symbol for gene ID [{}]", geneName);
+                        throw new ApiViolationException("Internal error processing gene id [" + geneName + "]");
+                    }
+                    MatchingPatientGene gene = new RemotePatientGene(symbol);
                     geneSet.add(gene);
                     // TODO: variants
                 }
                 return geneSet;
             }
+        } catch (ApiViolationException ex) {
+            throw ex;
         } catch (Exception ex) {
             this.logger.error("Error converting genes: {}", ex);
         }
