@@ -159,7 +159,7 @@ public class XWikiAdapter
         return null;
     }
 
-    static public BaseObject getRemoteConfigurationGivenRemoteName(String remoteName, XWikiContext context)
+    static public BaseObject getRemoteConfigurationGivenRemoteServerID(String remoteServerID, XWikiContext context)
     {
         try {
             List<BaseObject> remotes = getListOfRemotes(context);
@@ -170,14 +170,14 @@ public class XWikiAdapter
                 if (remote == null) {
                     continue;
                 }
-                String configuredName = remote.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_NAME);
-                if (StringUtils.equalsIgnoreCase(remoteName, configuredName)) {
+                String configuredServerId = remote.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_ID);
+                if (StringUtils.equalsIgnoreCase(remoteServerID, configuredServerId)) {
                     return remote;
                 }
             }
         } catch (Exception ex) {
-            logger.error("Error while getting server info for serverName [{}]: [{}] {}",
-                         remoteName, ex.getMessage(), ex);
+            logger.error("Error while getting server info for serverID [{}]: [{}] {}",
+                         remoteServerID, ex.getMessage(), ex);
         }
         return null;
     }

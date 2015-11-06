@@ -106,7 +106,7 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
 
         XWikiContext context = this.getContext();
 
-        BaseObject configurationObject = XWikiAdapter.getRemoteConfigurationGivenRemoteName(remoteServerId, context);
+        BaseObject configurationObject = XWikiAdapter.getRemoteConfigurationGivenRemoteServerID(remoteServerId, context);
 
         if (configurationObject == null) {
             logger.error("Requested matching server is not configured: [{}]", remoteServerId);

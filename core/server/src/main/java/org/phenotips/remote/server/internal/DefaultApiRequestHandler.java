@@ -101,7 +101,7 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
                     jsonResponse.put(ApiConfiguration.REPLY_JSON_ERROR_DESCRIPTION, "unauthorized server");
                 } else {
                     String remoteServerId =
-                            remoteServerConfiguration.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_NAME);
+                            remoteServerConfiguration.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_ID);
 
                     // Using futures to queue tasks and to retrieve results.
                     ExecutorService queue = Executors.newSingleThreadExecutor();
