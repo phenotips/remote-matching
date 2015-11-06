@@ -95,16 +95,20 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
 
             List<PatientSimilarityView> filteredMatches = new LinkedList<PatientSimilarityView>();
 
+            // TODO: use consent manager instead of loading consent object
             for (PatientSimilarityView match : matches) {
                 XWikiDocument patientDoc = XWikiAdapter.getPatientDoc(match.getId(), context);
                 if (patientDoc != null) {
                     BaseObject consent = patientDoc.getXObject(ApplicationConfiguration.PATIENT_CONSENT_OBJECT_REFERENCE);
                     if (consent != null) {
                         String consentValue = consent.getStringValue("matching");
-                        logger.error("Consent value: [{}]", consentValue);
                         if (consentValue != null && consentValue.equals("1")) {
                             filteredMatches.add(match);
+                        } else {
+                            logger.error("Patient [{}] is excluded form match results because match consent is either unchecked or undefined", match.getId());
                         }
+                    } else {
+                        logger.error("Consent object not found for patient [{}]", match.getId());
                     }
                 }
             }

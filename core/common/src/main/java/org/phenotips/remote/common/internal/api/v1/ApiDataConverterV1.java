@@ -80,11 +80,11 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
 
     public void initialize()
     {
-        incomingJSONParser = new DefaultIncomingJSONParser(getApiVersion(), logger, ontologyService);
+        this.incomingJSONParser = new DefaultIncomingJSONParser(getApiVersion(), logger, ontologyService);
 
-        patientToJSONConverter = new DefaultPatientToJSONConverter(getApiVersion(), logger);
+        this.patientToJSONConverter = new DefaultPatientToJSONConverter(getApiVersion(), logger);
 
-        outgoingJSONGenerator = new DefaultOutgoingJSONGenerator(getApiVersion(), logger, patientRepository, access, bridge);
+        this.outgoingJSONGenerator = new DefaultOutgoingJSONGenerator(getApiVersion(), logger, patientRepository, access, bridge);
     }
 
     @Override

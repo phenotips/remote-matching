@@ -70,8 +70,7 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
     @Override
     public Response matchPost(String json) throws XWikiRestException
     {
-        this.logger.error("PROCESS MME MATCH REQUEDST");
-        this.logger.error("INPUT JSON: [{}]", json);
+        this.logger.error("MME MATCH REQUEST; INPUT JSON: [{}]", json);
 
         try {
             JSONObject jsonResponse;
