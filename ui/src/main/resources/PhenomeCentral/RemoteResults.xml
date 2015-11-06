@@ -74,12 +74,16 @@ $response.setContentType('application/json')##
 #set ($matches = $lastRequest.optJSONArray("matches"))
 #if (!$wasSent || !$matches)
   #if (!$wasSent)
+    #set($result.errorCode = $lastRequest.get("errorCode"))
     #set($result.error = "request was initiated but was not sent")
   #else
-    #set($result.error = "request was sent but the reply did not contain a valid list of matches")
+    #set($result.errorCode = $lastRequest.get("responseHTTPCode"))
+    #if ($result.errorCode == 401)
+        #set($result.error = "remote server rejected match request")
+    #else
+        #set($result.error = "request was sent but the reply did not contain a valid list of matches")
+    #end
   #end
-  #set($result.errorCode = $lastRequest.get("errorCode"))
-  #set($result.errorDetails = $lastRequest.get("errorDetails"))
   $jsontool.serialize($result)
   #break
 #end
