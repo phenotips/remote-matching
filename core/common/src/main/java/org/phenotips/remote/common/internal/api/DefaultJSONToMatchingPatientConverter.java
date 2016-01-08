@@ -41,8 +41,8 @@ import java.util.regex.Pattern;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPatientConverter
 {
@@ -211,8 +211,8 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
 
     private ContactInfo parseContactInfo(JSONObject json)
     {
-        JSONObject submitter = json.getJSONObject(ApiConfiguration.JSON_CONTACT);
-        if (submitter.isEmpty()) {
+        JSONObject submitter = json.optJSONObject(ApiConfiguration.JSON_CONTACT);
+        if (submitter == null || submitter.length() == 0) {
             return null;
         }
 

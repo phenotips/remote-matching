@@ -24,8 +24,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -243,7 +243,7 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
             this.logger.error("No key 'results' in reply JSON");
         }
 
-        for (int i = 0; i < matches.size(); ++i) {
+        for (int i = 0; i < matches.length(); ++i) {
             try {
                 JSONObject next = matches.getJSONObject(i);
                 JSONObject nextPatient = next.getJSONObject("patient");

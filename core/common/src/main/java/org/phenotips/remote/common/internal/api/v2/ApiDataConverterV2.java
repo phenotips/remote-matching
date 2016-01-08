@@ -28,7 +28,7 @@ import java.util.List;
 
 import javax.inject.Named;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 @Component
 @Named("api-data-converter-v2")

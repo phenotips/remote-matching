@@ -20,7 +20,7 @@ package org.phenotips.remote.hibernate.internal;
 //import org.phenotips.data.Patient;
 //import org.phenotips.data.similarity.PatientSimilarityView;
 //import org.phenotips.data.similarity.PatientSimilarityViewFactory;
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.OutgoingMatchRequest;
@@ -72,7 +72,7 @@ public class DefaultOutgoingMatchRequest extends AbstractSearchRequest implement
         if (this.getRequestJSON() == null) {
             return false;
         }
-        if (this.getRequestJSON().containsKey(ApiConfiguration.REPLY_JSON_ERROR_DESCRIPTION)) {
+        if (this.getRequestJSON().has(ApiConfiguration.REPLY_JSON_ERROR_DESCRIPTION)) {
             return false;
         }
         return true;

@@ -38,8 +38,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class DefaultPatientToJSONConverter implements PatientToJSONConverter
 {
@@ -91,7 +91,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         }
 
         JSONArray disorders = DefaultPatientToJSONConverter.disorders(patient);
-        if (!disorders.isEmpty()) {
+        if (disorders.length() > 0) {
             json.put(ApiConfiguration.JSON_DISORDERS, disorders);
         }
 
@@ -105,7 +105,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         }
         JSONArray genes = removePrivateData ? DefaultPatientToJSONConverter.restrictedGenes(patient, includedTopGenes, logger) :
                                               DefaultPatientToJSONConverter.genes(patient, includedTopGenes, logger);
-        if (!genes.isEmpty()) {
+        if (genes.length() > 0) {
             json.put(ApiConfiguration.JSON_GENES, genes);
         }
 
@@ -130,7 +130,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             if (ageOfOnset != null) {
                 featureJson.put(ApiConfiguration.JSON_FEATURE_AGE_OF_ONSET, ageOfOnset.getId());
             }
-            features.add(featureJson);
+            features.put(featureJson);
         }
         return features;
     }
@@ -196,7 +196,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
                 // FIXME: need to throw to indicate unsuported format:throw new Exception(ERROR_MESSAGE_UNSUPPORTED_JSON_FORMAT);
                 continue;
             }
-            for (int i = 0; i < featureMatches.size(); i++)
+            for (int i = 0; i < featureMatches.length(); i++)
             {
                 String matchFeature = featureMatches.getString(i);
 
@@ -238,7 +238,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             if (count > 1) {
                 featureJson.put(ApiConfiguration.JSON_FEATURE_COUNT, count);
             }
-            features.add(featureJson);
+            features.put(featureJson);
         }
 
         return features;
@@ -258,7 +258,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         for (Disorder disease : patient.getDisorders()) {
             JSONObject disorderJson = new JSONObject();
             disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, disease.getId());
-            disorders.add(disorderJson);
+            disorders.put(disorderJson);
         }
         return disorders;
     }
@@ -293,7 +293,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
                 JSONObject nextGene = new JSONObject();
                 nextGene.put(ApiConfiguration.JSON_GENES_GENE, gene);
 
-                genes.add(nextGene);
+                genes.put(nextGene);
             }
         } catch (Exception ex) {
             logger.error("Error getting genes for patient [{}]: [{}]", patient.getId(), ex);
@@ -315,7 +315,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
                 return genes;
             }
 
-            int useGenes = Math.min(orderedPatientGenes.size(), includedTopGenes);
+            int useGenes = Math.min(orderedPatientGenes.length(), includedTopGenes);
             for(int i = 0; i < useGenes; ++i){
                 JSONObject nextGeneInfo = orderedPatientGenes.optJSONObject(i);
                 // no check for null so that if nextGeneInfo is not a JSONObject an error will be logged
@@ -327,7 +327,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
                     JSONObject nextGene = new JSONObject();
                     nextGene.put(ApiConfiguration.JSON_GENES_GENE, gene);
 
-                    genes.add(nextGene);
+                    genes.put(nextGene);
                 }
           }
 

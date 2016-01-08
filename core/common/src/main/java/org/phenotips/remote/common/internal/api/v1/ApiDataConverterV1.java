@@ -19,8 +19,8 @@ package org.phenotips.remote.common.internal.api.v1;
 
 import java.util.List;
 
-import net.sf.json.JSONObject;
-import net.sf.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONArray;
 
 import org.xwiki.component.phase.Initializable;
 import org.phenotips.remote.common.internal.api.DefaultIncomingJSONParser;
@@ -146,7 +146,7 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
 
                 matchInfo.put(ApiConfiguration.REPLY_JSON_RESULTS_PATIENT,
                               this.patientToJSONConverter.convert(patient, true, DEFAULT_NUMBER_OF_GENES_IN_REPLIES));
-                matchList.add(matchInfo);
+                matchList.put(matchInfo);
             } catch (Exception ex) {
                 this.logger.error("Error converting patient to JSON: [{}]", ex);
             }

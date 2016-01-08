@@ -29,7 +29,7 @@ import org.xwiki.security.authorization.AuthorizationManager;
 import org.xwiki.security.authorization.Right;
 import org.xwiki.bridge.DocumentAccessBridge;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 public class DefaultOutgoingJSONGenerator implements OutgoingJSONGenerator
 {
@@ -72,9 +72,9 @@ public class DefaultOutgoingJSONGenerator implements OutgoingJSONGenerator
             JSONObject patientJson = this.patientToJSONConverter.convert(referencePatient, false, includedTopGenes);
 
             if ((!patientJson.has(ApiConfiguration.JSON_FEATURES) ||
-                  patientJson.getJSONArray(ApiConfiguration.JSON_FEATURES).isEmpty()) &&
+                  patientJson.getJSONArray(ApiConfiguration.JSON_FEATURES).length() == 0) &&
                 (!patientJson.has(ApiConfiguration.JSON_GENES) ||
-                  patientJson.getJSONArray(ApiConfiguration.JSON_GENES).isEmpty())) {
+                  patientJson.getJSONArray(ApiConfiguration.JSON_GENES).length() == 0)) {
                 this.logger.error("Can't send a query for a patient with no features and no genes");
                 throw new ApiViolationException("Can't send a query for a patient with no features and no genes");
             }

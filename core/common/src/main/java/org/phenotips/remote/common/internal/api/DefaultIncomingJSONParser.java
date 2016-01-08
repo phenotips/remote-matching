@@ -27,7 +27,7 @@ import org.phenotips.remote.hibernate.internal.DefaultIncomingMatchRequest;
 import org.phenotips.vocabulary.Vocabulary;
 import org.slf4j.Logger;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 /**
  * TODO
  * note: designed to be able to handle multiple (slightly different) versions of the Matching API

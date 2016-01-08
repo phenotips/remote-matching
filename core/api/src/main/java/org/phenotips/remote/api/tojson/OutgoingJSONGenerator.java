@@ -17,7 +17,7 @@
  */
 package org.phenotips.remote.api.tojson;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 import org.phenotips.remote.api.ApiViolationException;
 

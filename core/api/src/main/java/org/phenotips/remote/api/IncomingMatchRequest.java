@@ -17,9 +17,9 @@
  */
 package org.phenotips.remote.api;
 
-import net.sf.json.JSONObject;
-
 import org.phenotips.remote.api.MatchRequest;
+
+import org.json.JSONObject;
 
 public interface IncomingMatchRequest extends MatchRequest
 {

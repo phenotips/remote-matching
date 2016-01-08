@@ -46,8 +46,8 @@ import com.xpn.xwiki.objects.BaseObject;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.sf.json.JSONObject;
-import net.sf.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONException;
 
 /**
  * Takes a json string in the constructor and does all the request processing functionality.
@@ -77,7 +77,7 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
         XWikiContext context = (XWikiContext) this.execution.getContext().getProperty("xwikicontext");
 
         try {
-            JSONObject json = JSONObject.fromObject(stringJson);
+            JSONObject json = new JSONObject(stringJson);
 
             this.logger.debug("...parsing input...");
 

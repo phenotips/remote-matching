@@ -19,7 +19,7 @@ package org.phenotips.remote.api.fromjson;
 
 import org.phenotips.remote.api.MatchingPatient;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 public interface JSONToMatchingPatientConverter
 {

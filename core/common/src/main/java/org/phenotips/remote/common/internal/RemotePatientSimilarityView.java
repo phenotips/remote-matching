@@ -17,7 +17,7 @@
  */
 package org.phenotips.remote.common.internal;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 import org.phenotips.data.Patient;
 import org.phenotips.data.similarity.AccessType;
@@ -45,12 +45,12 @@ public class RemotePatientSimilarityView extends DefaultPatientSimilarityView
 
         ContactInfo contactInfo = ((MatchingPatient)match).getContactInfo();
         JSONObject contactJSON = new JSONObject();
-        contactJSON.element("href", contactInfo.getContactHREF());
-        contactJSON.element("institution", contactInfo.getContactInstitution());
-        contactJSON.element("name", contactInfo.getContactName());
+        contactJSON.put("href", contactInfo.getContactHREF());
+        contactJSON.put("institution", contactInfo.getContactInstitution());
+        contactJSON.put("name", contactInfo.getContactName());
 
-        result.element("contact", contactJSON);
-        result.element("remoteScore", this.remoteScore);
+        result.put("contact", contactJSON);
+        result.put("remoteScore", this.remoteScore);
 
         return result;
     }

@@ -22,10 +22,9 @@ import java.util.List;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.ApiViolationException;
 import org.phenotips.remote.api.OutgoingMatchRequest;
+
 import org.xwiki.component.annotation.Role;
 import org.xwiki.stability.Unstable;
-
-//import net.sf.json.JSONObject;
 
 /**
  * Sends requests to remote servers supporting the specifications.

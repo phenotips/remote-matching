@@ -19,7 +19,7 @@ package org.phenotips.remote.api;
 
 import java.util.Date;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 /**
  *

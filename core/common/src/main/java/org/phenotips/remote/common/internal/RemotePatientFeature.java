@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * FIXME. Must extends the AbstractPhenoTipsOntologyProperty
@@ -71,15 +71,15 @@ public class RemotePatientFeature extends AbstractPhenoTipsVocabularyProperty im
     public JSONObject toJSON()
     {
         JSONObject result = super.toJSON();
-        result.element("observed", getObserved());
-        result.element("type", "phenotype");
+        result.put("observed", getObserved());
+        result.put("type", "phenotype");
         // TODO: get ageOfOnset out of metadata
         if (!this.metadata.isEmpty()) {
             JSONArray metadataList = new JSONArray();
             for (FeatureMetadatum metadatum : this.metadata.values()) {
-                metadataList.add(metadatum.toJSON());
+                metadataList.put(metadatum.toJSON());
             }
-            result.element("metadata", metadataList);
+            result.put("metadata", metadataList);
         }
         return result;
     }

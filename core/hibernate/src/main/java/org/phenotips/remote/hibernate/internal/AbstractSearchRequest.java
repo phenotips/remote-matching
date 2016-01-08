@@ -17,11 +17,11 @@
  */
 package org.phenotips.remote.hibernate.internal;
 
-import net.sf.json.JSONException;
-import net.sf.json.JSONObject;
+import org.phenotips.remote.api.MatchRequest;
 
 import org.hibernate.annotations.Type;
-import org.phenotips.remote.api.MatchRequest;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.persistence.Basic;
 import javax.persistence.GeneratedValue;
@@ -98,7 +98,7 @@ public abstract class AbstractSearchRequest implements MatchRequest
     public JSONObject getRequestJSON()
     {
         try {
-            return JSONObject.fromObject(request);
+            return new JSONObject(request);
         } catch (JSONException ex) {
             return null;
         }
@@ -108,7 +108,7 @@ public abstract class AbstractSearchRequest implements MatchRequest
     public JSONObject getResponseJSON()
     {
         try {
-            return JSONObject.fromObject(response);
+            return new JSONObject(response);
         } catch (JSONException ex) {
             return null;
         }

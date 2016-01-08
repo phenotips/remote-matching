@@ -32,8 +32,8 @@ import javax.inject.Singleton;
 
 import org.slf4j.Logger;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Gives velocity access to the functions it needs to perform remote matching. There is a set of functions for sending
@@ -87,13 +87,13 @@ public class RemoteMatchingScriptService implements ScriptService
 
         JSONObject result = new JSONObject();
 
-        result.element("requestSent", request.wasSent());
+        result.put("requestSent", request.wasSent());
 
         if (request.gotValidReply()) {
-            result.element("remoteResponseReceived", true);
-            result.element("queryJSON", request.getRequestJSON());
-            result.element("responseJSON", request.getResponseJSON());
-            result.element("responseHTTPCode", request.getRequestStatusCode());
+            result.put("remoteResponseReceived", true);
+            result.put("queryJSON", request.getRequestJSON());
+            result.put("responseJSON", request.getResponseJSON());
+            result.put("responseHTTPCode", request.getRequestStatusCode());
 
             try {
                 JSONArray matches = new JSONArray();
@@ -101,17 +101,17 @@ public class RemoteMatchingScriptService implements ScriptService
                 List<PatientSimilarityView> parsedResults = this.matchingService.getSimilarityResults(request);
 
                 for (PatientSimilarityView patient : parsedResults) {
-                    matches.add(patient.toJSON());
+                    matches.put(patient.toJSON());
                 }
 
-                result.element("matches", matches);
+                result.put("matches", matches);
             } catch (Exception ex) {
-                result.element("errorDetails", ex.getMessage());
+                result.put("errorDetails", ex.getMessage());
             }
         } else {
-            result.element("remoteResponseReceived", false);
-            result.element("errorCode", request.getRequestStatusCode());
-            result.element("errorDetails", request.getRequestJSON());
+            result.put("remoteResponseReceived", false);
+            result.put("errorCode", request.getRequestStatusCode());
+            result.put("errorDetails", request.getRequestJSON());
         }
 
         return result;

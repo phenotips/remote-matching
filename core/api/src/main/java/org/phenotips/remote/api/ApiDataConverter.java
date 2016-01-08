@@ -24,9 +24,9 @@ import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.fromjson.IncomingJSONParser;
 import org.phenotips.remote.api.tojson.OutgoingJSONGenerator;
 
-import net.sf.json.JSONObject;
-
 import org.xwiki.component.annotation.Role;
+
+import org.json.JSONObject;
 
 /*
  * Converts matching requests and replies to and from JSON

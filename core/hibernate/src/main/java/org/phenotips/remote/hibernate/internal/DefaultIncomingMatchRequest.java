@@ -17,7 +17,7 @@
  */
 package org.phenotips.remote.hibernate.internal;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 import org.phenotips.remote.api.IncomingMatchRequest;
 import org.phenotips.remote.api.MatchingPatient;

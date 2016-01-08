@@ -46,8 +46,8 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Resource for listing full patient phenotype.
@@ -115,7 +115,7 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
                 jsonResponse.put(ApiConfiguration.REPLY_JSON_ERROR_DESCRIPTION,
                                  "unsupported API version");
                 jsonResponse.put(ApiConfiguration.REPLY_JSON_SUPPORTEDVERSIONS,
-                                 JSONArray.fromObject(this.apiFactory.getSupportedApiVersions()));
+                                 new JSONArray(this.apiFactory.getSupportedApiVersions()));
                 apiVersion = ApiConfiguration.LATEST_API_VERSION_STRING;
             } catch (Exception ex) {
                 jsonResponse = new JSONObject();

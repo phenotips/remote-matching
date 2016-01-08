@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 /**
  * Implementation of {@link org.phenotips.data.Patient} based on the data obtained from the remote server for use in the
