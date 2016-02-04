@@ -473,7 +473,7 @@ td input[type="text"]:focus {
       #set ($count = 0)
       #foreach ($config in $allRemotes)
         #if ($config.getProperty('remoteAuthToken').getValue() != "" &amp;&amp; $config.getProperty('includeInUI').getValue() == 1)
-          #if ($count > 0)
+          #if ($count &gt; 0)
             {{html clean=false}}&lt;hr&gt;{{/html}}##
           #end
           #set ($count = $count + 1)
