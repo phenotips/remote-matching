@@ -461,6 +461,11 @@ td input[type="text"]:focus {
     <guid>a7c27acb-19f4-4e13-9182-2579f52a70e0</guid>
     <property>
       <content>{{velocity}}
+    #set($privacyLevelObject = $doc.getObject('PhenoTips.PatientConsent'))
+    #set($consents = "$!{privacyLevelObject.getProperty('granted').value}")
+    #if ($consents &amp;&amp; !$consents.contains('matching'))
+      #break
+    #end
     #if ($services.remoteMatching)
       $xwiki.ssx.use('PhenomeCentral.RemoteMatching')##
       === Remote Databases ===
