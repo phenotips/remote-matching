@@ -90,7 +90,7 @@ $response.setContentType('application/json')##
 #set ($patient = $services.patients.getPatientById("$!{request.patientId}"))
 {
   "replyHTTPCode": $lastRequest.get("responseHTTPCode"),
-  "resultsCount" : $matches.size(),
+  "resultsCount" : $matches.length(),
   "results" : $matches,
   "query":  $patient.toJSON(),
   "request": $lastRequest.get("queryJSON"),
