@@ -101,8 +101,8 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
                 if (patientDoc != null) {
                     BaseObject consent = patientDoc.getXObject(ApplicationConfiguration.PATIENT_CONSENT_OBJECT_REFERENCE);
                     if (consent != null) {
-                        String consentValue = consent.getStringValue("matching");
-                        if (consentValue != null && consentValue.equals("1")) {
+                        List consentValue = consent.getListValue("granted");
+                        if (consentValue != null && consentValue.contains("matching")) {
                             filteredMatches.add(match);
                         } else {
                             logger.error("Patient [{}] is excluded form match results because match consent is either unchecked or undefined", match.getId());
