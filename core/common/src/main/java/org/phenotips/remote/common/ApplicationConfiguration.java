@@ -38,9 +38,6 @@ public interface ApplicationConfiguration
     EntityReference REMOTE_CONFIGURATION_OBJECT_REFERENCE =
         new EntityReference("RemoteMatchingServiceConfiguration", EntityType.DOCUMENT, PHENOMECENTRAL_SPACE);
 
-    EntityReference PATIENT_CONSENT_OBJECT_REFERENCE =
-        new EntityReference("PatientConsent", EntityType.DOCUMENT, Constants.CODE_SPACE_REFERENCE);
-
     // XWiki remote request/config
     String CONFIGDOC_REMOTE_SERVER_NAME = "humanReadableName";
     String CONFIGDOC_REMOTE_SERVER_ID   = "serverId";

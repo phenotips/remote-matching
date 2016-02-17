@@ -26,6 +26,7 @@ import org.phenotips.remote.common.internal.XWikiAdapter;
 import org.phenotips.remote.server.SearchRequestProcessor;
 import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
 import org.phenotips.remote.hibernate.internal.DefaultIncomingMatchRequest;
+import org.phenotips.data.ConsentManager;
 import org.phenotips.data.similarity.PatientSimilarityView;
 
 import java.util.concurrent.ExecutorService;
@@ -68,6 +69,9 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
     @Inject
     private RemoteMatchingStorageManager requestStorageManager;
 
+    @Inject
+    private ConsentManager consentManager;
+
     @Override
     public JSONObject processHTTPSearchRequest(ApiDataConverter apiVersionSpecificConverter, String stringJson,
         ExecutorService queue, String remoteServerId, HttpServletRequest httpRequest)
@@ -99,16 +103,10 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
             for (PatientSimilarityView match : matches) {
                 XWikiDocument patientDoc = XWikiAdapter.getPatientDoc(match.getId(), context);
                 if (patientDoc != null) {
-                    BaseObject consent = patientDoc.getXObject(ApplicationConfiguration.PATIENT_CONSENT_OBJECT_REFERENCE);
-                    if (consent != null) {
-                        String consentValue = consent.getStringValue("matching");
-                        if (consentValue != null && consentValue.equals("1")) {
-                            filteredMatches.add(match);
-                        } else {
-                            logger.error("Patient [{}] is excluded form match results because match consent is either unchecked or undefined", match.getId());
-                        }
+                    if (consentManager.hasConsent(match, "matching")) {
+                        filteredMatches.add(match);
                     } else {
-                        logger.error("Consent object not found for patient [{}]", match.getId());
+                        logger.error("Patient [{}] is excluded form match results because match consent is unchecked", match.getId());
                     }
                 }
             }
