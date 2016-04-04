@@ -176,7 +176,7 @@ xwiki.authentication.loginsubmitpage=/bin/loginsubmit/PhenomeCentral/login
                 <xwikiPropertiesAdditionalProperties>
 model.reference.default.space=data
 extension.repositories=maven-xwiki:maven:http://nexus.xwiki.org/nexus/content/groups/public
-extension.repositories=maven-phenotips:maven:http://nexus.phenotips.org/nexus/content/repositories/releases/
+extension.repositories=maven-phenotips:maven:https://nexus.phenotips.org/nexus/content/repositories/releases/
 extension.repositories=extensions.xwiki.org:xwiki:http://extensions.xwiki.org/xwiki/rest/
 solr.type=remote
 solr.remote.url=http://localhost:8080/solr/xwiki/
