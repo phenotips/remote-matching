@@ -55,8 +55,8 @@ $response.setContentType('application/json')##
   #break
 #end
 #if ("$!{request.sendNewRequest}" == "true")
-  ## REVIEW MAGIC NUMBER: send up to 5 top genes according to exomiser in outgoing requests
-  #set ($lastRequest = $services.remoteMatching.sendRequest("$!{request.patientId}", "$!{request.server}", 5))
+  ## REVIEW MAGIC NUMBER: don't send any top Exomiser genes in outgoing requests
+  #set ($lastRequest = $services.remoteMatching.sendRequest("$!{request.patientId}", "$!{request.server}", 0))
 #else
   #set ($lastRequest = $services.remoteMatching.getLastRequest("$!{request.patientId}", "$!{request.server}"))
 #end
