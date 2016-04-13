@@ -21,16 +21,18 @@ import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.ApiDataConverter;
 import org.phenotips.remote.common.ApiFactory;
 import org.phenotips.remote.common.ApplicationConfiguration;
+import org.phenotips.remote.common.RemoteConfigurationManager;
 import org.phenotips.remote.common.internal.XWikiAdapter;
 import org.phenotips.remote.server.ApiRequestHandler;
 import org.phenotips.remote.server.SearchRequestProcessor;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.rest.XWikiResource;
 import org.xwiki.rest.XWikiRestException;
 
-import java.util.regex.Pattern;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -38,6 +40,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,9 +49,6 @@ import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 /**
  * Resource for listing full patient phenotype.
@@ -66,6 +67,9 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
 
     @Inject
     ApiFactory apiFactory;
+
+    @Inject
+    private RemoteConfigurationManager remoteConfigurationManager;
 
     @Override
     public Response matchPost(String json) throws XWikiRestException
@@ -91,7 +95,7 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
                 this.logger.debug("Request version: <<{}>>", apiVersion);
 
                 String requestKey = httpRequest.getHeader(ApiConfiguration.HTTPHEADER_KEY_PARAMETER);
-                BaseObject remoteServerConfiguration = XWikiAdapter.
+                BaseObject remoteServerConfiguration = this.remoteConfigurationManager.
                         getRemoteConfigurationGivenRemoteIPAndToken(httpRequest.getRemoteAddr(), requestKey, context);
 
                 if (remoteServerConfiguration == null) {
