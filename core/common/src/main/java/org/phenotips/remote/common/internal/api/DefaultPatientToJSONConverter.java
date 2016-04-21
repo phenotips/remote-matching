@@ -173,11 +173,16 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
          *  all non-observed features will be ignored.
          */
 
+        JSONArray features = new JSONArray();
+
+        JSONArray similarityFeaturesJson = patient.toJSON().optJSONArray(PATIENTMATCHING_JSON_FEATUREMATCHES);
+        if (similarityFeaturesJson == null) {
+            return features;
+        }
+
         Map<String, Integer> featureCounts      = new HashMap<String, Integer>();
         Set<String>          obfuscatedFeatures = new HashSet<String>();
         Set<String>          notMatchedFeatures = new HashSet<String>();
-
-        JSONArray similarityFeaturesJson = patient.toJSON().getJSONArray(PATIENTMATCHING_JSON_FEATUREMATCHES);
 
         for (Object featureMatchUC : similarityFeaturesJson) {
             JSONObject featureMatch = (JSONObject) featureMatchUC;
@@ -221,7 +226,6 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
 
         // convert featuresWithCounts to features
         // note: for now only observed features are supported, so "observed" is hardcoded to "yes" for now
-        JSONArray features = new JSONArray();
 
         for (String featureId : featureCounts.keySet()) {
             if (featureId.isEmpty() || !this.hpoTerm.matcher(featureId).matches()) {
