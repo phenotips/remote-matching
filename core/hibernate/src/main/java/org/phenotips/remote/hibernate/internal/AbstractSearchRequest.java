@@ -109,7 +109,7 @@ public abstract class AbstractSearchRequest implements MatchRequest
     {
         try {
             return new JSONObject(response);
-        } catch (JSONException ex) {
+        } catch (JSONException | NullPointerException ex) {
             return null;
         }
     }
