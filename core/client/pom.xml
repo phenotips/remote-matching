@@ -84,6 +84,11 @@
       <version>${patientNetwork.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.phenotips</groupId>
+      <artifactId>matching-notification-api</artifactId>
+      <version>${patientNetwork.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
     </dependency>
