@@ -25,6 +25,7 @@ import org.phenotips.data.permissions.Visibility;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.matchingnotification.finder.MatchFinder;
 import org.phenotips.matchingnotification.match.PatientMatch;
+import org.phenotips.matchingnotification.match.internal.DefaultPatientMatch;
 import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.client.RemoteMatchingService;
 import org.phenotips.remote.common.ApplicationConfiguration;
@@ -116,44 +117,57 @@ public class RemoteMatchFinder implements MatchFinder
             this.logger.warn("No remote servers were found for remote matching.");
         }
 
+        List<PatientMatch> patientMatches = new LinkedList<>();
+
         for (String patientId : patientIds) {
             for (String remoteId : remoteIds) {
-
-                this.sendAndProcessRequest(patientId, remoteId);
-
+                List<PatientMatch> currentMatches = this.sendAndProcessRequest(patientId, remoteId);
+                patientMatches.addAll(currentMatches);
             }
         }
 
-        return null;
+        return patientMatches;
     }
 
-    private void sendAndProcessRequest(String patientId, String remoteId)
+    private List<PatientMatch> sendAndProcessRequest(String patientId, String remoteId)
     {
+        List<PatientMatch> patientMatchList = new ArrayList<>();
+
+        this.logger.debug("Processing request for patientId {}, remoteId {}.", patientId, remoteId);
         OutgoingMatchRequest request =
             this.matchingService.sendRequest(patientId, remoteId, ADD_TOP_N_GENES_PARAMETER);
 
-        this.logger.debug("Processing request for patientId {}, remoteId {}.", patientId, remoteId);
+        if (!checkRequestValidity(request, patientId, remoteId)) {
+            return patientMatchList;
+        }
+
+        List<PatientSimilarityView> parsedResults = this.matchingService.getSimilarityResults(request);
+        for (PatientSimilarityView result : parsedResults) {
+            PatientMatch match = new DefaultPatientMatch(result);
+            patientMatchList.add(match);
+        }
+        return patientMatchList;
+    }
+
+    private boolean checkRequestValidity(OutgoingMatchRequest request, String patientId, String remoteId)
+    {
         if (request == null) {
-            return;
+            return false;
         }
 
         if (!request.wasSent()) {
             this.logger.error("Request for patientId {}, remoteId {} was not sent.", patientId, remoteId);
-            return;
+            return false;
         }
 
         if (!request.gotValidReply()) {
             this.logger.error("Request for patientId {}, remoteId {} returned with status code: {}",
                 patientId, remoteId, request.getRequestStatusCode());
             this.logger.error("and error details {}.", request.getRequestJSON());
-            return;
+            return false;
         }
 
-        List<PatientSimilarityView> parsedResults = this.matchingService.getSimilarityResults(request);
-        List<PatientMatch> patientMatchList = new ArrayList<>(parsedResults.size());
-        for (PatientSimilarityView result : parsedResults) {
-            //TODO create a patient match
-        }
+        return true;
     }
 
     private List<String> getRemotesList()
