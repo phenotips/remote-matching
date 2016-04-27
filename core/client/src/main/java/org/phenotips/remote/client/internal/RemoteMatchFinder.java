@@ -98,7 +98,8 @@ public class RemoteMatchFinder implements MatchFinder
     private Logger logger;
 
     @Override
-    public int getPriority() {
+    public int getPriority()
+    {
         return 100;
     }
 
@@ -193,8 +194,8 @@ public class RemoteMatchFinder implements MatchFinder
     /*
      * Returns a list of patients with visibility>=matchable and consent for remote matching.
      */
-    private List<String> getPatientsList() {
-
+    private List<String> getPatientsList()
+    {
         List<String> potentialPatientIds = null;
         List<String> patientIds = new LinkedList<>();
         try {
@@ -221,5 +222,4 @@ public class RemoteMatchFinder implements MatchFinder
 
         return patientIds;
     }
-
 }
