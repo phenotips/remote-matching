@@ -144,7 +144,7 @@ public class RemoteMatchFinder implements MatchFinder
 
         List<PatientSimilarityView> parsedResults = this.matchingService.getSimilarityResults(request);
         for (PatientSimilarityView result : parsedResults) {
-            PatientMatch match = new DefaultPatientMatch(result);
+            PatientMatch match = new DefaultPatientMatch(result, remoteId, true);
             patientMatchList.add(match);
         }
         return patientMatchList;
