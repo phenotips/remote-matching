@@ -81,13 +81,9 @@ public class RemoteMatchFinder implements MatchFinder
     @Override
     public List<PatientMatch> findMatches(Patient patient)
     {
-        List<String> remoteIds = this.getRemotesList();
-        if (remoteIds == null) {
-            this.logger.warn("No remote servers were found for remote matching.");
-        }
-
         List<PatientMatch> patientMatches = new LinkedList<>();
 
+        List<String> remoteIds = this.getRemotesList();
         for (String remoteId : remoteIds) {
             List<PatientMatch> currentMatches = this.sendAndProcessRequest(patient.getId(), remoteId);
             patientMatches.addAll(currentMatches);
@@ -141,6 +137,7 @@ public class RemoteMatchFinder implements MatchFinder
     {
         XWikiContext context = this.contextProvider.get();
         List<BaseObject> potentialRemotes = this.RemoteConfigurationManager.getListOfRemotes(context);
+
         List<String> remoteIdsList = new LinkedList<>();
         for (BaseObject remote : potentialRemotes) {
             if (remote == null) {
