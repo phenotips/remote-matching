@@ -21,7 +21,6 @@ import org.phenotips.data.Patient;
 import org.phenotips.data.PatientRepository;
 import org.phenotips.data.permissions.AccessLevel;
 import org.phenotips.data.similarity.AccessType;
-import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.data.similarity.PatientSimilarityViewFactory;
 import org.phenotips.data.similarity.internal.DefaultAccessType;
 import org.phenotips.remote.api.ApiConfiguration;
@@ -218,9 +217,9 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
     }
 
     @Override
-    public List<PatientSimilarityView> getSimilarityResults(OutgoingMatchRequest request)
+    public List<RemotePatientSimilarityView> getSimilarityResults(OutgoingMatchRequest request)
     {
-        List<PatientSimilarityView> resultsList = new LinkedList<PatientSimilarityView>();
+        List<RemotePatientSimilarityView> resultsList = new LinkedList<>();
 
         if (request == null) {
             return resultsList;
