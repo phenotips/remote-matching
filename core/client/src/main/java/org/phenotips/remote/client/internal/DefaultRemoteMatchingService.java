@@ -247,6 +247,8 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
             this.logger.error("No key 'results' in reply JSON");
         }
 
+        String remoteServerId = request.getRemoteServerId();
+
         for (int i = 0; i < matches.length(); ++i) {
             try {
                 JSONObject next = matches.getJSONObject(i);
@@ -262,7 +264,8 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
                     throw new ApiViolationException("Invalid score in JSON for patient [" + modelRemotePatient.getId() + "]");
                 }
 
-                PatientSimilarityView similarityView = new RemotePatientSimilarityView(modelRemotePatient, reference, access, patientScore);
+                RemotePatientSimilarityView similarityView = new RemotePatientSimilarityView(modelRemotePatient,
+                    reference, access, remoteServerId, patientScore);
 
                 resultsList.add(similarityView);
             } catch (ApiViolationException ex) {
