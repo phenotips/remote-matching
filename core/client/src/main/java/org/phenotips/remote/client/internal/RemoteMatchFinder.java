@@ -81,6 +81,8 @@ public class RemoteMatchFinder implements MatchFinder
     @Override
     public List<PatientMatch> findMatches(Patient patient)
     {
+        this.logger.debug("Finding remote matches for patient {}.", patient.getId());
+
         List<PatientMatch> patientMatches = new LinkedList<>();
 
         List<String> remoteIds = this.getRemotesList();
