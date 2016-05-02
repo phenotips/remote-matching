@@ -17,23 +17,24 @@
  */
 package org.phenotips.remote.client.script;
 
-import java.util.List;
-
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.client.RemoteMatchingService;
+import org.phenotips.remote.common.internal.RemotePatientSimilarityView;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.script.service.ScriptService;
 import org.xwiki.stability.Unstable;
+
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.slf4j.Logger;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
 
 /**
  * Gives velocity access to the functions it needs to perform remote matching. There is a set of functions for sending
@@ -49,7 +50,7 @@ public class RemoteMatchingScriptService implements ScriptService
     private Logger logger;
 
     @Inject
-    RemoteMatchingService matchingService;
+    private RemoteMatchingService matchingService;
 
     public JSONObject sendRequest(String patientId, String remoteServerId)
     {
@@ -98,7 +99,7 @@ public class RemoteMatchingScriptService implements ScriptService
             try {
                 JSONArray matches = new JSONArray();
 
-                List<PatientSimilarityView> parsedResults = this.matchingService.getSimilarityResults(request);
+                List<RemotePatientSimilarityView> parsedResults = this.matchingService.getSimilarityResults(request);
 
                 for (PatientSimilarityView patient : parsedResults) {
                     matches.put(patient.toJSON());

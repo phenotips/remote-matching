@@ -18,7 +18,6 @@
 package org.phenotips.remote.client.internal;
 
 import org.phenotips.data.Patient;
-import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.matchingnotification.finder.MatchFinder;
 import org.phenotips.matchingnotification.match.PatientMatch;
 import org.phenotips.matchingnotification.match.internal.DefaultPatientMatch;
@@ -26,6 +25,7 @@ import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.client.RemoteMatchingService;
 import org.phenotips.remote.common.ApplicationConfiguration;
 import org.phenotips.remote.common.RemoteConfigurationManager;
+import org.phenotips.remote.common.internal.RemotePatientSimilarityView;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReferenceResolver;
@@ -104,8 +104,8 @@ public class RemoteMatchFinder implements MatchFinder
             return patientMatchList;
         }
 
-        List<PatientSimilarityView> parsedResults = this.matchingService.getSimilarityResults(request);
-        for (PatientSimilarityView result : parsedResults) {
+        List<RemotePatientSimilarityView> parsedResults = this.matchingService.getSimilarityResults(request);
+        for (RemotePatientSimilarityView result : parsedResults) {
             PatientMatch match = new DefaultPatientMatch(result, remoteId, true);
             patientMatchList.add(match);
         }

@@ -17,14 +17,13 @@
  */
 package org.phenotips.remote.client;
 
-import java.util.List;
-
-import org.phenotips.data.similarity.PatientSimilarityView;
-import org.phenotips.remote.api.ApiViolationException;
 import org.phenotips.remote.api.OutgoingMatchRequest;
+import org.phenotips.remote.common.internal.RemotePatientSimilarityView;
 
 import org.xwiki.component.annotation.Role;
 import org.xwiki.stability.Unstable;
+
+import java.util.List;
 
 /**
  * Sends requests to remote servers supporting the specifications.
@@ -39,5 +38,5 @@ public interface RemoteMatchingService
 
     public OutgoingMatchRequest getLastRequestSent(String patientId, String remoteServerId);
 
-    public List<PatientSimilarityView> getSimilarityResults(OutgoingMatchRequest request);
+    public List<RemotePatientSimilarityView> getSimilarityResults(OutgoingMatchRequest request);
 }
