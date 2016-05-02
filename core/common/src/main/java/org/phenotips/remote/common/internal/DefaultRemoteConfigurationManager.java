@@ -26,6 +26,7 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -50,19 +51,22 @@ public class DefaultRemoteConfigurationManager implements RemoteConfigurationMan
     @Override
     public List<BaseObject> getListOfRemotes(XWikiContext context)
     {
+        List<BaseObject> remotes = null;
         try {
             XWikiDocument prefsDoc =
                     context.getWiki().getDocument(ApplicationConfiguration.XWIKI_PREFERENCES_DOCUMENT_REFERENCE, context);
 
-            List<BaseObject> remotes =
-                    prefsDoc.getXObjects(ApplicationConfiguration.REMOTE_CONFIGURATION_OBJECT_REFERENCE);
-
-            return remotes;
+            remotes = prefsDoc.getXObjects(ApplicationConfiguration.REMOTE_CONFIGURATION_OBJECT_REFERENCE);
         } catch (Exception ex) {
             logger.error("Remote matching admin section is absent or empty - can not process request: [{}] {}",
                     ex.getMessage(), ex);
         }
-        return null;
+
+        if (remotes == null) {
+            return Collections.emptyList();
+        } else {
+            return remotes;
+        }
     }
 
     @Override
