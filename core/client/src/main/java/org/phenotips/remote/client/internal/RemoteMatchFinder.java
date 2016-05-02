@@ -17,11 +17,7 @@
  */
 package org.phenotips.remote.client.internal;
 
-import org.phenotips.data.ConsentManager;
 import org.phenotips.data.Patient;
-import org.phenotips.data.PatientRepository;
-import org.phenotips.data.permissions.PermissionsManager;
-import org.phenotips.data.permissions.Visibility;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.matchingnotification.finder.MatchFinder;
 import org.phenotips.matchingnotification.match.PatientMatch;
@@ -34,9 +30,6 @@ import org.phenotips.remote.common.RemoteConfigurationManager;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
-import org.xwiki.query.Query;
-import org.xwiki.query.QueryException;
-import org.xwiki.query.QueryManager;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -63,8 +56,6 @@ public class RemoteMatchFinder implements MatchFinder
 {
     private static final int ADD_TOP_N_GENES_PARAMETER = 0;
 
-    private static final String REMOTE_MATCHING_CONSENT_ID = "matching";
-
     @Inject
     private Provider<XWikiContext> contextProvider;
 
@@ -74,22 +65,6 @@ public class RemoteMatchFinder implements MatchFinder
 
     @Inject
     private RemoteConfigurationManager RemoteConfigurationManager;
-
-    @Inject
-    private PatientRepository patientRepository;
-
-    @Inject
-    private ConsentManager consentManager;
-
-    @Inject
-    private PermissionsManager permissionsManager;
-
-    @Inject
-    private QueryManager qm;
-
-    @Inject
-    @Named("matchable")
-    private Visibility matchableVisibility;
 
     @Inject
     private RemoteMatchingService matchingService;
@@ -104,27 +79,18 @@ public class RemoteMatchFinder implements MatchFinder
     }
 
     @Override
-    public List<PatientMatch> findMatches()
+    public List<PatientMatch> findMatches(Patient patient)
     {
-        List<String> patientIds = this.getPatientsList();
         List<String> remoteIds = this.getRemotesList();
-
-        if (patientIds == null) {
-            this.logger.warn("No patients found for remote matching.");
-            return null;
-        }
-
         if (remoteIds == null) {
             this.logger.warn("No remote servers were found for remote matching.");
         }
 
         List<PatientMatch> patientMatches = new LinkedList<>();
 
-        for (String patientId : patientIds) {
-            for (String remoteId : remoteIds) {
-                List<PatientMatch> currentMatches = this.sendAndProcessRequest(patientId, remoteId);
-                patientMatches.addAll(currentMatches);
-            }
+        for (String remoteId : remoteIds) {
+            List<PatientMatch> currentMatches = this.sendAndProcessRequest(patient.getId(), remoteId);
+            patientMatches.addAll(currentMatches);
         }
 
         return patientMatches;
@@ -189,37 +155,5 @@ public class RemoteMatchFinder implements MatchFinder
         }
 
         return remoteIdsList;
-    }
-
-    /*
-     * Returns a list of patients with visibility>=matchable and consent for remote matching.
-     */
-    private List<String> getPatientsList()
-    {
-        List<String> potentialPatientIds = null;
-        List<String> patientIds = new LinkedList<>();
-        try {
-            Query q = this.qm.createQuery(
-                "select doc.name "
-                    + "from Document doc, "
-                    + "doc.object(PhenoTips.PatientClass) as patient "
-                    + "where patient.identifier is not null order by patient.identifier desc", Query.XWQL);
-            potentialPatientIds = q.execute();
-        } catch (QueryException e) {
-            this.logger.error("Error retrieving a list of patients for matching: {}", e);
-            return null;
-        }
-
-        for (String patientId : potentialPatientIds) {
-            Patient patient = this.patientRepository.getPatientById(patientId);
-            Visibility patientVisibility = this.permissionsManager.getPatientAccess(patient).getVisibility();
-
-            if (this.consentManager.hasConsent(patient, REMOTE_MATCHING_CONSENT_ID)
-                && patientVisibility.compareTo(matchableVisibility) >= 0) {
-                patientIds.add(patientId);
-            }
-        }
-
-        return patientIds;
     }
 }
