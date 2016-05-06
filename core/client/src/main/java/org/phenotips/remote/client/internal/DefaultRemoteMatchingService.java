@@ -267,7 +267,7 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
                 }
 
                 RemotePatientSimilarityView similarityView = new RemotePatientSimilarityView(modelRemotePatient,
-                    reference, access, remoteServerId, patientScore);
+                    reference, access, patientScore);
 
                 resultsList.add(similarityView);
             } catch (ApiViolationException ex) {
