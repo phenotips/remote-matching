@@ -30,16 +30,11 @@ public class RemotePatientSimilarityView extends DefaultPatientSimilarityView
     /** Score as reposted by the remote server. */
     private Double remoteScore;
 
-    /** id of remote server where the match is found */
-    private String remoteServerId;
-
-    public RemotePatientSimilarityView(MatchingPatient match, Patient reference, AccessType access,
-        String remoteServerId, Double remoteScore)
+    public RemotePatientSimilarityView(MatchingPatient match, Patient reference, AccessType access, Double remoteScore)
             throws IllegalArgumentException
     {
         super(match, reference, access);
 
-        this.remoteServerId = remoteServerId;
         this.remoteScore = remoteScore;
     }
 
@@ -58,10 +53,5 @@ public class RemotePatientSimilarityView extends DefaultPatientSimilarityView
         result.put("remoteScore", this.remoteScore);
 
         return result;
-    }
-
-    public String getRemoteServerId()
-    {
-        return this.remoteServerId;
     }
 }
