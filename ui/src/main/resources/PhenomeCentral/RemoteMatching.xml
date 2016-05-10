@@ -475,7 +475,7 @@ td input[type="text"]:focus {
       #set ($allRemotes = $preferenceDoc.getObjects("PhenomeCentral.RemoteMatchingServiceConfiguration"))
       #set ($count = 0)
       #foreach ($config in $allRemotes)
-        #if ($config.getProperty('remoteAuthToken').getValue() != "" &amp;&amp; $config.getProperty('includeInUI').getValue() == 1)
+        #if ($config.getProperty('remoteAuthToken').getValue() != "" &amp;&amp; $config.getProperty('serverId').getValue() != "" &amp;&amp; $config.getProperty('includeInUI').getValue() == 1)
           #if ($count &gt; 0)
             {{html clean=false}}&lt;hr&gt;{{/html}}##
           #end
