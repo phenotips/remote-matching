@@ -118,6 +118,9 @@ public class XWikiAdapter
                 String configuredToken = remote.getStringValue(ApplicationConfiguration.CONFIGDOC_LOCAL_KEY_FIELD);
 
                 String remoteServerName = remote.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_NAME);
+                if (StringUtils.isEmpty(remoteServerName)) {
+                    remoteServerName = remote.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_ID);
+                }
 
                 boolean limitIPs = (remote.getIntValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_LIMIT_IP) == 1);
 

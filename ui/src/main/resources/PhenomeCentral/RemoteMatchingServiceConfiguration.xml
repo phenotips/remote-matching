@@ -66,7 +66,7 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>humanReadableName</name>
-      <number>1</number>
+      <number>2</number>
       <picker>0</picker>
       <prettyName>Display Name</prettyName>
       <size>30</size>
@@ -79,9 +79,9 @@
       <customDisplay/>
       <disabled>0</disabled>
       <name>serverId</name>
-      <number>2</number>
+      <number>1</number>
       <picker>0</picker>
-      <prettyName>ID</prettyName>
+      <prettyName>ID (required)</prettyName>
       <size>15</size>
       <unmodifiable>0</unmodifiable>
       <validationMessage/>
