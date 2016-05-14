@@ -19,6 +19,7 @@ package org.phenotips.remote.server.internal;
 
 import org.phenotips.data.ConsentManager;
 import org.phenotips.data.similarity.PatientSimilarityView;
+import org.phenotips.matchingnotification.MatchingNotificationManager;
 import org.phenotips.remote.api.ApiDataConverter;
 import org.phenotips.remote.api.ApiViolationException;
 import org.phenotips.remote.api.IncomingMatchRequest;
@@ -66,6 +67,9 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
     @Inject
     private ConsentManager consentManager;
 
+    @Inject
+    private MatchingNotificationManager notificationManager;
+
     @Override
     public JSONObject processHTTPSearchRequest(ApiDataConverter apiVersionSpecificConverter, String stringJson,
         ExecutorService queue, String remoteServerId, HttpServletRequest httpRequest)
@@ -87,6 +91,8 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
             List<PatientSimilarityView> matches = patientsFinder.findMatchingPatients(request.getModelPatient());
 
             List<PatientSimilarityView> filteredMatches = filterMatches(matches);
+
+            this.notificationManager.saveIncomingMatches(filteredMatches, remoteServerId);
 
             JSONObject responseJSON = apiVersionSpecificConverter.generateServerResponse(request, filteredMatches);
 
