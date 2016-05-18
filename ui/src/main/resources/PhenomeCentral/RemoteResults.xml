@@ -79,7 +79,11 @@ $response.setContentType('application/json')##
   #else
     #set($result.errorCode = $lastRequest.get("responseHTTPCode"))
     #if ($result.errorCode == 401)
-        #set($result.error = "remote server rejected match request")
+        #set($result.error = "remote server rejected match request (not authorized to send requests)")
+    #elseif ($result.errorCode == 400)
+        #set($result.error = "remote server rejected match request (bad request)")
+    #elseif ($result.errorCode == 406)
+        #set($result.error = "remote server rejected match request (unsupported API version)")
     #else
         #set($result.error = "request was sent but the reply did not contain a valid list of matches")
     #end

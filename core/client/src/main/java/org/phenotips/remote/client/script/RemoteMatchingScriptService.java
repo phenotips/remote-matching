@@ -89,11 +89,14 @@ public class RemoteMatchingScriptService implements ScriptService
 
         result.put("requestSent", request.wasSent());
 
+        if (request.wasSent()) {
+            result.put("responseHTTPCode", request.getRequestStatusCode());
+        }
+
         if (request.gotValidReply()) {
             result.put("remoteResponseReceived", true);
             result.put("queryJSON", request.getRequestJSON());
             result.put("responseJSON", request.getResponseJSON());
-            result.put("responseHTTPCode", request.getRequestStatusCode());
 
             try {
                 JSONArray matches = new JSONArray();
