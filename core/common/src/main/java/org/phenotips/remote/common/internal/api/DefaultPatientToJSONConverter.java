@@ -22,6 +22,7 @@ import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
 import org.phenotips.data.FeatureMetadatum;
 import org.phenotips.data.Patient;
+import org.phenotips.data.PatientData;
 import org.phenotips.data.similarity.PatientGenotype;
 import org.phenotips.data.similarity.internal.DefaultPatientGenotype;
 import org.phenotips.remote.common.ApplicationConfiguration;
@@ -37,7 +38,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
-
+import org.codehaus.plexus.util.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -76,12 +77,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         json.put(ApiConfiguration.JSON_PATIENT_ID, patient.getId());
 
         // TODO
-        JSONObject contactJson = new JSONObject();
-        contactJson.put(ApiConfiguration.JSON_CONTACT_NAME,        "PhenomeCentral");
-        contactJson.put(ApiConfiguration.JSON_CONTACT_INSTITUTION, "PhenomeCentral");
-        contactJson.put(ApiConfiguration.JSON_CONTACT_HREF,        "mailto:matchmaker@phenomecentral.org");
-        json.put(ApiConfiguration.JSON_CONTACT, contactJson);
-
+        json.put(ApiConfiguration.JSON_CONTACT, DefaultPatientToJSONConverter.contact(patient));
         try {
             json.put(ApiConfiguration.JSON_PATIENT_GENDER, DefaultPatientToJSONConverter.gender(patient));
             // TODO
@@ -110,6 +106,30 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         }
 
         return json;
+    }
+
+    private static JSONObject contact(Patient patient) {
+        // Default contact info
+        String name = "PhenomeCentral";
+        String institution = "PhenomeCentral";
+        String href = "mailto:matchmaker@phenomecentral.org";
+
+        PatientData<String> data = patient.getData("contact");
+        if (data != null && data.isNamed()) {
+            name = data.get("name");
+            institution = data.get("institution");
+            // TODO: replace this with a URL to a match/contact page
+            String email = data.get("email");
+            if (!StringUtils.isBlank(email)) {
+                href = "mailto:" + email;
+            }
+        }
+
+        JSONObject contactJson = new JSONObject();
+        contactJson.put(ApiConfiguration.JSON_CONTACT_NAME, name);
+        contactJson.put(ApiConfiguration.JSON_CONTACT_INSTITUTION, institution);
+        contactJson.put(ApiConfiguration.JSON_CONTACT_HREF, href);
+        return contactJson;
     }
 
     private JSONArray features(Patient patient)
