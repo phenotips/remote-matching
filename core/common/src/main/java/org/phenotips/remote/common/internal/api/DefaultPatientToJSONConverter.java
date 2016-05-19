@@ -110,13 +110,17 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
 
     private static JSONObject contact(Patient patient) {
         // Default contact info
-        String name = "PhenomeCentral";
+        String name = "PhenomeCentral Support";
         String institution = "PhenomeCentral";
         String href = "mailto:matchmaker@phenomecentral.org";
 
         PatientData<String> data = patient.getData("contact");
         if (data != null && data.isNamed()) {
-            name = data.get("name");
+            String contactName = data.get("name");
+            if (!StringUtils.isBlank(contactName)) {
+                name = contactName;
+            }
+            // Replace institution, even if blank
             institution = data.get("institution");
             // TODO: replace this with a URL to a match/contact page
             String email = data.get("email");
@@ -127,7 +131,10 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
 
         JSONObject contactJson = new JSONObject();
         contactJson.put(ApiConfiguration.JSON_CONTACT_NAME, name);
-        contactJson.put(ApiConfiguration.JSON_CONTACT_INSTITUTION, institution);
+        // Institution is optional, so only include if non-blank
+        if (!StringUtils.isBlank(institution)) {
+            contactJson.put(ApiConfiguration.JSON_CONTACT_INSTITUTION, institution);
+        }
         contactJson.put(ApiConfiguration.JSON_CONTACT_HREF, href);
         return contactJson;
     }
