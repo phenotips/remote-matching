@@ -137,10 +137,11 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
 
         // TODO: hack to make charset lower-cased so that GeneMatcher accepts it
         //jsonEntity.setContentType("application/json; charset=utf-8");
-        jsonEntity.setContentType(ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX +
-                                  ApiConfiguration.LATEST_API_VERSION_STRING +
-                                  ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX + "; charset=utf-8");
-        this.logger.error("Using content type: [{}]", jsonEntity.getContentType().toString());
+        String mimeType = ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX +
+            ApiConfiguration.LATEST_API_VERSION_STRING +
+            ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX;
+        jsonEntity.setContentType(mimeType + "; charset=utf-8");
+        this.logger.error("Setting Content-Type: [{}]", jsonEntity.getContentType().toString());
 
         String key     = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_KEY_FIELD);
         String baseURL = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_BASE_URL_FIELD);
@@ -156,7 +157,8 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
             HttpPost httpRequest = new HttpPost(targetURL);
             httpRequest.setEntity(jsonEntity);
             httpRequest.setHeader(ApiConfiguration.HTTPHEADER_KEY_PARAMETER, key);
-            httpRequest.setHeader(ApiConfiguration.HTTPHEADER_API_VERSION, ApiConfiguration.LATEST_API_VERSION_STRING);
+            httpRequest.setHeader(ApiConfiguration.HTTPHEADER_API_VERSION, mimeType);
+            this.logger.error("Setting {}: [{}]", ApiConfiguration.HTTPHEADER_API_VERSION, mimeType);
             httpResponse = client.execute(httpRequest);
         } catch (javax.net.ssl.SSLHandshakeException ex) {
             this.logger.error("Error sending matching request to ["+ targetURL +
