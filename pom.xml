@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>phenotips-components</artifactId>
-    <version>1.3-SNAPSHOT</version>
+    <version>1.3-milestone-1r2</version>
     <relativePath />
   </parent>
   <artifactId>remote-matching-parent</artifactId>
@@ -53,6 +53,36 @@
     <name>University of Toronto, Computational Biology Lab</name>
     <url>http://compbio.cs.toronto.edu/</url>
   </organization>
+
+  <!-- We need to list repositories for finding the parent. Other settings will be correctly inherited from the parent. -->
+  <repositories>
+    <repository>
+      <id>phenotips-releases</id>
+      <name>PhenoTips Releases repository</name>
+      <url>https://nexus.phenotips.org/nexus/content/repositories/releases/</url>
+      <releases>
+	<enabled>true</enabled>
+	<checksumPolicy>fail</checksumPolicy>
+      </releases>
+      <snapshots>
+	<enabled>false</enabled>
+	<checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>phenotips-snapshots</id>
+      <name>PhenoTips Snapshots repository</name>
+      <url>https://nexus.phenotips.org/nexus/content/repositories/snapshots/</url>
+      <releases>
+	<enabled>false</enabled>
+	<checksumPolicy>fail</checksumPolicy>
+      </releases>
+      <snapshots>
+	<enabled>true</enabled>
+	<checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+    </repository>
+  </repositories>
 
   <properties>
     <patientNetwork.version>1.0-SNAPSHOT</patientNetwork.version>
