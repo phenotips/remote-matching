@@ -54,12 +54,12 @@ public class DefaultRemoteConfigurationManager implements RemoteConfigurationMan
         List<BaseObject> remotes = null;
         try {
             XWikiDocument prefsDoc =
-                    context.getWiki().getDocument(ApplicationConfiguration.XWIKI_PREFERENCES_DOCUMENT_REFERENCE, context);
+                context.getWiki().getDocument(ApplicationConfiguration.XWIKI_PREFERENCES_DOCUMENT_REFERENCE, context);
 
             remotes = prefsDoc.getXObjects(ApplicationConfiguration.REMOTE_CONFIGURATION_OBJECT_REFERENCE);
         } catch (Exception ex) {
             logger.error("Remote matching admin section is absent or empty - can not process request: [{}] {}",
-                    ex.getMessage(), ex);
+                ex.getMessage(), ex);
         }
 
         if (remotes == null) {
@@ -71,15 +71,15 @@ public class DefaultRemoteConfigurationManager implements RemoteConfigurationMan
 
     @Override
     public BaseObject getRemoteConfiguration(String baseURL, XWiki wiki, XWikiContext context)
-            throws XWikiException
+        throws XWikiException
     {
         XWikiDocument configurationsDoc =
-                wiki.getDocument(ApplicationConfiguration.XWIKI_PREFERENCES_DOCUMENT_REFERENCE, context);
+            wiki.getDocument(ApplicationConfiguration.XWIKI_PREFERENCES_DOCUMENT_REFERENCE, context);
         if (configurationsDoc == null) {
             this.logger.error("Could not find configurations document");
         }
         List<BaseObject> configurations =
-                configurationsDoc.getXObjects(ApplicationConfiguration.REMOTE_CONFIGURATION_OBJECT_REFERENCE);
+            configurationsDoc.getXObjects(ApplicationConfiguration.REMOTE_CONFIGURATION_OBJECT_REFERENCE);
         for (BaseObject remote : configurations) {
             if (remote == null) {
                 continue;
@@ -91,8 +91,8 @@ public class DefaultRemoteConfigurationManager implements RemoteConfigurationMan
             }
         }
         logger.error(
-                "Could not find any remote configuration objects or no match was found. Configurations list size: " +
-                        configurations.size());
+            "Could not find any remote configuration objects or no match was found. Configurations list size: " +
+                configurations.size());
         // FIXME. Not exactly true.
         throw new XWikiException();
     }
@@ -125,24 +125,24 @@ public class DefaultRemoteConfigurationManager implements RemoteConfigurationMan
                         }
                     } catch (MalformedURLException ex) {
                         logger.error("One of the configured remote matching servers has an incorrectly formatted URL [{}]: {}",
-                                configuredURL, ex.getMessage());
+                            configuredURL, ex.getMessage());
                     } catch (UnknownHostException ex) {
                         logger.error("One of the configured remote matching server URLs has no valid DNS record [{}]: {}",
-                                configuredURL, ex.getMessage());
+                            configuredURL, ex.getMessage());
                     }
 
                     if (!StringUtils.equalsIgnoreCase(providedToken, configuredToken)) {
                         logger.error("Remote server token validation failed for server [{}]: Provided: {}",
-                                remoteServerName, providedToken);
+                            remoteServerName, providedToken);
                         return null;
                     }
                     logger.error("Remote server IP and token validated OK for server [{}] (remote IP {})",
-                            remoteServerName, remoteIP);
+                        remoteServerName, remoteIP);
                     return remote;
                 } else {
                     if (StringUtils.equalsIgnoreCase(providedToken, configuredToken)) {
                         logger.error("Remote server token validated OK for server [{}] (remote IP {})",
-                                remoteServerName, remoteIP);
+                            remoteServerName, remoteIP);
                         return remote;
                     }
                 }
@@ -173,7 +173,7 @@ public class DefaultRemoteConfigurationManager implements RemoteConfigurationMan
             }
         } catch (Exception ex) {
             logger.error("Error while getting server info for serverID [{}]: [{}] {}",
-                    remoteServerID, ex.getMessage(), ex);
+                remoteServerID, ex.getMessage(), ex);
         }
         return null;
     }
