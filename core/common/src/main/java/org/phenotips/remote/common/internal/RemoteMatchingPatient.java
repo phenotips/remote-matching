@@ -146,7 +146,7 @@ public class RemoteMatchingPatient implements MatchingPatient
     }
 
     @Override
-    public JSONObject toJSON(Collection<String> onlyFieldNames)
+    public JSONObject toJSON(Collection<String> selectedFields)
     {
         throw new UnsupportedOperationException();
     }
