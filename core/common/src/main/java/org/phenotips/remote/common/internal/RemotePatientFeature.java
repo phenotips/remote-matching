@@ -21,7 +21,9 @@ import org.phenotips.data.Feature;
 import org.phenotips.data.FeatureMetadatum;
 import org.phenotips.data.internal.AbstractPhenoTipsVocabularyProperty;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -99,5 +101,17 @@ public class RemotePatientFeature extends AbstractPhenoTipsVocabularyProperty im
     public String getNotes()
     {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<String> getCategories()
+    {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public String getPropertyName()
+    {
+        return "phenotype";
     }
 }
