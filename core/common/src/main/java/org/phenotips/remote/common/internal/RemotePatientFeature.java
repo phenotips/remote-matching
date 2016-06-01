@@ -35,7 +35,7 @@ public class RemotePatientFeature extends AbstractPhenoTipsVocabularyProperty im
 {
     private String observedStatus = "unknown";
 
-    private Map<String, FeatureMetadatum> metadata = new TreeMap<String, FeatureMetadatum>();
+    private Map<String, FeatureMetadatum> metadata = new TreeMap<>();
 
     public RemotePatientFeature(String id, String observedStatus)
     {
@@ -64,7 +64,7 @@ public class RemotePatientFeature extends AbstractPhenoTipsVocabularyProperty im
     @Override
     public Map<String, ? extends FeatureMetadatum> getMetadata()
     {
-        return new HashMap<String, FeatureMetadatum>();
+        return new HashMap<>();
     }
 
     @Override

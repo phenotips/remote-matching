@@ -21,9 +21,10 @@ import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
 import org.phenotips.data.IndexedPatientData;
 import org.phenotips.data.PatientData;
+import org.phenotips.remote.api.ContactInfo;
 import org.phenotips.remote.api.MatchingPatient;
 import org.phenotips.remote.api.MatchingPatientGene;
-import org.phenotips.remote.api.ContactInfo;
+
 import org.xwiki.model.reference.DocumentReference;
 
 import java.util.Collection;
@@ -61,7 +62,7 @@ public class RemoteMatchingPatient implements MatchingPatient
     final private Map<String, PatientData<?>> extraData = new HashMap<String, PatientData<?>>();
 
     public RemoteMatchingPatient(String remotePatientId, String label, Set<Feature> features,
-                                 Set<Disorder> disorders, Set<MatchingPatientGene> genes, ContactInfo contactInfo)
+        Set<Disorder> disorders, Set<MatchingPatientGene> genes, ContactInfo contactInfo)
     {
         this.remotePatientId = remotePatientId;
         this.label = label;
@@ -74,13 +75,13 @@ public class RemoteMatchingPatient implements MatchingPatient
     @Override
     public String getId()
     {
-        return remotePatientId;
+        return this.remotePatientId;
     }
 
     @Override
     public String getExternalId()
     {
-        return remotePatientId;
+        return this.remotePatientId;
     }
 
     @Override
