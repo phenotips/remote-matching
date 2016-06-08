@@ -17,6 +17,7 @@
  */
 package org.phenotips.remote.client.internal;
 
+import org.phenotips.data.ConsentManager;
 import org.phenotips.data.Patient;
 import org.phenotips.matchingnotification.finder.MatchFinder;
 import org.phenotips.matchingnotification.match.PatientMatch;
@@ -56,6 +57,8 @@ public class RemoteMatchFinder implements MatchFinder
 {
     private static final int ADD_TOP_N_GENES_PARAMETER = 0;
 
+    private static final String REMOTE_MATCHING_CONSENT_ID = "matching";
+
     @Inject
     private Provider<XWikiContext> contextProvider;
 
@@ -72,6 +75,9 @@ public class RemoteMatchFinder implements MatchFinder
     @Inject
     private Logger logger;
 
+    @Inject
+    private ConsentManager consentManager;
+
     @Override
     public int getPriority()
     {
@@ -81,6 +87,11 @@ public class RemoteMatchFinder implements MatchFinder
     @Override
     public List<PatientMatch> findMatches(Patient patient)
     {
+        // Checking if a patient has a consent for remote matching
+        if (!this.consentManager.hasConsent(patient, REMOTE_MATCHING_CONSENT_ID)) {
+            this.logger.debug("Skipping patient {}. No consent for remote matching", patient.getId());
+        }
+
         this.logger.debug("Finding remote matches for patient {}.", patient.getId());
 
         List<PatientMatch> patientMatches = new LinkedList<>();
