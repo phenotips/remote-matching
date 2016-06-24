@@ -198,7 +198,7 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
         baseRequest.setReplayHTTPStatus(statusCode);
 
         JSONObject errorJSON = new JSONObject();
-        if (errorMessage == null) {
+        if (errorMessage != null) {
             errorJSON.put(ApiConfiguration.REPLY_JSON_ERROR_DESCRIPTION, errorMessage);
         }
         baseRequest.addRequestJSON(errorJSON);

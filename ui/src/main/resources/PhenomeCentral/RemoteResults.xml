@@ -75,7 +75,7 @@ $response.setContentType('application/json')##
 #if (!$wasSent || !$matches)
   #if (!$wasSent)
     #set($result.errorCode = $lastRequest.get("errorCode"))
-    #set($result.error = "request was initiated but was not sent")
+    #set($result.error = "unable to connect to remote server")
   #else
     #set($result.errorCode = $lastRequest.get("responseHTTPCode"))
     #if ($result.errorCode == 401)
