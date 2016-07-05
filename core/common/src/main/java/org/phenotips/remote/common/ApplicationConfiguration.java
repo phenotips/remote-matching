@@ -17,7 +17,6 @@
  */
 package org.phenotips.remote.common;
 
-import org.phenotips.Constants;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.EntityReference;
 
