@@ -156,8 +156,15 @@ public class RemoteMatchFinder implements MatchFinder
             if (remote == null) {
                 continue;
             }
+
             String configuredServerId = remote.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_ID);
             if (StringUtils.isEmpty(configuredServerId)) {
+                continue;
+            }
+
+            // Include only servers that are marked for remote search
+            int searchMatches = remote.getIntValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_SEARCH_MATCHES);
+            if (searchMatches != 1) {
                 continue;
             }
 

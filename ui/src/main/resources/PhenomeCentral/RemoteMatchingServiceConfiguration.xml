@@ -157,6 +157,20 @@
       <validationRegExp/>
       <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
     </limitAcceptedIPs>
+    <searchMatches>
+      <customDisplay/>
+      <defaultValue/>
+      <disabled>0</disabled>
+      <displayFormType>checkbox</displayFormType>
+      <displayType/>
+      <name>searchMatches</name>
+      <number>9</number>
+      <prettyName>Search Matches</prettyName>
+      <unmodifiable>0</unmodifiable>
+      <validationMessage/>
+      <validationRegExp/>
+      <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+    </searchMatches>
   </class>
   <content/>
 </xwikidoc>
