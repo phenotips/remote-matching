@@ -490,7 +490,7 @@ td input[type="text"]:focus {
           (% class="similarity-mme-server-name-header" id="$headerID" %)((({{html clean=false}}Remote server: &lt;b&gt;$serverName&lt;/b&gt;
           #set ($disclaimer = $config.getProperty('disclaimer').getValue())
           #if ($disclaimer &amp;&amp; $disclaimer != "")
-            &lt;p class="hint mme-disclaimer"&gt;$disclaimer&lt;br/&gt;&lt;/p&gt;
+            &lt;div class="hint mme-disclaimer"&gt;$disclaimer&lt;/div&gt;
           #end
           {{/html}})))##
           (% class="similarity-results-container similarity-results-container-mme" id="similar-remote-patients-container-$serverName" %)((({{html clean=false}}
