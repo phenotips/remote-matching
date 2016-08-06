@@ -26,6 +26,7 @@ import org.phenotips.remote.api.MatchingPatient;
 import org.phenotips.remote.api.MatchingPatientGene;
 
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.EntityReference;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -156,5 +157,24 @@ public class RemoteMatchingPatient implements MatchingPatient
     public void updateFromJSON(JSONObject json)
     {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public EntityReference getType()
+    {
+        // This isn't a local entity
+        return null;
+    }
+
+    @Override
+    public String getName()
+    {
+        return getExternalId();
+    }
+
+    @Override
+    public String getDescription()
+    {
+        return "";
     }
 }
