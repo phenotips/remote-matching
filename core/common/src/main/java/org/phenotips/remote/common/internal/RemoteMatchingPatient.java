@@ -60,7 +60,7 @@ public class RemoteMatchingPatient implements MatchingPatient
 
     final private ContactInfo contactInfo;
 
-    final private Map<String, PatientData<?>> extraData = new HashMap<String, PatientData<?>>();
+    final private Map<String, PatientData<?>> extraData = new HashMap<>();
 
     public RemoteMatchingPatient(String remotePatientId, String label, Set<Feature> features,
         Set<Disorder> disorders, Set<MatchingPatientGene> genes, ContactInfo contactInfo)
@@ -129,14 +129,14 @@ public class RemoteMatchingPatient implements MatchingPatient
         if (name == "genes") {
             Set<? extends MatchingPatientGene> genes = this.genes;
 
-            List<Map<String, String>> allGenes = new LinkedList<Map<String, String>>();
+            List<Map<String, String>> allGenes = new LinkedList<>();
 
             for (MatchingPatientGene gene : genes) {
-                Map<String, String> singleGene = new LinkedHashMap<String, String>();
+                Map<String, String> singleGene = new LinkedHashMap<>();
                 singleGene.put("gene", gene.getName());
                 allGenes.add(singleGene);
             }
-            return (PatientData<T>) new IndexedPatientData<Map<String, String>>("genes", allGenes);
+            return (PatientData<T>) new IndexedPatientData<>("genes", allGenes);
         }
         return (PatientData<T>) this.extraData.get(name);
     }
