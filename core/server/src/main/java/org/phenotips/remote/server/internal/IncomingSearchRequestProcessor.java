@@ -21,8 +21,6 @@ import org.phenotips.remote.server.MatchingPatientsFinder;
 import org.phenotips.remote.api.IncomingMatchRequest;
 import org.phenotips.remote.api.ApiDataConverter;
 import org.phenotips.remote.api.ApiViolationException;
-import org.phenotips.remote.common.ApplicationConfiguration;
-import org.phenotips.remote.common.internal.XWikiAdapter;
 import org.phenotips.remote.server.SearchRequestProcessor;
 import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
 import org.phenotips.remote.hibernate.internal.DefaultIncomingMatchRequest;
@@ -41,8 +39,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.objects.BaseObject;
 
 import java.util.LinkedList;
 import java.util.List;
