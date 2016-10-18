@@ -21,8 +21,6 @@ import org.phenotips.remote.server.MatchingPatientsFinder;
 import org.phenotips.remote.api.IncomingMatchRequest;
 import org.phenotips.remote.api.ApiDataConverter;
 import org.phenotips.remote.api.ApiViolationException;
-import org.phenotips.remote.common.ApplicationConfiguration;
-import org.phenotips.remote.common.internal.XWikiAdapter;
 import org.phenotips.remote.server.SearchRequestProcessor;
 import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
 import org.phenotips.remote.hibernate.internal.DefaultIncomingMatchRequest;
@@ -41,8 +39,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.objects.BaseObject;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -92,20 +88,7 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
 
             List<PatientSimilarityView> matches = patientsFinder.findMatchingPatients(request.getModelPatient());
 
-            // check consent level for each of the patient: exclude patients without explicit MME consent
-            //
-            // TODO: use CollectionUtils.filter once a) updated Apache Commons that support parametrized types are used
-            //       and b) a workaround for anonymous classes only being able to use final local variables is testd
-
-            List<PatientSimilarityView> filteredMatches = new LinkedList<PatientSimilarityView>();
-
-            for (PatientSimilarityView match : matches) {
-                if (consentManager.hasConsent(match.getId(), "matching")) {
-                    filteredMatches.add(match);
-                } else {
-                    logger.error("Patient [{}] is excluded form match results because match consent is unchecked", match.getId());
-                }
-            }
+            List<PatientSimilarityView> filteredMatches = filterMatches(matches);
 
             JSONObject responseJSON = apiVersionSpecificConverter.generateServerResponse(request, filteredMatches);
 
@@ -136,5 +119,32 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
                 new DefaultIncomingMatchRequest(remoteServerId, apiVersion, requestString, null);
 
         requestStorageManager.saveIncomingRequest(request);
+    }
+
+    private List<PatientSimilarityView> filterMatches(List<PatientSimilarityView> matches)
+    {
+        // check consent level for each of the patient: exclude patients without explicit MME consent
+        //
+        // TODO: use CollectionUtils.filter once a) updated Apache Commons that support parametrized types are used
+        //       and b) a workaround for anonymous classes only being able to use final local variables is testd
+
+        List<PatientSimilarityView> filteredMatches = new LinkedList<PatientSimilarityView>();
+
+        for (PatientSimilarityView match : matches) {
+            if (consentManager.hasConsent(match.getId(), "matching")) {
+                // For now, only include results where the genotype score is high enough to indicate a candidate
+                // gene matched (exome data gives max score of 0.5, and candidate genes boost towards 1.0)
+                //
+                // FIXME: once PatientSimilarityView exposes candidate genes, use that to check if candidate genes
+                // matched instead of this indirect test based on the score
+                if (match.getGenotypeScore() > 0.5) {
+                    filteredMatches.add(match);
+                }
+            } else {
+                logger.error("Patient [{}] is excluded form match results because match consent is unchecked", match.getId());
+            }
+        }
+
+        return filteredMatches;
     }
 }
