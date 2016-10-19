@@ -94,11 +94,8 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         // TODO: rework this part, as Patient may be an instance of a Patient (for outgoing requests) or
         //       RestrictedSimilarityView (for returning replies to incoming requests), and the two
         //       behave differently
-        if (removePrivateData) {
-            json.put(ApiConfiguration.JSON_FEATURES, this.nonPersonalFeatures(patient));
-        } else {
-            json.put(ApiConfiguration.JSON_FEATURES, this.features(patient));
-        }
+        json.put(ApiConfiguration.JSON_FEATURES, this.features(patient));
+
         JSONArray genes = removePrivateData ? DefaultPatientToJSONConverter.restrictedGenes(patient, includedTopGenes, logger) :
                                               DefaultPatientToJSONConverter.genes(patient, includedTopGenes, logger);
         if (genes.length() > 0) {
