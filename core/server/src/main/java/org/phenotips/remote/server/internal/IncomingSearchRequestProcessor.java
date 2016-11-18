@@ -133,11 +133,11 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
         for (PatientSimilarityView match : matches) {
             if (consentManager.hasConsent(match.getId(), "matching")) {
                 // For now, only include results where the genotype score is high enough to indicate a candidate
-                // gene matched (exome data gives max score of 0.5, and candidate genes boost towards 1.0)
+                // gene matched (exome data gives max score of 0.5, and candidate genes have score of 1.0)
                 //
                 // FIXME: once PatientSimilarityView exposes candidate genes, use that to check if candidate genes
                 // matched instead of this indirect test based on the score
-                if (match.getGenotypeScore() > 0.5) {
+                if (match.getGenotypeScore() >= 1.0) {
                     filteredMatches.add(match);
                 }
             } else {

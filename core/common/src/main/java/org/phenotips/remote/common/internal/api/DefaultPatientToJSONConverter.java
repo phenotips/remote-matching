@@ -351,9 +351,12 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
                 JSONObject nextGeneInfo = orderedPatientGenes.optJSONObject(i);
                 // no check for null so that if nextGeneInfo is not a JSONObject an error will be logged
                 String geneName = nextGeneInfo.optString("gene", null);
-                if (geneName != null) {
+                // Only include gene if listed as a candidate (score of 1)
+                double geneScore = nextGeneInfo.optDouble("score", 0.0);
+                if (geneName != null && geneScore >= 1.0) {
                     JSONObject gene = new JSONObject();
                     gene.put(ApiConfiguration.JSON_GENES_GENE_ID, geneName);
+                    // TODO: add gene status (solved/candidate/exome) here
 
                     JSONObject nextGene = new JSONObject();
                     nextGene.put(ApiConfiguration.JSON_GENES_GENE, gene);
