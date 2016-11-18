@@ -130,10 +130,6 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
     {
         JSONObject reply = new JSONObject();
 
-        //TODO:
-        //reply.put("modelPatientLabel", request.getRemotePatient().getLabel());
-        //reply.put("modelPatientId", request.getRemotePatient().getExternalId());
-
         JSONArray matchList = new JSONArray();
         for (PatientSimilarityView patient : resultList) {
             try {

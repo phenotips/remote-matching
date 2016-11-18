@@ -81,7 +81,7 @@ public class RemoteMatchingPatient implements MatchingPatient
     @Override
     public String getExternalId()
     {
-        return this.remotePatientId;
+        return this.label;
     }
 
     @Override
@@ -106,12 +106,6 @@ public class RemoteMatchingPatient implements MatchingPatient
     public Set<? extends Disorder> getDisorders()
     {
         return this.disorders;
-    }
-
-    @Override
-    public String getLabel()
-    {
-        return this.label;
     }
 
     @Override

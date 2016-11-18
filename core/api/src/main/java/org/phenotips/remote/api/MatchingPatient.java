@@ -36,7 +36,5 @@ public interface MatchingPatient extends Patient
 
     //Set<? extends MatchingPatientGene> getGenes(); // TODO: Use VariantClass or similar instead of MatchingPatientGene?
 
-    String getLabel();
-
     ContactInfo getContactInfo();
 }
