@@ -342,6 +342,10 @@
     <property>
       <code>#template('colorThemeInit.vm')
 
+.similarity-info h4 {
+  border-bottom: 0 none;
+  margin: 5px 0 0;
+}
 .list-actions + .buttons {
   float: right;
   margin-top: -1.8em;
@@ -487,7 +491,7 @@ td input[type="text"]:focus {
             #set ($serverName = $serverID)
           #end
           #set ($resultsURL = $xwiki.getURL('PhenomeCentral.RemoteResults', 'get', ""))
-          (% class="similarity-mme-server-name-header" id="$headerID" %)((({{html clean=false}}&lt;b&gt;$serverName&lt;/b&gt;
+          (% class="similarity-mme-server-name-header" id="$headerID" %)((({{html clean=false}}&lt;h4&gt;$serverName&lt;/h4&gt;
           #set ($disclaimer = $config.getProperty('disclaimer').getValue())
           #if ($disclaimer &amp;&amp; $disclaimer != "")
             &lt;div class="hint mme-disclaimer"&gt;$disclaimer&lt;/div&gt;
