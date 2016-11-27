@@ -466,7 +466,7 @@ td input[type="text"]:focus {
     #end
     #if ($services.remoteMatching)
       $xwiki.ssx.use('PhenomeCentral.RemoteMatching')##
-      === Remote Databases ===
+      === Matches in partner [[Matchmaker Exchange (MME)>>http://www.matchmakerexchange.org/||rel="__blank"]] databases ===
       ##=======================================
       ## Get list of remote configurations and
       ## only display those which have a non-empty token and the checkbox to show in UI is checked
@@ -487,7 +487,7 @@ td input[type="text"]:focus {
             #set ($serverName = $serverID)
           #end
           #set ($resultsURL = $xwiki.getURL('PhenomeCentral.RemoteResults', 'get', ""))
-          (% class="similarity-mme-server-name-header" id="$headerID" %)((({{html clean=false}}Remote server: &lt;b&gt;$serverName&lt;/b&gt;
+          (% class="similarity-mme-server-name-header" id="$headerID" %)((({{html clean=false}}&lt;b&gt;$serverName&lt;/b&gt;
           #set ($disclaimer = $config.getProperty('disclaimer').getValue())
           #if ($disclaimer &amp;&amp; $disclaimer != "")
             &lt;div class="hint mme-disclaimer"&gt;$disclaimer&lt;/div&gt;
