@@ -470,7 +470,7 @@ td input[type="text"]:focus {
     #end
     #if ($services.remoteMatching)
       $xwiki.ssx.use('PhenomeCentral.RemoteMatching')##
-      === Matches in partner [[Matchmaker Exchange (MME)>>http://www.matchmakerexchange.org/||rel="__blank"]] databases ===
+      === Matches in partner [[MME&gt;&gt;http://www.matchmakerexchange.org/||title="Matchmaker Exchange" rel="__blank"]] databases ===
       ##=======================================
       ## Get list of remote configurations and
       ## only display those which have a non-empty token and the checkbox to show in UI is checked
