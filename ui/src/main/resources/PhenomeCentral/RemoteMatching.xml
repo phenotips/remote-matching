@@ -342,10 +342,6 @@
     <property>
       <code>#template('colorThemeInit.vm')
 
-.similarity-info h4 {
-  border-bottom: 0 none;
-  margin: 5px 0 0;
-}
 .list-actions + .buttons {
   float: right;
   margin-top: -1.8em;
@@ -375,13 +371,12 @@ td input[type="text"]:focus {
   margin-left: 10px;
 }
 .similarity-mme-server-name-header {
-  padding: 10px 0;
-  margin-top: 10px;
+  border-bottom: 0 none;
+  float: left;
+  margin-top: 0;
+  padding: 5px 0 0;
 }
 .similarity-mme-server-name-header .similarity-results-refresh {
-}
-.mme-disclaimer {
-  margin-top: 5px;
 }</code>
     </property>
     <property>
@@ -477,30 +472,26 @@ td input[type="text"]:focus {
       ##=======================================
       #set ($preferenceDoc = $xwiki.getDocumentAsAuthor("XWiki.XWikiPreferences"))
       #set ($allRemotes = $preferenceDoc.getObjects("PhenomeCentral.RemoteMatchingServiceConfiguration"))
-      #set ($count = 0)
       #foreach ($config in $allRemotes)
         #if ($config.getProperty('remoteAuthToken').getValue() != "" &amp;&amp; $config.getProperty('serverId').getValue() != "" &amp;&amp; $config.getProperty('includeInUI').getValue() == 1)
-          #if ($count &gt; 0)
+          #if ($foreach.index &gt; 0)
             {{html clean=false}}&lt;hr&gt;{{/html}}##
           #end
-          #set ($count = $count + 1)
-          #set ($headerID = "mme-header-$count")
+          #set ($headerID = "mme-header-${foreach.count}")
           #set ($serverID = $config.getProperty('serverId').getValue())
           #set ($serverName = $config.getProperty('humanReadableName').getValue())
           #if ($serverName == "")
             #set ($serverName = $serverID)
           #end
           #set ($resultsURL = $xwiki.getURL('PhenomeCentral.RemoteResults', 'get', ""))
-          (% class="similarity-mme-server-name-header" id="$headerID" %)((({{html clean=false}}&lt;h4&gt;$serverName&lt;/h4&gt;
           #set ($disclaimer = $config.getProperty('disclaimer').getValue())
-          #if ($disclaimer &amp;&amp; $disclaimer != "")
-            &lt;div class="hint mme-disclaimer"&gt;$disclaimer&lt;/div&gt;
-          #end
-          {{/html}})))##
-          (% class="similarity-results-container similarity-results-container-mme" id="similar-remote-patients-container-$serverName" %)((({{html clean=false}}
-            &lt;input type="hidden" name="refreshButtonContainer" value="$headerID"/&gt;
-            &lt;input type="hidden" name="service" value="$resultsURL"/&gt;
-            &lt;input type="hidden" name="mmeServer" value="$serverID"/&gt;{{/html}})))##
+          {{html clean=false}}##
+          &lt;h4 class="similarity-mme-server-name-header" id="$headerID"&gt;$escapetool.xml($serverName)&lt;/h4&gt;
+          {{/html}}##
+          (% class="similarity-results-container similarity-results-container-mme" id="similar-remote-patients-container-${escapetool.xml($serverName)}" %)((({{html clean=false}}
+            &lt;input type="hidden" name="service" value="$escapetool.xml($resultsURL)"/&gt;
+            &lt;input type="hidden" name="mmeServer" value="$escapetool.xml($serverID)"/&gt;
+            &lt;input type="hidden" name="serviceDisclaimer" value="$escapetool.xml($disclaimer)"/&gt;{{/html}})))##
         #end
       #end
     #end
