@@ -17,13 +17,13 @@
  */
 package org.phenotips.remote.common.internal;
 
-import org.json.JSONObject;
-
 import org.phenotips.data.Patient;
 import org.phenotips.data.similarity.AccessType;
 import org.phenotips.data.similarity.internal.DefaultPatientSimilarityView;
 import org.phenotips.remote.api.ContactInfo;
 import org.phenotips.remote.api.MatchingPatient;
+
+import org.json.JSONObject;
 
 public class RemotePatientSimilarityView extends DefaultPatientSimilarityView
 {

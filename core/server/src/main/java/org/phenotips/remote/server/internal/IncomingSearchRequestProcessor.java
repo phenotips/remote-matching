@@ -17,34 +17,33 @@
  */
 package org.phenotips.remote.server.internal;
 
-import org.phenotips.remote.server.MatchingPatientsFinder;
-import org.phenotips.remote.api.IncomingMatchRequest;
-import org.phenotips.remote.api.ApiDataConverter;
-import org.phenotips.remote.api.ApiViolationException;
-import org.phenotips.remote.server.SearchRequestProcessor;
-import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
-import org.phenotips.remote.hibernate.internal.DefaultIncomingMatchRequest;
 import org.phenotips.data.ConsentManager;
 import org.phenotips.data.similarity.PatientSimilarityView;
-
-import java.util.concurrent.ExecutorService;
+import org.phenotips.matchingnotification.MatchingNotificationManager;
+import org.phenotips.remote.api.ApiDataConverter;
+import org.phenotips.remote.api.ApiViolationException;
+import org.phenotips.remote.api.IncomingMatchRequest;
+import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
+import org.phenotips.remote.hibernate.internal.DefaultIncomingMatchRequest;
+import org.phenotips.remote.server.MatchingPatientsFinder;
+import org.phenotips.remote.server.SearchRequestProcessor;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWikiContext;
-
-import java.util.LinkedList;
-import java.util.List;
-
-import org.json.JSONObject;
-import org.json.JSONException;
 
 /**
  * Takes a json string in the constructor and does all the request processing functionality.
@@ -68,6 +67,9 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
     @Inject
     private ConsentManager consentManager;
 
+    @Inject
+    private MatchingNotificationManager notificationManager;
+
     @Override
     public JSONObject processHTTPSearchRequest(ApiDataConverter apiVersionSpecificConverter, String stringJson,
         ExecutorService queue, String remoteServerId, HttpServletRequest httpRequest)
@@ -89,6 +91,8 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
             List<PatientSimilarityView> matches = patientsFinder.findMatchingPatients(request.getModelPatient());
 
             List<PatientSimilarityView> filteredMatches = filterMatches(matches);
+
+            this.notificationManager.saveIncomingMatches(filteredMatches, remoteServerId);
 
             JSONObject responseJSON = apiVersionSpecificConverter.generateServerResponse(request, filteredMatches);
 

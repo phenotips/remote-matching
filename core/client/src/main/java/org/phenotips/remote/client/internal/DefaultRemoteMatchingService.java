@@ -17,31 +17,12 @@
  */
 package org.phenotips.remote.client.internal;
 
-import java.util.LinkedList;
-import java.util.List;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientRepository;
 import org.phenotips.data.permissions.AccessLevel;
 import org.phenotips.data.similarity.AccessType;
-import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.data.similarity.PatientSimilarityViewFactory;
 import org.phenotips.data.similarity.internal.DefaultAccessType;
-import org.phenotips.remote.common.internal.RemotePatientSimilarityView;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.ApiDataConverter;
 import org.phenotips.remote.api.ApiViolationException;
@@ -50,15 +31,34 @@ import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.client.RemoteMatchingService;
 import org.phenotips.remote.common.ApiFactory;
 import org.phenotips.remote.common.ApplicationConfiguration;
-import org.phenotips.remote.common.internal.XWikiAdapter;
+import org.phenotips.remote.common.RemoteConfigurationManager;
+import org.phenotips.remote.common.internal.RemotePatientSimilarityView;
 import org.phenotips.remote.common.internal.api.DefaultJSONToMatchingPatientConverter;
 import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
 import org.phenotips.remote.hibernate.internal.DefaultOutgoingMatchRequest;
 import org.phenotips.vocabulary.Vocabulary;
-import org.slf4j.Logger;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
 import org.xwiki.stability.Unstable;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.objects.BaseObject;
@@ -98,6 +98,9 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
     @Inject
     private PatientSimilarityViewFactory similarityViewFactory;  // injected so that static data is initialized. TODO: review static data usage
 
+    @Inject
+    private RemoteConfigurationManager remoteConfigurationManager;
+
     @Override
     public OutgoingMatchRequest sendRequest(String patientId, String remoteServerId, int addTopNGenes)
     {
@@ -106,7 +109,8 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
 
         XWikiContext context = this.getContext();
 
-        BaseObject configurationObject = XWikiAdapter.getRemoteConfigurationGivenRemoteServerID(remoteServerId, context);
+        BaseObject configurationObject =
+            this.remoteConfigurationManager.getRemoteConfigurationGivenRemoteServerID(remoteServerId, context);
 
         if (configurationObject == null) {
             logger.error("Requested matching server is not configured: [{}]", remoteServerId);
@@ -213,9 +217,9 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
     }
 
     @Override
-    public List<PatientSimilarityView> getSimilarityResults(OutgoingMatchRequest request)
+    public List<RemotePatientSimilarityView> getSimilarityResults(OutgoingMatchRequest request)
     {
-        List<PatientSimilarityView> resultsList = new LinkedList<PatientSimilarityView>();
+        List<RemotePatientSimilarityView> resultsList = new LinkedList<>();
 
         if (request == null) {
             return resultsList;
@@ -245,6 +249,8 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
             this.logger.error("No key 'results' in reply JSON");
         }
 
+        String remoteServerId = request.getRemoteServerId();
+
         for (int i = 0; i < matches.length(); ++i) {
             try {
                 JSONObject next = matches.getJSONObject(i);
@@ -260,7 +266,8 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
                     throw new ApiViolationException("Invalid score in JSON for patient [" + modelRemotePatient.getId() + "]");
                 }
 
-                PatientSimilarityView similarityView = new RemotePatientSimilarityView(modelRemotePatient, reference, access, patientScore);
+                RemotePatientSimilarityView similarityView = new RemotePatientSimilarityView(modelRemotePatient,
+                    reference, access, patientScore);
 
                 resultsList.add(similarityView);
             } catch (ApiViolationException ex) {

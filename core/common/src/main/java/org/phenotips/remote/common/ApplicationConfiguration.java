@@ -17,7 +17,6 @@
  */
 package org.phenotips.remote.common;
 
-import org.phenotips.Constants;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.EntityReference;
 
@@ -41,6 +40,7 @@ public interface ApplicationConfiguration
     // XWiki remote request/config
     String CONFIGDOC_REMOTE_SERVER_NAME = "humanReadableName";
     String CONFIGDOC_REMOTE_SERVER_ID   = "serverId";
+    String CONFIGDOC_REMOTE_SERVER_SEARCH_MATCHES = "searchMatches";
 
     String CONFIGDOC_REMOTE_KEY_FIELD = "remoteAuthToken";     // used for accessing remote server
     String CONFIGDOC_LOCAL_KEY_FIELD  = "localAuthToken";      // used for accessing this server

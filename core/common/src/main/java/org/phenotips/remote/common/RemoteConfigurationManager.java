@@ -15,28 +15,27 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/
  */
-package org.phenotips.remote.client;
-
-import org.phenotips.remote.api.OutgoingMatchRequest;
-import org.phenotips.remote.common.internal.RemotePatientSimilarityView;
+package org.phenotips.remote.common;
 
 import org.xwiki.component.annotation.Role;
-import org.xwiki.stability.Unstable;
 
 import java.util.List;
 
-/**
- * Sends requests to remote servers supporting the specifications.
- *
- * FIXME Should there be an API for this?
- */
-@Unstable
+import com.xpn.xwiki.XWiki;
+import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.objects.BaseObject;
+
 @Role
-public interface RemoteMatchingService
-{
-    public OutgoingMatchRequest sendRequest(String patientId, String remoteServerId, int addTopNGenes);
+public interface RemoteConfigurationManager {
 
-    public OutgoingMatchRequest getLastRequestSent(String patientId, String remoteServerId);
+    List<BaseObject> getListOfRemotes(XWikiContext context);
 
-    public List<RemotePatientSimilarityView> getSimilarityResults(OutgoingMatchRequest request);
+    BaseObject getRemoteConfiguration(String baseURL, XWiki wiki, XWikiContext context)
+            throws XWikiException;
+
+    BaseObject getRemoteConfigurationGivenRemoteIPAndToken(String remoteIP, String providedToken, XWikiContext context);
+
+    BaseObject getRemoteConfigurationGivenRemoteServerID(String remoteServerID, XWikiContext context);
+
 }
