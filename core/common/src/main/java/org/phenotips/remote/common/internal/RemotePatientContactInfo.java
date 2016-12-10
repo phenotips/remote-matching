@@ -22,7 +22,9 @@ import org.phenotips.remote.api.ContactInfo;
 public class RemotePatientContactInfo implements ContactInfo
 {
     private String contactName;
+
     private String contactInstitution;
+
     private String contactHREF;
 
     public RemotePatientContactInfo(String contactName, String contactInstitution, String contactHREF)

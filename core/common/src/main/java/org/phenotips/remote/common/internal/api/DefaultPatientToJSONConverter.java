@@ -17,7 +17,6 @@
  */
 package org.phenotips.remote.common.internal.api;
 
-import org.phenotips.remote.api.tojson.PatientToJSONConverter;
 import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
 import org.phenotips.data.FeatureMetadatum;
@@ -25,31 +24,32 @@ import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
 import org.phenotips.data.similarity.PatientGenotype;
 import org.phenotips.data.similarity.internal.DefaultPatientGenotype;
-import org.phenotips.remote.common.ApplicationConfiguration;
 import org.phenotips.remote.api.ApiConfiguration;
-import org.slf4j.Logger;
+import org.phenotips.remote.api.tojson.PatientToJSONConverter;
+import org.phenotips.remote.common.ApplicationConfiguration;
 
-import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.List;
-
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
 
 public class DefaultPatientToJSONConverter implements PatientToJSONConverter
 {
     private final static String PATIENTMATCHING_JSON_FEATUREMATCHES = "featureMatches";
-    private final static String PATIENTMATCHING_JSON_CATEGORY       = "category";
-    private final static String PATIENTMATCHING_JSON_CATEGORY_ID    = "id";
-    private final static String PATIENTMATCHING_JSON_MATCH          = "match";
 
-    //private final static String ERROR_MESSAGE_UNSUPPORTED_JSON_FORMAT = "Unsupported JSON representation of matched features";
+    private final static String PATIENTMATCHING_JSON_CATEGORY = "category";
+
+    private final static String PATIENTMATCHING_JSON_CATEGORY_ID = "id";
+
+    private final static String PATIENTMATCHING_JSON_MATCH = "match";
 
     private Logger logger;
 
@@ -60,7 +60,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
     public DefaultPatientToJSONConverter(String apiVersion, Logger logger)
     {
         this.apiVersion = apiVersion;
-        this.logger     = logger;
+        this.logger = logger;
 
         this.hpoTerm = Pattern.compile("^HP:\\d+$");
     }
@@ -81,7 +81,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         try {
             json.put(ApiConfiguration.JSON_PATIENT_GENDER, DefaultPatientToJSONConverter.gender(patient));
             // TODO
-            //json.putAll(DefaultPatientToJSONConverter.globalQualifiers(patient));
+            // json.putAll(DefaultPatientToJSONConverter.globalQualifiers(patient));
         } catch (Exception ex) {
             // Do nothing. These are optional.
         }
@@ -92,15 +92,16 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         }
 
         // TODO: rework this part, as Patient may be an instance of a Patient (for outgoing requests) or
-        //       RestrictedSimilarityView (for returning replies to incoming requests), and the two
-        //       behave differently
+        // RestrictedSimilarityView (for returning replies to incoming requests), and the two
+        // behave differently
         if (removePrivateData) {
             json.put(ApiConfiguration.JSON_FEATURES, this.nonPersonalFeatures(patient));
         } else {
             json.put(ApiConfiguration.JSON_FEATURES, this.features(patient));
         }
-        JSONArray genes = removePrivateData ? DefaultPatientToJSONConverter.restrictedGenes(patient, includedTopGenes, logger) :
-                                              DefaultPatientToJSONConverter.genes(patient, includedTopGenes, logger);
+        JSONArray genes =
+            removePrivateData ? DefaultPatientToJSONConverter.restrictedGenes(patient, includedTopGenes, logger)
+                : DefaultPatientToJSONConverter.genes(patient, includedTopGenes, logger);
         if (genes.length() > 0) {
             json.put(ApiConfiguration.JSON_GENES, genes);
         }
@@ -108,7 +109,8 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         return json;
     }
 
-    private static JSONObject contact(Patient patient) {
+    private static JSONObject contact(Patient patient)
+    {
         // Default contact info
         String name = "PhenomeCentral Support";
         String institution = "PhenomeCentral";
@@ -149,7 +151,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
                 continue;
             }
             JSONObject featureJson = new JSONObject();
-            featureJson.put(ApiConfiguration.JSON_FEATURE_ID,       featureId);
+            featureJson.put(ApiConfiguration.JSON_FEATURE_ID, featureId);
             featureJson.put(ApiConfiguration.JSON_FEATURE_OBSERVED, observedStatusToJSONString(patientFeature));
 
             Map<String, ? extends FeatureMetadatum> metadata = patientFeature.getMetadata();
@@ -172,33 +174,33 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
 
     private JSONArray nonPersonalFeatures(Patient patient)
     {
-        /* Example of a expected reply which should be parsed for features:
-         *
-         * QUERY: "features": [ {"id": "HP:0000316", "observed": "yes"},
-         *                      {"id": "HP:0004325", "observed": "yes"},
-         *                      {"id": "HP:0001999", "observed": "yes"} ]
-         *
-         * REPLY:
-         *  1) "matchabe" patient with the same set of symptoms {"HP:0000316", "HP:0004325", "HP:0001999"}
-         *     and two other unmatched feature:
-         *
-         *   "features": [{"score":0.46,"category":{"id":"HP:0100886",...},"reference":["HP:0000316"],"match":[""]},
-         *                {"score":0.44,"category":{"id":"HP:0004323",...},"reference":["HP:0004325"],"match":[""]},
-         *                {"score":0.40,"category":{"id":"HP:0000271",...},"reference":["HP:0001999"],"match":[""]},
-         *                {"score":0,"category":{"id":"","name":"Unmatched"},"match":["",""]}]
-         *
-         *  2) "public" patient with {"HP:0004325", "HP:0001999", "HP:0000479"} and two other unmatched features:
-         *
-         *   "features": [{"score":0.44,"category":{"id":"HP:0004325",...},"reference":["HP:0004325"],"match":["HP:0004325"]},
-         *                {"score":0.40,"category":{"id":"HP:0001999",...},"reference":["HP:0001999"],"match":["HP:0001999"]},
-         *                {"score":0.22,"category":{"id":"HP:0000478",...},"reference":["HP:0000316"],"match":["HP:0000479"]},
-         *                {"score":0,"category":{"id":"","name":"Unmatched"},"match":["HP:0011276","HP:0000505"]}]
-         *
-         *  For now feature info returned by the patient-network component will be used, in order
-         *  not to reinvent the "privacy" wheel. All non-matched features will be returned as
-         *  HP:0000118 ("Phenotypic abnormality"), and (given how patient-netowrk component works)
-         *  all non-observed features will be ignored.
-         */
+        // Example of a expected reply which should be parsed for features:
+        //
+        // QUERY: "features": [ {"id": "HP:0000316", "observed": "yes"},
+        // {"id": "HP:0004325", "observed": "yes"},
+        // {"id": "HP:0001999", "observed": "yes"} ]
+        //
+        // REPLY:
+        // 1) "matchable" patient with the same set of symptoms {"HP:0000316", "HP:0004325", "HP:0001999"}
+        // and two other unmatched feature:
+        //
+        // "features": [{"score":0.46,"category":{"id":"HP:0100886",...},"reference":["HP:0000316"],"match":[""]},
+        // {"score":0.44,"category":{"id":"HP:0004323",...},"reference":["HP:0004325"],"match":[""]},
+        // {"score":0.40,"category":{"id":"HP:0000271",...},"reference":["HP:0001999"],"match":[""]},
+        // {"score":0,"category":{"id":"","name":"Unmatched"},"match":["",""]}]
+        //
+        // 2) "public" patient with {"HP:0004325", "HP:0001999", "HP:0000479"} and two other unmatched features:
+        //
+        // "features":
+        // [{"score":0.44,"category":{"id":"HP:0004325",...},"reference":["HP:0004325"],"match":["HP:0004325"]},
+        // {"score":0.40,"category":{"id":"HP:0001999",...},"reference":["HP:0001999"],"match":["HP:0001999"]},
+        // {"score":0.22,"category":{"id":"HP:0000478",...},"reference":["HP:0000316"],"match":["HP:0000479"]},
+        // {"score":0,"category":{"id":"","name":"Unmatched"},"match":["HP:0011276","HP:0000505"]}]
+        //
+        // For now feature info returned by the patient-network component will be used, in order
+        // not to reinvent the "privacy" wheel. All non-matched features will be returned as
+        // HP:0000118 ("Phenotypic abnormality"), and (given how patient-network component works)
+        // all non-observed features will be ignored.
 
         JSONArray features = new JSONArray();
 
@@ -207,16 +209,16 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             return features;
         }
 
-        Map<String, Integer> featureCounts      = new HashMap<String, Integer>();
-        Set<String>          obfuscatedFeatures = new HashSet<String>();
-        Set<String>          notMatchedFeatures = new HashSet<String>();
+        Map<String, Integer> featureCounts = new HashMap<String, Integer>();
+        Set<String> obfuscatedFeatures = new HashSet<String>();
+        Set<String> notMatchedFeatures = new HashSet<String>();
 
         for (Object featureMatchUC : similarityFeaturesJson) {
             JSONObject featureMatch = (JSONObject) featureMatchUC;
 
             JSONObject featureCategory = featureMatch.optJSONObject(PATIENTMATCHING_JSON_CATEGORY);
             if (featureCategory == null) {
-                //FIXME: throw new Exception(ERROR_MESSAGE_UNSUPPORTED_JSON_FORMAT);
+                // FIXME: throw new Exception(ERROR_MESSAGE_UNSUPPORTED_JSON_FORMAT);
                 continue;
             }
 
@@ -225,11 +227,11 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             // an unmatched feature
             JSONArray featureMatches = featureMatch.optJSONArray(PATIENTMATCHING_JSON_MATCH);
             if (featureMatches == null) {
-                // FIXME: need to throw to indicate unsuported format:throw new Exception(ERROR_MESSAGE_UNSUPPORTED_JSON_FORMAT);
+                // FIXME: need to throw to indicate unsuported format:throw new
+                // Exception(ERROR_MESSAGE_UNSUPPORTED_JSON_FORMAT);
                 continue;
             }
-            for (int i = 0; i < featureMatches.length(); i++)
-            {
+            for (int i = 0; i < featureMatches.length(); i++) {
                 String matchFeature = featureMatches.getString(i);
 
                 // if feature id is obfuscated use category Id instead as the best available substitute
@@ -261,9 +263,9 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             }
 
             JSONObject featureJson = new JSONObject();
-            featureJson.put(ApiConfiguration.JSON_FEATURE_ID,         featureId);
-            featureJson.put(ApiConfiguration.JSON_FEATURE_OBSERVED,   ApiConfiguration.JSON_FEATURE_OBSERVED_YES);
-            featureJson.put(ApiConfiguration.JSON_FEATURE_MATCHED,    !notMatchedFeatures.contains(featureId));
+            featureJson.put(ApiConfiguration.JSON_FEATURE_ID, featureId);
+            featureJson.put(ApiConfiguration.JSON_FEATURE_OBSERVED, ApiConfiguration.JSON_FEATURE_OBSERVED_YES);
+            featureJson.put(ApiConfiguration.JSON_FEATURE_MATCHED, !notMatchedFeatures.contains(featureId));
             featureJson.put(ApiConfiguration.JSON_FEATURE_OBFUSCATED, obfuscatedFeatures.contains(featureId));
             int count = featureCounts.get(featureId);
             if (count > 1) {
@@ -296,7 +298,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
 
     private static JSONArray genes(Patient patient, int includedTopGenes, Logger logger)
     {
-        //logger.error("[request] Getting candidate genes for patient [{}]", patient.getId());
+        // logger.error("[request] Getting candidate genes for patient [{}]", patient.getId());
 
         JSONArray genes = new JSONArray();
         try {
@@ -335,7 +337,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
 
     private static JSONArray restrictedGenes(Patient patient, int includedTopGenes, Logger logger)
     {
-        //logger.error("[reply] Getting candidate genes for patient [{}]", patient.getId());
+        // logger.error("[reply] Getting candidate genes for patient [{}]", patient.getId());
 
         JSONArray genes = new JSONArray();
 
@@ -347,7 +349,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             }
 
             int useGenes = Math.min(orderedPatientGenes.length(), includedTopGenes);
-            for(int i = 0; i < useGenes; ++i){
+            for (int i = 0; i < useGenes; ++i) {
                 JSONObject nextGeneInfo = orderedPatientGenes.optJSONObject(i);
                 // no check for null so that if nextGeneInfo is not a JSONObject an error will be logged
                 String geneName = nextGeneInfo.optString("gene", null);
@@ -363,7 +365,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
 
                     genes.put(nextGene);
                 }
-          }
+            }
 
         } catch (Exception ex) {
             logger.error("Error getting genes for patient [{}]: [{}]", patient.getId(), ex);
@@ -378,33 +380,33 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         String rawSex = patient.<ImmutablePair<String, String>>getData("sex").get(0).getRight();
         if (rawSex.toUpperCase().equals("M")) {
             return ApiConfiguration.JSON_PATIENT_GENDER_MALE;
-        } if (rawSex.toUpperCase().equals("F")) {
+        }
+        if (rawSex.toUpperCase().equals("F")) {
             return ApiConfiguration.JSON_PATIENT_GENDER_FEMALE;
         }
         return ApiConfiguration.JSON_PATIENT_GENDER_OTHER;
     }
 
-    /*private static Map<String, String> globalQualifiers(Patient patient)
-    {
-        Map<String, String> globalQualifiers = new HashMap<String, String>();
-        Map<String, String> remappedGlobalQualifierStrings = new HashMap<String, String>();
-        remappedGlobalQualifierStrings.put("global_age_of_onset", "age_of_onset");
-        remappedGlobalQualifierStrings.put("global_mode_of_inheritance", "mode_of_inheritance");
+//    private static Map<String, String> globalQualifiers(Patient patient)
+//    {
+//        Map<String, String> globalQualifiers = new HashMap<String, String>();
+//        Map<String, String> remappedGlobalQualifierStrings = new HashMap<String, String>();
+//        remappedGlobalQualifierStrings.put("global_age_of_onset", "age_of_onset");
+//        remappedGlobalQualifierStrings.put("global_mode_of_inheritance", "mode_of_inheritance");
+//        // These are the actual qualifiers, that are remapped to have the keys compliant with the remote JSON standard.
+//        PatientData<ImmutablePair<String, SolrOntologyTerm>> existingQualifiers =
+//            patient.<ImmutablePair<String, SolrOntologyTerm>>getData("global-qualifiers");
+//        if (globalQualifiers != null) {
+//            for (ImmutablePair<String, SolrOntologyTerm> qualifierPair : existingQualifiers) {
+//                for (String key : remappedGlobalQualifierStrings.keySet()) { // Could do contains, but is it safe?
+//                    if (StringUtils.equalsIgnoreCase(qualifierPair.getLeft(), key)) {
+//                        globalQualifiers.put(remappedGlobalQualifierStrings.get(key), qualifierPair.getRight().getId());
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+//        return globalQualifiers;
+//    }
 
-        // These are the actual qualifiers, that are remapped to have the keys compliant with the remote JSON standard.
-        PatientData<ImmutablePair<String, SolrOntologyTerm>> existingQualifiers =
-            patient.<ImmutablePair<String, SolrOntologyTerm>>getData("global-qualifiers");
-        if (globalQualifiers != null) {
-            for (ImmutablePair<String, SolrOntologyTerm> qualifierPair : existingQualifiers) {
-                for (String key : remappedGlobalQualifierStrings.keySet()) {
-                    // Could do contains, but is it safe?
-                    if (StringUtils.equalsIgnoreCase(qualifierPair.getLeft(), key)) {
-                        globalQualifiers.put(remappedGlobalQualifierStrings.get(key), qualifierPair.getRight().getId());
-                        break;
-                    }
-                }
-            }
-        }
-        return globalQualifiers;
-    }*/
 }

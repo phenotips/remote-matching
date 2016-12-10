@@ -27,12 +27,13 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.objects.BaseObject;
 
 @Role
-public interface RemoteConfigurationManager {
+public interface RemoteConfigurationManager
+{
 
     List<BaseObject> getListOfRemotes(XWikiContext context);
 
     BaseObject getRemoteConfiguration(String baseURL, XWiki wiki, XWikiContext context)
-            throws XWikiException;
+        throws XWikiException;
 
     BaseObject getRemoteConfigurationGivenRemoteIPAndToken(String remoteIP, String providedToken, XWikiContext context);
 

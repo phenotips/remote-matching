@@ -19,9 +19,9 @@ package org.phenotips.remote.common;
 
 import org.phenotips.remote.api.ApiDataConverter;
 
-import java.util.Set;
-
 import org.xwiki.component.annotation.Role;
+
+import java.util.Set;
 
 /*
  * Returns the correct ApiConverter for the requested API version
