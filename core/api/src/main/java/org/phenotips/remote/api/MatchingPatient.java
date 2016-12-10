@@ -17,11 +17,7 @@
  */
 package org.phenotips.remote.api;
 
-//import org.phenotips.data.Disorder;
-//import org.phenotips.data.Feature;
 import org.phenotips.data.Patient;
-
-//import java.util.Set;
 
 /**
  * TODO.
@@ -29,12 +25,13 @@ import org.phenotips.data.Patient;
 public interface MatchingPatient extends Patient
 {
     // Inherited from Patient:
-    //  Set<? extends Feature> getFeatures();
-    //  Set<? extends Disorder> getDisorders();
-    //  String getId();
-    //  getExternalId();
+    // Set<? extends Feature> getFeatures();
+    // Set<? extends Disorder> getDisorders();
+    // String getId();
+    // getExternalId();
 
-    //Set<? extends MatchingPatientGene> getGenes(); // TODO: Use VariantClass or similar instead of MatchingPatientGene?
+    // Set<? extends MatchingPatientGene> getGenes(); // TODO: Use VariantClass or similar instead of
+    // MatchingPatientGene?
 
     ContactInfo getContactInfo();
 }

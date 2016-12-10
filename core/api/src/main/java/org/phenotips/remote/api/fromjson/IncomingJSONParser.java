@@ -17,9 +17,9 @@
  */
 package org.phenotips.remote.api.fromjson;
 
-import org.json.JSONObject;
-
 import org.phenotips.remote.api.IncomingMatchRequest;
+
+import org.json.JSONObject;
 
 public interface IncomingJSONParser
 {

@@ -25,11 +25,10 @@ import org.phenotips.remote.api.ApiViolationException;
 import org.phenotips.remote.api.IncomingMatchRequest;
 import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
 import org.phenotips.remote.hibernate.internal.DefaultIncomingMatchRequest;
-import org.phenotips.remote.server.MatchingPatientsFinder;
 import org.phenotips.remote.server.SearchRequestProcessor;
+import org.phenotips.similarity.SimilarPatientsFinder;
 
 import org.xwiki.component.annotation.Component;
-import org.xwiki.context.Execution;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -43,8 +42,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
-import com.xpn.xwiki.XWikiContext;
-
 /**
  * Takes a json string in the constructor and does all the request processing functionality.
  */
@@ -56,10 +53,7 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
     private Logger logger;
 
     @Inject
-    private Execution execution;
-
-    @Inject
-    private MatchingPatientsFinder patientsFinder;
+    private SimilarPatientsFinder patientsFinder;
 
     @Inject
     private RemoteMatchingStorageManager requestStorageManager;
@@ -76,19 +70,17 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
     {
         this.logger.debug("Received JSON search request: <<{}>>", stringJson);
 
-        XWikiContext context = (XWikiContext) this.execution.getContext().getProperty("xwikicontext");
-
         try {
             JSONObject json = new JSONObject(stringJson);
 
             this.logger.debug("...parsing input...");
 
             IncomingMatchRequest request =
-                    apiVersionSpecificConverter.getIncomingJSONParser().parseIncomingRequest(json, remoteServerId);
+                apiVersionSpecificConverter.getIncomingJSONParser().parseIncomingRequest(json, remoteServerId);
 
             this.logger.debug("...handling...");
 
-            List<PatientSimilarityView> matches = patientsFinder.findMatchingPatients(request.getModelPatient());
+            List<PatientSimilarityView> matches = patientsFinder.findSimilarPatients(request.getModelPatient());
 
             List<PatientSimilarityView> filteredMatches = filterMatches(matches);
 
@@ -120,7 +112,7 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
     public void saveUnprocessedRequest(String requestString, String remoteServerId, String apiVersion)
     {
         IncomingMatchRequest request =
-                new DefaultIncomingMatchRequest(remoteServerId, apiVersion, requestString, null);
+            new DefaultIncomingMatchRequest(remoteServerId, apiVersion, requestString, null);
 
         requestStorageManager.saveIncomingRequest(request);
     }
@@ -130,7 +122,7 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
         // check consent level for each of the patient: exclude patients without explicit MME consent
         //
         // TODO: use CollectionUtils.filter once a) updated Apache Commons that support parametrized types are used
-        //       and b) a workaround for anonymous classes only being able to use final local variables is testd
+        // and b) a workaround for anonymous classes only being able to use final local variables is testd
 
         List<PatientSimilarityView> filteredMatches = new LinkedList<PatientSimilarityView>();
 
@@ -145,7 +137,8 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
                     filteredMatches.add(match);
                 }
             } else {
-                logger.error("Patient [{}] is excluded form match results because match consent is unchecked", match.getId());
+                logger.error("Patient [{}] is excluded form match results because match consent is unchecked",
+                    match.getId());
             }
         }
 

@@ -19,12 +19,13 @@ package org.phenotips.remote.common.internal;
 
 import org.phenotips.remote.api.ApiDataConverter;
 import org.phenotips.remote.common.ApiFactory;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.phase.Initializable;
 
-import java.util.Set;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -48,7 +49,6 @@ public class DefaultApiFactory implements ApiFactory, Initializable
     public void initialize()
     {
         allApiDataConverters.put("1.0", this.apiDataConverterV1);
-        //allApiDataConverters.put("1.1", this.apiDataConverterV2);
     }
 
     @Override

@@ -22,7 +22,6 @@ import org.phenotips.remote.api.ApiDataConverter;
 import org.phenotips.remote.common.ApiFactory;
 import org.phenotips.remote.common.ApplicationConfiguration;
 import org.phenotips.remote.common.RemoteConfigurationManager;
-import org.phenotips.remote.common.internal.XWikiAdapter;
 import org.phenotips.remote.server.ApiRequestHandler;
 import org.phenotips.remote.server.SearchRequestProcessor;
 
@@ -95,8 +94,8 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
                 this.logger.debug("Request version: <<{}>>", apiVersion);
 
                 String requestKey = httpRequest.getHeader(ApiConfiguration.HTTPHEADER_KEY_PARAMETER);
-                BaseObject remoteServerConfiguration = this.remoteConfigurationManager.
-                        getRemoteConfigurationGivenRemoteIPAndToken(httpRequest.getRemoteAddr(), requestKey, context);
+                BaseObject remoteServerConfiguration = this.remoteConfigurationManager
+                    .getRemoteConfigurationGivenRemoteIPAndToken(httpRequest.getRemoteAddr(), requestKey, context);
 
                 if (remoteServerConfiguration == null) {
                     jsonResponse = new JSONObject();
@@ -104,27 +103,27 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
                     jsonResponse.put(ApiConfiguration.REPLY_JSON_ERROR_DESCRIPTION, "unauthorized server");
                 } else {
                     String remoteServerId =
-                            remoteServerConfiguration.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_ID);
+                        remoteServerConfiguration.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_ID);
 
                     // Using futures to queue tasks and to retrieve results.
                     ExecutorService queue = Executors.newSingleThreadExecutor();
                     jsonResponse = this.searchRequestProcessor.processHTTPSearchRequest(
-                                   apiVersionSpecificConverter, json, queue, remoteServerId, httpRequest);
+                        apiVersionSpecificConverter, json, queue, remoteServerId, httpRequest);
                 }
             } catch (IllegalArgumentException ex) {
                 this.logger.error("Incorrect incoming request: unsupported API version: [{}]", apiVersion);
                 jsonResponse = new JSONObject();
                 jsonResponse.put(ApiConfiguration.REPLY_JSON_HTTP_STATUS,
-                                 ApiConfiguration.HTTP_UNSUPPORTED_API_VERSION);
+                    ApiConfiguration.HTTP_UNSUPPORTED_API_VERSION);
                 jsonResponse.put(ApiConfiguration.REPLY_JSON_ERROR_DESCRIPTION,
-                                 "unsupported API version");
+                    "unsupported API version");
                 jsonResponse.put(ApiConfiguration.REPLY_JSON_SUPPORTEDVERSIONS,
-                                 new JSONArray(this.apiFactory.getSupportedApiVersions()));
+                    new JSONArray(this.apiFactory.getSupportedApiVersions()));
                 apiVersion = ApiConfiguration.LATEST_API_VERSION_STRING;
             } catch (Exception ex) {
                 jsonResponse = new JSONObject();
                 jsonResponse.put(ApiConfiguration.REPLY_JSON_HTTP_STATUS,
-                                 ApiConfiguration.HTTP_SERVER_ERROR);
+                    ApiConfiguration.HTTP_SERVER_ERROR);
                 apiVersion = ApiConfiguration.LATEST_API_VERSION_STRING;
             }
 

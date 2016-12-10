@@ -20,17 +20,16 @@ package org.phenotips.remote.common.internal.api;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.IncomingMatchRequest;
 import org.phenotips.remote.api.MatchingPatient;
-import org.phenotips.remote.common.internal.api.DefaultJSONToMatchingPatientConverter;
 import org.phenotips.remote.api.fromjson.IncomingJSONParser;
 import org.phenotips.remote.api.fromjson.JSONToMatchingPatientConverter;
 import org.phenotips.remote.hibernate.internal.DefaultIncomingMatchRequest;
 import org.phenotips.vocabulary.Vocabulary;
-import org.slf4j.Logger;
 
 import org.json.JSONObject;
+import org.slf4j.Logger;
+
 /**
- * TODO
- * note: designed to be able to handle multiple (slightly different) versions of the Matching API
+ * TODO note: designed to be able to handle multiple (slightly different) versions of the Matching API
  */
 public class DefaultIncomingJSONParser implements IncomingJSONParser
 {
@@ -43,7 +42,7 @@ public class DefaultIncomingJSONParser implements IncomingJSONParser
     public DefaultIncomingJSONParser(String apiVersion, Logger logger, Vocabulary ontologyService)
     {
         this.apiVersion = apiVersion;
-        this.logger     = logger;
+        this.logger = logger;
 
         this.patientConverter = new DefaultJSONToMatchingPatientConverter(apiVersion, logger, ontologyService);
     }
@@ -56,7 +55,7 @@ public class DefaultIncomingJSONParser implements IncomingJSONParser
         MatchingPatient requestPatient = this.patientConverter.convert(patientJSON);
 
         DefaultIncomingMatchRequest request =
-               new DefaultIncomingMatchRequest(remoteServerId, this.apiVersion, jsonRequest.toString(), requestPatient);
+            new DefaultIncomingMatchRequest(remoteServerId, this.apiVersion, jsonRequest.toString(), requestPatient);
 
         this.logger.debug("JSON->IncomingRequest done");
 

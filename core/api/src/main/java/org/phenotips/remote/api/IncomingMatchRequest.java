@@ -17,20 +17,16 @@
  */
 package org.phenotips.remote.api;
 
-import org.phenotips.remote.api.MatchRequest;
-
 import org.json.JSONObject;
 
 public interface IncomingMatchRequest extends MatchRequest
 {
     /**
-     *
      * @return
      */
     MatchingPatient getModelPatient();
 
     /**
-     *
      * @param response
      */
     void addResponse(JSONObject response);

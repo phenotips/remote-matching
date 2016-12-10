@@ -96,7 +96,8 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
     private RemoteMatchingStorageManager requestStorageManager;
 
     @Inject
-    private PatientSimilarityViewFactory similarityViewFactory;  // injected so that static data is initialized. TODO: review static data usage
+    private PatientSimilarityViewFactory similarityViewFactory; // injected so that static data is initialized. TODO:
+                                                                // review static data usage
 
     @Inject
     private RemoteConfigurationManager remoteConfigurationManager;
@@ -105,7 +106,7 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
     public OutgoingMatchRequest sendRequest(String patientId, String remoteServerId, int addTopNGenes)
     {
         DefaultOutgoingMatchRequest request =
-                new DefaultOutgoingMatchRequest(remoteServerId, ApiConfiguration.LATEST_API_VERSION_STRING, patientId);
+            new DefaultOutgoingMatchRequest(remoteServerId, ApiConfiguration.LATEST_API_VERSION_STRING, patientId);
 
         XWikiContext context = this.getContext();
 
@@ -115,39 +116,39 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
         if (configurationObject == null) {
             logger.error("Requested matching server is not configured: [{}]", remoteServerId);
             return this.generateErrorRequest(ApiConfiguration.ERROR_NOT_SENT,
-                    "requested matching server ["+remoteServerId+"] is not configured", request);
+                "requested matching server [" + remoteServerId + "] is not configured", request);
         }
 
         JSONObject requestJSON;
         try {
             ApiDataConverter apiVersionSpecificConverter =
-                    this.apiFactory.getApiVersion(ApiConfiguration.LATEST_API_VERSION_STRING);
+                this.apiFactory.getApiVersion(ApiConfiguration.LATEST_API_VERSION_STRING);
 
             requestJSON = apiVersionSpecificConverter.getOutgoingJSONGenerator()
-                              .generateRequestJSON(remoteServerId, patientId, addTopNGenes);
+                .generateRequestJSON(remoteServerId, patientId, addTopNGenes);
         } catch (ApiViolationException ex) {
             return this.generateErrorRequest(ApiConfiguration.ERROR_NOT_SENT, ex.getMessage(), request);
         }
         if (requestJSON == null) {
             this.logger.error("Unable to convert patient to JSON: [{}]", patientId);
             return this.generateErrorRequest(ApiConfiguration.ERROR_NOT_SENT,
-                    "unable to convert patient with ID ["+patientId.toString()+"] to JSON", request);
+                "unable to convert patient with ID [" + patientId.toString() + "] to JSON", request);
         }
 
         CloseableHttpClient client = HttpClients.createDefault();
 
         StringEntity jsonEntity =
-                new StringEntity(requestJSON.toString(), ContentType.create("application/json", "utf-8"));
+            new StringEntity(requestJSON.toString(), ContentType.create("application/json", "utf-8"));
 
         // TODO: hack to make charset lower-cased so that GeneMatcher accepts it
-        //jsonEntity.setContentType("application/json; charset=utf-8");
+        // jsonEntity.setContentType("application/json; charset=utf-8");
         String mimeType = ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX +
             ApiConfiguration.LATEST_API_VERSION_STRING +
             ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX;
         jsonEntity.setContentType(mimeType + "; charset=utf-8");
         this.logger.error("Setting Content-Type: [{}]", jsonEntity.getContentType().toString());
 
-        String key     = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_KEY_FIELD);
+        String key = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_KEY_FIELD);
         String baseURL = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_BASE_URL_FIELD);
         if (baseURL.charAt(baseURL.length() - 1) != '/') {
             baseURL += "/";
@@ -165,8 +166,8 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
             this.logger.error("Setting {}: [{}]", ApiConfiguration.HTTPHEADER_API_VERSION, mimeType);
             httpResponse = client.execute(httpRequest);
         } catch (javax.net.ssl.SSLHandshakeException ex) {
-            this.logger.error("Error sending matching request to ["+ targetURL +
-                              "]: SSL handshake exception: [{}]", ex);
+            this.logger.error("Error sending matching request to [" + targetURL +
+                "]: SSL handshake exception: [{}]", ex);
             return this.generateErrorRequest(ApiConfiguration.ERROR_NOT_SENT, "SSL handshake problem", request);
         } catch (Exception ex) {
             this.logger.error("Error sending matching request to [" + targetURL + "]: [{}]", ex);
@@ -174,8 +175,8 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
         }
 
         try {
-            Integer httpStatus   = (Integer) httpResponse.getStatusLine().getStatusCode();
-            String stringReply   = EntityUtils.toString(httpResponse.getEntity());
+            Integer httpStatus = (Integer) httpResponse.getStatusLine().getStatusCode();
+            String stringReply = EntityUtils.toString(httpResponse.getEntity());
 
             logger.error("Reply to matching request: STATUS: [{}], DATA: [{}]", httpStatus, stringReply);
 
@@ -193,7 +194,8 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
         }
     }
 
-    private OutgoingMatchRequest generateErrorRequest(Integer statusCode, String errorMessage, DefaultOutgoingMatchRequest baseRequest)
+    private OutgoingMatchRequest generateErrorRequest(Integer statusCode, String errorMessage,
+        DefaultOutgoingMatchRequest baseRequest)
     {
         baseRequest.setReplayHTTPStatus(statusCode);
 
@@ -212,7 +214,8 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
     }
 
     @Override
-    public OutgoingMatchRequest getLastRequestSent(String patientId, String remoteServerId) {
+    public OutgoingMatchRequest getLastRequestSent(String patientId, String remoteServerId)
+    {
         return requestStorageManager.loadCachedOutgoingRequest(patientId, remoteServerId);
     }
 
@@ -240,9 +243,10 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
         }
 
         DefaultJSONToMatchingPatientConverter patientConverter =
-                new DefaultJSONToMatchingPatientConverter(ApiConfiguration.LATEST_API_VERSION_STRING, logger, ontologyService);
+            new DefaultJSONToMatchingPatientConverter(ApiConfiguration.LATEST_API_VERSION_STRING, logger,
+                ontologyService);
 
-        //JSONArray processedResults = new JSONArray();
+        // JSONArray processedResults = new JSONArray();
 
         JSONArray matches = replyJSON.optJSONArray("results");
         if (matches == null) {
@@ -263,7 +267,8 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
                     patientScore = next.getJSONObject("score").getDouble("patient");
                 } catch (Exception ex) {
                     this.logger.error("Invalid score in JSON for patient [{}]", modelRemotePatient.getId());
-                    throw new ApiViolationException("Invalid score in JSON for patient [" + modelRemotePatient.getId() + "]");
+                    throw new ApiViolationException(
+                        "Invalid score in JSON for patient [" + modelRemotePatient.getId() + "]");
                 }
 
                 RemotePatientSimilarityView similarityView = new RemotePatientSimilarityView(modelRemotePatient,
@@ -271,13 +276,15 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
 
                 resultsList.add(similarityView);
             } catch (ApiViolationException ex) {
-                this.logger.error("Parsing incoming patients: one of the patients did not satisfy API requirements: [{}]", ex.getMessage());
+                this.logger.error(
+                    "Parsing incoming patients: one of the patients did not satisfy API requirements: [{}]",
+                    ex.getMessage());
             } catch (Exception ex) {
                 this.logger.error("Error parsing one of the patients from JSON: [{}]", ex);
             }
         }
 
-        //replyJSON.element("results", processedResults);
+        // replyJSON.element("results", processedResults);
         return resultsList;
     }
 }

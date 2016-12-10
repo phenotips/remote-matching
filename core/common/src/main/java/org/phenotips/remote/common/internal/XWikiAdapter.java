@@ -25,9 +25,6 @@ import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -39,8 +36,6 @@ import com.xpn.xwiki.objects.BaseObject;
  */
 public class XWikiAdapter
 {
-    private static final Logger logger = LoggerFactory.getLogger(XWikiAdapter.class);
-
     static public BaseObject getSubmitter(String userId, XWiki wiki, XWikiContext context,
         DocumentReferenceResolver<String> resolver) throws XWikiException
     {
