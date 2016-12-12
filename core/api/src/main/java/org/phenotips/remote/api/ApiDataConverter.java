@@ -23,20 +23,16 @@ import org.phenotips.remote.api.tojson.OutgoingJSONGenerator;
 
 import org.xwiki.component.annotation.Role;
 
-//import org.phenotips.remote.api.ApiConfiguration;
 import java.util.List;
 
 import org.json.JSONObject;
 
 /*
- * Converts matching requests and replies to and from JSON
+ * Converts matching requests and replies to and from JSON.
  */
 @Role
 public interface ApiDataConverter
 {
-    // TODO:
-    // ApiConfiguration getApiConfiguration();
-
     String getApiVersion();
 
     JSONObject generateWrongInputDataResponse(String reasonMsg);

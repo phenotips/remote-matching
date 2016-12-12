@@ -18,7 +18,7 @@
 package org.phenotips.remote.api;
 
 /**
- * TODO: make an interface so that different versions of the API can implement this differently This is where the
+ * TODO: make an interface so that different versions of the API can implement this differently. This is where the
  * constants and other configurations are stored for easy global access.
  */
 public interface ApiConfiguration
