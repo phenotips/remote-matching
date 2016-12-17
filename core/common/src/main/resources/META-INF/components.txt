@@ -1,4 +1,3 @@
 org.phenotips.remote.common.internal.DefaultApiFactory
 org.phenotips.remote.common.internal.api.v1.ApiDataConverterV1
-org.phenotips.remote.common.internal.api.v2.ApiDataConverterV2
 org.phenotips.remote.common.internal.DefaultRemoteConfigurationManager
