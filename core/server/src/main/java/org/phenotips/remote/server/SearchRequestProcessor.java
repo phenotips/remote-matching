@@ -18,7 +18,6 @@
 package org.phenotips.remote.server;
 
 import org.phenotips.remote.api.ApiDataConverter;
-
 import org.xwiki.component.annotation.Role;
 
 import java.util.concurrent.ExecutorService;

@@ -61,15 +61,14 @@ public class RemoteMatchingScriptService implements ScriptService
     {
         this.logger.info("Sending outgoing request for patient [{}] to server [{}]", patientId, remoteServerId);
 
-        OutgoingMatchRequest request = this.matchingService.sendRequest(patientId, remoteServerId, addTopNGenes);
+        OutgoingMatchRequest request =  this.matchingService.sendRequest(patientId, remoteServerId, addTopNGenes);
 
         return this.processRequest(request);
     }
 
     public JSONObject getLastRequest(String patientId, String remoteServerId)
     {
-        this.logger.info("Getting processed response for the last request for patient [{}] to server [{}]", patientId,
-            remoteServerId);
+        this.logger.info("Getting processed response for the last request for patient [{}] to server [{}]", patientId, remoteServerId);
 
         OutgoingMatchRequest request = this.matchingService.getLastRequestSent(patientId, remoteServerId);
 

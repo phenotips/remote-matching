@@ -17,9 +17,9 @@
  */
 package org.phenotips.remote.api.tojson;
 
-import org.phenotips.remote.api.ApiViolationException;
-
 import org.json.JSONObject;
+
+import org.phenotips.remote.api.ApiViolationException;
 
 public interface OutgoingJSONGenerator
 {

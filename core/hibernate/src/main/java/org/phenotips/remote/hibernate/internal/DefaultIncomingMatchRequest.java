@@ -17,14 +17,14 @@
  */
 package org.phenotips.remote.hibernate.internal;
 
+import org.json.JSONObject;
+
 import org.phenotips.remote.api.IncomingMatchRequest;
 import org.phenotips.remote.api.MatchingPatient;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-
-import org.json.JSONObject;
 
 /**
  * Class for storing an incoming request outside the main PhenoTips database for privacy reasons.
@@ -46,11 +46,11 @@ public class DefaultIncomingMatchRequest extends AbstractSearchRequest implement
     }
 
     /**
-     * @param queryID when not null, the ID of the request that needs to be updated; iff null, an auto-generated ID will
-     *            be assigned when the request is stored in the database
+     * @param queryID when not null, the ID of the request that needs to be updated;
+     *                iff null, an auto-generatred ID wil be assigned when the request is stored in the database
      */
     public DefaultIncomingMatchRequest(String remoteServerId, String apiVersionUsed,
-        String request, MatchingPatient remotePatient)
+                                       String request, MatchingPatient remotePatient)
     {
         super(remoteServerId, apiVersionUsed, request, null);
 

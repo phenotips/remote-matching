@@ -19,17 +19,17 @@ package org.phenotips.remote.common.internal.api;
 
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientRepository;
+import org.phenotips.remote.api.tojson.OutgoingJSONGenerator;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.ApiViolationException;
-import org.phenotips.remote.api.tojson.OutgoingJSONGenerator;
 import org.phenotips.remote.api.tojson.PatientToJSONConverter;
-
-import org.xwiki.bridge.DocumentAccessBridge;
+import org.phenotips.remote.common.internal.api.DefaultPatientToJSONConverter;
+import org.slf4j.Logger;
 import org.xwiki.security.authorization.AuthorizationManager;
 import org.xwiki.security.authorization.Right;
+import org.xwiki.bridge.DocumentAccessBridge;
 
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 public class DefaultOutgoingJSONGenerator implements OutgoingJSONGenerator
 {
@@ -46,14 +46,14 @@ public class DefaultOutgoingJSONGenerator implements OutgoingJSONGenerator
     private final String apiVersion;
 
     public DefaultOutgoingJSONGenerator(String apiVersion, Logger logger, PatientRepository patientRepository,
-        AuthorizationManager access, DocumentAccessBridge bridge)
+                                        AuthorizationManager access, DocumentAccessBridge bridge)
     {
         this.apiVersion = apiVersion;
 
-        this.logger = logger;
+        this.logger            = logger;
         this.patientRepository = patientRepository;
-        this.access = access;
-        this.bridge = bridge;
+        this.access            = access;
+        this.bridge            = bridge;
 
         this.patientToJSONConverter = new DefaultPatientToJSONConverter(this.apiVersion, logger);
     }
@@ -72,9 +72,9 @@ public class DefaultOutgoingJSONGenerator implements OutgoingJSONGenerator
             JSONObject patientJson = this.patientToJSONConverter.convert(referencePatient, false, includedTopGenes);
 
             if ((!patientJson.has(ApiConfiguration.JSON_FEATURES) ||
-                patientJson.getJSONArray(ApiConfiguration.JSON_FEATURES).length() == 0) &&
+                  patientJson.getJSONArray(ApiConfiguration.JSON_FEATURES).length() == 0) &&
                 (!patientJson.has(ApiConfiguration.JSON_GENES) ||
-                    patientJson.getJSONArray(ApiConfiguration.JSON_GENES).length() == 0)) {
+                  patientJson.getJSONArray(ApiConfiguration.JSON_GENES).length() == 0)) {
                 this.logger.error("Can't send a query for a patient with no features and no genes");
                 throw new ApiViolationException("Can't send a query for a patient with no features and no genes");
             }
@@ -83,8 +83,8 @@ public class DefaultOutgoingJSONGenerator implements OutgoingJSONGenerator
             JSONObject json = new JSONObject();
             json.put(ApiConfiguration.JSON_PATIENT, patientJson);
 
-            // JSONObject submitter = new JSONObject();
-            // submitter.put("name", request.getSubmitterName());
+            //JSONObject submitter = new JSONObject();
+            //submitter.put("name",  request.getSubmitterName());
 
             return json;
         } catch (ApiViolationException ex) {
@@ -107,7 +107,7 @@ public class DefaultOutgoingJSONGenerator implements OutgoingJSONGenerator
         if (!this.access.hasAccess(Right.toRight(accessLevelName), this.bridge.getCurrentUserReference(),
             patient.getDocument())) {
             this.logger.error("Can't send outgoing matching request for patient [{}]: no access level [{}]",
-                patientID, accessLevelName);
+                              patientID, accessLevelName);
             return null;
         }
 

@@ -31,7 +31,7 @@ public class RemotePatientSimilarityView extends DefaultPatientSimilarityView
     private Double remoteScore;
 
     public RemotePatientSimilarityView(MatchingPatient match, Patient reference, AccessType access, Double remoteScore)
-        throws IllegalArgumentException
+            throws IllegalArgumentException
     {
         super(match, reference, access);
 
@@ -43,7 +43,7 @@ public class RemotePatientSimilarityView extends DefaultPatientSimilarityView
     {
         JSONObject result = super.toJSON();
 
-        ContactInfo contactInfo = ((MatchingPatient) match).getContactInfo();
+        ContactInfo contactInfo = ((MatchingPatient)match).getContactInfo();
         JSONObject contactJSON = new JSONObject();
         contactJSON.put("href", contactInfo.getContactHREF());
         contactJSON.put("institution", contactInfo.getContactInstitution());

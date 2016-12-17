@@ -17,14 +17,14 @@
  */
 package org.phenotips.remote.api;
 
+//import org.phenotips.remote.api.ApiConfiguration;
+import java.util.List;
+
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.fromjson.IncomingJSONParser;
 import org.phenotips.remote.api.tojson.OutgoingJSONGenerator;
 
 import org.xwiki.component.annotation.Role;
-
-//import org.phenotips.remote.api.ApiConfiguration;
-import java.util.List;
 
 import org.json.JSONObject;
 
@@ -34,18 +34,24 @@ import org.json.JSONObject;
 @Role
 public interface ApiDataConverter
 {
-    // TODO:
-    // ApiConfiguration getApiConfiguration();
+    //TODO:
+    //ApiConfiguration getApiConfiguration();
 
     String getApiVersion();
+
+    //================================================================
 
     JSONObject generateWrongInputDataResponse(String reasonMsg);
 
     JSONObject generateInternalServerErrorResponse(String reasonMsg);
 
+    //================================================================
+
     IncomingJSONParser getIncomingJSONParser();
 
     JSONObject generateServerResponse(IncomingMatchRequest request, List<PatientSimilarityView> resultList);
+
+    //================================================================
 
     OutgoingJSONGenerator getOutgoingJSONGenerator();
 }

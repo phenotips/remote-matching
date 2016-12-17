@@ -98,8 +98,7 @@ public class DefaultRemoteConfigurationManager implements RemoteConfigurationMan
     }
 
     @Override
-    public BaseObject getRemoteConfigurationGivenRemoteIPAndToken(String remoteIP, String providedToken,
-        XWikiContext context)
+    public BaseObject getRemoteConfigurationGivenRemoteIPAndToken(String remoteIP, String providedToken, XWikiContext context)
     {
         try {
             List<BaseObject> remotes = getListOfRemotes(context);
@@ -121,20 +120,17 @@ public class DefaultRemoteConfigurationManager implements RemoteConfigurationMan
                 boolean limitIPs = (remote.getIntValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_LIMIT_IP) == 1);
 
                 if (limitIPs) {
-                    String configuredURL =
-                        remote.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_BASE_URL_FIELD);
+                    String configuredURL = remote.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_BASE_URL_FIELD);
                     try {
                         String configuredIP = InetAddress.getByName(new URL(configuredURL).getHost()).getHostAddress();
                         if (!StringUtils.equalsIgnoreCase(remoteIP, configuredIP)) {
                             continue;
                         }
                     } catch (MalformedURLException ex) {
-                        logger.error(
-                            "One of the configured remote matching servers has an incorrectly formatted URL [{}]: {}",
+                        logger.error("One of the configured remote matching servers has an incorrectly formatted URL [{}]: {}",
                             configuredURL, ex.getMessage());
                     } catch (UnknownHostException ex) {
-                        logger.error(
-                            "One of the configured remote matching server URLs has no valid DNS record [{}]: {}",
+                        logger.error("One of the configured remote matching server URLs has no valid DNS record [{}]: {}",
                             configuredURL, ex.getMessage());
                     }
 

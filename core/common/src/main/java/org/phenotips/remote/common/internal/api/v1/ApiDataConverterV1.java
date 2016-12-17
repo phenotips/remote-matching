@@ -17,6 +17,15 @@
  */
 package org.phenotips.remote.common.internal.api.v1;
 
+import java.util.List;
+
+import org.json.JSONObject;
+import org.json.JSONArray;
+
+import org.xwiki.component.phase.Initializable;
+import org.phenotips.remote.common.internal.api.DefaultIncomingJSONParser;
+import org.phenotips.remote.common.internal.api.DefaultPatientToJSONConverter;
+import org.phenotips.remote.common.internal.api.DefaultOutgoingJSONGenerator;
 import org.phenotips.data.PatientRepository;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.ApiConfiguration;
@@ -25,24 +34,15 @@ import org.phenotips.remote.api.IncomingMatchRequest;
 import org.phenotips.remote.api.fromjson.IncomingJSONParser;
 import org.phenotips.remote.api.tojson.OutgoingJSONGenerator;
 import org.phenotips.remote.api.tojson.PatientToJSONConverter;
-import org.phenotips.remote.common.internal.api.DefaultIncomingJSONParser;
-import org.phenotips.remote.common.internal.api.DefaultOutgoingJSONGenerator;
-import org.phenotips.remote.common.internal.api.DefaultPatientToJSONConverter;
 import org.phenotips.vocabulary.Vocabulary;
-
-import org.xwiki.bridge.DocumentAccessBridge;
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.phase.Initializable;
 import org.xwiki.security.authorization.AuthorizationManager;
-
-import java.util.List;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.xwiki.bridge.DocumentAccessBridge;
 import org.slf4j.Logger;
+
+import javax.inject.Named;
+import javax.inject.Inject;
+
+import org.xwiki.component.annotation.Component;
 
 @Component
 @Named("api-data-converter-v1")
@@ -84,8 +84,7 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
 
         this.patientToJSONConverter = new DefaultPatientToJSONConverter(getApiVersion(), logger);
 
-        this.outgoingJSONGenerator =
-            new DefaultOutgoingJSONGenerator(getApiVersion(), logger, patientRepository, access, bridge);
+        this.outgoingJSONGenerator = new DefaultOutgoingJSONGenerator(getApiVersion(), logger, patientRepository, access, bridge);
     }
 
     @Override
@@ -93,6 +92,8 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
     {
         return VERSION_STRING;
     }
+
+    //================================================================
 
     @Override
     public JSONObject generateWrongInputDataResponse(String reasonMsg)
@@ -116,6 +117,8 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
         return reply;
     }
 
+    //================================================================
+
     @Override
     public IncomingJSONParser getIncomingJSONParser()
     {
@@ -138,7 +141,7 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
                 matchInfo.put(ApiConfiguration.REPLY_JSON_RESULTS_SCORE, scoreJson);
 
                 matchInfo.put(ApiConfiguration.REPLY_JSON_RESULTS_PATIENT,
-                    this.patientToJSONConverter.convert(patient, true, DEFAULT_NUMBER_OF_GENES_IN_REPLIES));
+                              this.patientToJSONConverter.convert(patient, true, DEFAULT_NUMBER_OF_GENES_IN_REPLIES));
                 matchList.put(matchInfo);
             } catch (Exception ex) {
                 this.logger.error("Error converting patient to JSON: [{}]", ex);
@@ -152,6 +155,8 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
 
         return reply;
     }
+
+    //================================================================
 
     @Override
     public OutgoingJSONGenerator getOutgoingJSONGenerator()

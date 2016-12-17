@@ -17,14 +17,17 @@
  */
 package org.phenotips.remote.hibernate.internal;
 
+//import org.phenotips.data.Patient;
+//import org.phenotips.data.similarity.PatientSimilarityView;
+//import org.phenotips.data.similarity.PatientSimilarityViewFactory;
+import org.json.JSONObject;
+
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.OutgoingMatchRequest;
 
 import javax.persistence.Basic;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-
-import org.json.JSONObject;
 
 /**
  * TODO.

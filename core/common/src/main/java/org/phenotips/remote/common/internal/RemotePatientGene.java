@@ -23,11 +23,15 @@ public class RemotePatientGene implements MatchingPatientGene
 {
     private String geneName;
 
-    // private String assembly;
-    // private String referenceName;
-    // private Long start;
-    // private Long end;
-    // private String mutationType;
+    /*private String assembly;
+
+    private String referenceName;
+
+    private Long start;
+
+    private Long end;
+
+    private String mutationType;*/
 
     public RemotePatientGene(String geneName)
     {

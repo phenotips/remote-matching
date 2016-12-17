@@ -19,16 +19,16 @@ package org.phenotips.remote.hibernate.internal;
 
 import org.phenotips.remote.api.MatchRequest;
 
-import java.sql.Timestamp;
+import org.hibernate.annotations.Type;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.persistence.Basic;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 
-import org.hibernate.annotations.Type;
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.sql.Timestamp;
 
 /**
  * This class combines shared functions between the different search request types (
@@ -49,10 +49,10 @@ public abstract class AbstractSearchRequest implements MatchRequest
     @Basic
     private Timestamp requestTime;
 
-    @Type(type = "text")
+    @Type(type="text")
     private String request;
 
-    @Type(type = "text")
+    @Type(type="text")
     private String response;
 
     @Basic

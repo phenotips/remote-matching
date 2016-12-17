@@ -15,23 +15,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/
  */
-package org.phenotips.remote.api;
+package org.phenotips.remote.server;
 
-import org.phenotips.remote.api.MatchRequest;
+import org.phenotips.data.similarity.PatientSimilarityView;
+import org.phenotips.remote.api.MatchingPatient;
 
-import org.json.JSONObject;
+import org.xwiki.component.annotation.Role;
 
-public interface IncomingMatchRequest extends MatchRequest
+import java.util.List;
+
+@Role
+public interface MatchingPatientsFinder
 {
-    /**
-     *
-     * @return
-     */
-    MatchingPatient getModelPatient();
-
-    /**
-     *
-     * @param response
-     */
-    void addResponse(JSONObject response);
+    List<PatientSimilarityView> findMatchingPatients(MatchingPatient modelPatient);
 }

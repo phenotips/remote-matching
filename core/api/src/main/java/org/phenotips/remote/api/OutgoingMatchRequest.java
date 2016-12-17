@@ -17,24 +17,30 @@
  */
 package org.phenotips.remote.api;
 
+import org.phenotips.remote.api.MatchRequest;
+
 public interface OutgoingMatchRequest extends MatchRequest
 {
     /**
+     *
      * @return
      */
     String getLocalReferencePatientId();
 
     /**
+     *
      * @return
      */
     boolean wasSent();
 
     /**
+     *
      * @return
      */
     boolean gotValidReply();
 
     /**
+     *
      * @return
      */
     Integer getRequestStatusCode();

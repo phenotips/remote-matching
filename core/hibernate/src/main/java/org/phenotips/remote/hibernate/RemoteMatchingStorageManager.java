@@ -30,14 +30,16 @@ public interface RemoteMatchingStorageManager
      */
     void saveIncomingRequest(IncomingMatchRequest request);
 
+    //=========================================================================
+
     /**
      * Stores the incoming request and the generated reply for audit purposes
      */
     void saveOutgoingRequest(OutgoingMatchRequest request);
 
     /**
-     * Returns the last request+response received form the given server when querying for the given patient. Returns
-     * null if no responses are currently cached.
+     * Returns the last request+response received form the given server when quering for the given patient.
+     * Returns null if no responses are currently cached.
      */
     OutgoingMatchRequest loadCachedOutgoingRequest(String remoteServerId, String patientId);
 }

@@ -34,21 +34,25 @@ public interface MatchRequest
     String getRemoteServerId();
 
     /**
+     *
      * @return
      */
     JSONObject getRequestJSON();
 
     /**
+     *
      * @return
      */
     JSONObject getResponseJSON();
 
     /**
+     *
      * @return
      */
     Date getRequestTime();
 
     /**
+     *
      * @return
      */
     String getApiVersionUsed();

@@ -20,15 +20,14 @@ package org.phenotips.remote.hibernate.internal;
 import org.phenotips.remote.api.IncomingMatchRequest;
 import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
-
 import org.xwiki.component.annotation.Component;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.HibernateException;
 import org.hibernate.criterion.Property;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
@@ -60,14 +59,14 @@ public class DefaultRemoteMatchingStorageManager implements RemoteMatchingStorag
         Session session = this.sessionFactory.getSessionFactory().openSession();
         Transaction t = session.beginTransaction();
         try {
-            Long id = (Long) session.save(request);
+            Long id = (Long)session.save(request);
             t.commit();
             this.logger.info("Stored new incoming request from server [{}] with id [{}]",
-                request.getRemoteServerId(), id);
+                             request.getRemoteServerId(), id);
         } catch (HibernateException ex) {
             this.logger.error("ERROR storing new incoming request from server [{}]: [{}]",
-                request.getRemoteServerId(), ex);
-            if (t != null) {
+                              request.getRemoteServerId(), ex);
+            if (t!=null) {
                 t.rollback();
             }
             throw ex;
@@ -82,14 +81,14 @@ public class DefaultRemoteMatchingStorageManager implements RemoteMatchingStorag
         Session session = this.sessionFactory.getSessionFactory().openSession();
         Transaction t = session.beginTransaction();
         try {
-            Long id = (Long) session.save(request);
+            Long id = (Long)session.save(request);
             t.commit();
             this.logger.info("Saved outgoing request for patient [{}] to server [{}] with id [{}]",
-                request.getLocalReferencePatientId(), request.getRemoteServerId(), id);
+                             request.getLocalReferencePatientId(), request.getRemoteServerId(), id);
         } catch (HibernateException ex) {
             this.logger.error("ERROR saving outgoing request for patient [{}] to server [{}]: [{}]",
-                request.getLocalReferencePatientId(), request.getRemoteServerId(), ex);
-            if (t != null) {
+                              request.getLocalReferencePatientId(), request.getRemoteServerId(), ex);
+            if (t!=null) {
                 t.rollback();
             }
         } finally {
@@ -108,16 +107,14 @@ public class DefaultRemoteMatchingStorageManager implements RemoteMatchingStorag
             OutgoingMatchRequest data = (OutgoingMatchRequest) session.createCriteria(DefaultOutgoingMatchRequest.class)
                 .add(Restrictions.eq("localReferencePatientId", patientId))
                 .add(Restrictions.eq("remoteServerId", remoteServerId))
-                .addOrder(Property.forName("requestTime").desc())
+                .addOrder( Property.forName("requestTime").desc() )
                 .setMaxResults(1)
                 .uniqueResult();
 
             if (data == null) {
-                this.logger.info("No outstanding match queries to server [{}] for patient [{}]", remoteServerId,
-                    patientId);
+                this.logger.info("No outstanding match queries to server [{}] for patient [{}]", remoteServerId, patientId);
             } else {
-                this.logger.info("Found an outstanding query to server [{}] for patient [{}]", remoteServerId,
-                    patientId);
+                this.logger.info("Found an outstanding query to server [{}] for patient [{}]", remoteServerId, patientId);
             }
             return data;
         } catch (HibernateException ex) {

@@ -27,26 +27,29 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+//import org.xwiki.component.annotation.Role;
+
 /**
  * Interface for the /match endpoint. This is where a remote request would send the request to.
  *
  * @version $Id$
  */
+//@Role
 @Path("/remoteMatcher")
 public interface ApiRequestHandler
 {
     /**
      * Place a search request to this server.
-     * 
+     *
      * TODO fix the doc.
      */
     @Path("match")
-    @Consumes({ MediaType.APPLICATION_JSON,
-    ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX +
-        ApiConfiguration.LATEST_API_VERSION_STRING +
-        ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX,
-    ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SIMPLE,
-    "application/*+json" })
+    @Consumes({MediaType.APPLICATION_JSON,
+              ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX +
+              ApiConfiguration.LATEST_API_VERSION_STRING +
+              ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX,
+              ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SIMPLE,
+              "application/*+json"})
     @POST
     Response matchPost(String json) throws XWikiRestException;
 }
