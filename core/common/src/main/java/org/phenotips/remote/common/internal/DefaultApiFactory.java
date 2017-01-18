@@ -39,10 +39,6 @@ public class DefaultApiFactory implements ApiFactory, Initializable
     @Named("api-data-converter-v1")
     private ApiDataConverter apiDataConverterV1;
 
-    @Inject
-    @Named("api-data-converter-v2")
-    private ApiDataConverter apiDataConverterV2;
-
     private Map<String, ApiDataConverter> allApiDataConverters = new HashMap<String, ApiDataConverter>();
 
     @Override
