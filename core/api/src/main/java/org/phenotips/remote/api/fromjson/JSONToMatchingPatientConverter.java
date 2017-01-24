@@ -17,11 +17,10 @@
  */
 package org.phenotips.remote.api.fromjson;
 
-import org.phenotips.remote.api.MatchingPatient;
-
+import org.phenotips.data.Patient;
 import org.json.JSONObject;
 
 public interface JSONToMatchingPatientConverter
 {
-    MatchingPatient convert(JSONObject json);
+    Patient convert(JSONObject json);
 }

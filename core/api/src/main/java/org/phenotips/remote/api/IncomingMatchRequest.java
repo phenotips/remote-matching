@@ -18,13 +18,14 @@
 package org.phenotips.remote.api;
 
 import org.json.JSONObject;
+import org.phenotips.data.Patient;
 
 public interface IncomingMatchRequest extends MatchRequest
 {
     /**
      * @return
      */
-    MatchingPatient getModelPatient();
+    Patient getModelPatient();
 
     /**
      * @param response

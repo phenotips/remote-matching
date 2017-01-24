@@ -17,14 +17,13 @@
  */
 package org.phenotips.remote.common.internal.api;
 
+import org.phenotips.data.Patient;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.IncomingMatchRequest;
-import org.phenotips.remote.api.MatchingPatient;
 import org.phenotips.remote.api.fromjson.IncomingJSONParser;
 import org.phenotips.remote.api.fromjson.JSONToMatchingPatientConverter;
 import org.phenotips.remote.hibernate.internal.DefaultIncomingMatchRequest;
 import org.phenotips.vocabulary.Vocabulary;
-
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
@@ -52,7 +51,7 @@ public class DefaultIncomingJSONParser implements IncomingJSONParser
     {
         JSONObject patientJSON = jsonRequest.optJSONObject(ApiConfiguration.JSON_PATIENT);
 
-        MatchingPatient requestPatient = this.patientConverter.convert(patientJSON);
+        Patient requestPatient = this.patientConverter.convert(patientJSON);
 
         DefaultIncomingMatchRequest request =
             new DefaultIncomingMatchRequest(remoteServerId, this.apiVersion, jsonRequest.toString(), requestPatient);

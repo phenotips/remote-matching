@@ -17,12 +17,14 @@
  */
 package org.phenotips.remote.common.internal;
 
+import java.util.Iterator;
+import java.util.Map.Entry;
+
+import org.phenotips.data.ContactInfo;
 import org.phenotips.data.Patient;
+import org.phenotips.data.PatientData;
 import org.phenotips.data.similarity.AccessType;
 import org.phenotips.data.similarity.internal.DefaultPatientSimilarityView;
-import org.phenotips.remote.api.ContactInfo;
-import org.phenotips.remote.api.MatchingPatient;
-
 import org.json.JSONObject;
 
 public class RemotePatientSimilarityView extends DefaultPatientSimilarityView
@@ -30,7 +32,7 @@ public class RemotePatientSimilarityView extends DefaultPatientSimilarityView
     /** Score as reposted by the remote server. */
     private Double remoteScore;
 
-    public RemotePatientSimilarityView(MatchingPatient match, Patient reference, AccessType access, Double remoteScore)
+    public RemotePatientSimilarityView(Patient match, Patient reference, AccessType access, Double remoteScore)
         throws IllegalArgumentException
     {
         super(match, reference, access);
@@ -42,16 +44,7 @@ public class RemotePatientSimilarityView extends DefaultPatientSimilarityView
     public JSONObject toJSON()
     {
         JSONObject result = super.toJSON();
-
-        ContactInfo contactInfo = ((MatchingPatient) match).getContactInfo();
-        JSONObject contactJSON = new JSONObject();
-        contactJSON.put("href", contactInfo.getContactHREF());
-        contactJSON.put("institution", contactInfo.getContactInstitution());
-        contactJSON.put("name", contactInfo.getContactName());
-
-        result.put("contact", contactJSON);
         result.put("remoteScore", this.remoteScore);
-
         return result;
     }
 }

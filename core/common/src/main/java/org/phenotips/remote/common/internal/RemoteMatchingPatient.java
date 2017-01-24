@@ -17,18 +17,18 @@
  */
 package org.phenotips.remote.common.internal;
 
+import org.phenotips.data.ContactInfo;
+import org.phenotips.data.PatientContactsManager;
 import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
 import org.phenotips.data.IndexedPatientData;
+import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
-import org.phenotips.remote.api.ContactInfo;
-import org.phenotips.remote.api.MatchingPatient;
+import org.phenotips.data.SimpleValuePatientData;
 import org.phenotips.remote.api.MatchingPatientGene;
-
 import org.xwiki.model.reference.DocumentReference;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -45,7 +45,7 @@ import org.json.JSONObject;
  * @version $Id$
  * @since 1.0M8
  */
-public class RemoteMatchingPatient implements MatchingPatient
+public class RemoteMatchingPatient implements Patient
 {
     final private String remotePatientId;
 
@@ -57,9 +57,7 @@ public class RemoteMatchingPatient implements MatchingPatient
 
     final private Set<MatchingPatientGene> genes;
 
-    final private ContactInfo contactInfo;
-
-    final private Map<String, PatientData<?>> extraData = new HashMap<String, PatientData<?>>();
+    final private PatientContactsManager contacts;
 
     public RemoteMatchingPatient(String remotePatientId, String label, Set<Feature> features,
         Set<Disorder> disorders, Set<MatchingPatientGene> genes, ContactInfo contactInfo)
@@ -69,7 +67,7 @@ public class RemoteMatchingPatient implements MatchingPatient
         this.features = (features != null) ? features : new HashSet<Feature>();
         this.disorders = (disorders != null) ? disorders : new HashSet<Disorder>();
         this.genes = (genes != null) ? genes : new HashSet<MatchingPatientGene>();
-        this.contactInfo = contactInfo;
+        this.contacts = new RemotePatientContactsManager(contactInfo);
     }
 
     @Override
@@ -108,12 +106,6 @@ public class RemoteMatchingPatient implements MatchingPatient
         return this.disorders;
     }
 
-    @Override
-    public ContactInfo getContactInfo()
-    {
-        return this.contactInfo;
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public <T> PatientData<T> getData(String name)
@@ -129,9 +121,14 @@ public class RemoteMatchingPatient implements MatchingPatient
                 singleGene.put("gene", gene.getName());
                 allGenes.add(singleGene);
             }
-            return (PatientData<T>) new IndexedPatientData<Map<String, String>>("genes", allGenes);
+            return (PatientData<T>) new IndexedPatientData<>("genes", allGenes);
         }
-        return (PatientData<T>) this.extraData.get(name);
+
+        if (name == "contact") {
+            return (PatientData<T>) new SimpleValuePatientData<>("contact", this.contacts);
+        }
+
+        return null;
     }
 
     @Override

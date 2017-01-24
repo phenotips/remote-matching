@@ -26,7 +26,6 @@ import org.phenotips.data.similarity.internal.DefaultAccessType;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.ApiDataConverter;
 import org.phenotips.remote.api.ApiViolationException;
-import org.phenotips.remote.api.MatchingPatient;
 import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.client.RemoteMatchingService;
 import org.phenotips.remote.common.ApiFactory;
@@ -37,7 +36,6 @@ import org.phenotips.remote.common.internal.api.DefaultJSONToMatchingPatientConv
 import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
 import org.phenotips.remote.hibernate.internal.DefaultOutgoingMatchRequest;
 import org.phenotips.vocabulary.Vocabulary;
-
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
 import org.xwiki.stability.Unstable;
@@ -253,14 +251,12 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
             this.logger.error("No key 'results' in reply JSON");
         }
 
-        String remoteServerId = request.getRemoteServerId();
-
         for (int i = 0; i < matches.length(); ++i) {
             try {
                 JSONObject next = matches.getJSONObject(i);
                 JSONObject nextPatient = next.getJSONObject("patient");
 
-                MatchingPatient modelRemotePatient = patientConverter.convert(nextPatient);
+                Patient modelRemotePatient = patientConverter.convert(nextPatient);
 
                 double patientScore = 0;
                 try {

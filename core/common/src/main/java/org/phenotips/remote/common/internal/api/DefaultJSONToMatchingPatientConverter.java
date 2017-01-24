@@ -17,26 +17,30 @@
  */
 package org.phenotips.remote.common.internal.api;
 
+import org.phenotips.data.ContactInfo;
 import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
+import org.phenotips.data.Patient;
+import org.phenotips.data.internal.DefaultContactInfo;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.ApiViolationException;
-import org.phenotips.remote.api.ContactInfo;
-import org.phenotips.remote.api.MatchingPatient;
 import org.phenotips.remote.api.MatchingPatientGene;
 import org.phenotips.remote.api.fromjson.JSONToMatchingPatientConverter;
 import org.phenotips.remote.common.internal.RemoteMatchingPatient;
-import org.phenotips.remote.common.internal.RemotePatientContactInfo;
 import org.phenotips.remote.common.internal.RemotePatientDisorder;
 import org.phenotips.remote.common.internal.RemotePatientFeature;
 import org.phenotips.remote.common.internal.RemotePatientGene;
 import org.phenotips.vocabulary.Vocabulary;
 import org.phenotips.vocabulary.VocabularyTerm;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -64,7 +68,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
     }
 
     @Override
-    public MatchingPatient convert(JSONObject patientJSON)
+    public Patient convert(JSONObject patientJSON)
     {
         try {
             if (patientJSON == null) {
@@ -92,7 +96,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
             ContactInfo contactInfo = this.parseContactInfo(patientJSON);
             String label = patientJSON.optString(ApiConfiguration.JSON_PATIENT_LABEL, null);
 
-            MatchingPatient patient =
+            RemoteMatchingPatient patient =
                 new RemoteMatchingPatient(remotePatientId, label, features, disorders, genes, contactInfo);
 
             return patient;
@@ -222,8 +226,25 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
         String href = submitter.optString(ApiConfiguration.JSON_CONTACT_HREF, null);
         String institution = submitter.optString(ApiConfiguration.JSON_CONTACT_INSTITUTION, null);
 
-        ContactInfo contact = new RemotePatientContactInfo(name, institution, href);
+        DefaultContactInfo contactInfo = new DefaultContactInfo();
+        contactInfo.setName(name);
+        contactInfo.setUrl(href);
+        contactInfo.setInstitution(institution);
 
-        return contact;
+        if (href.startsWith("mailto:")) {
+            URL emailUrl;
+            try {
+                emailUrl = new URL(href);
+                String emails = emailUrl.getPath();
+                if (StringUtils.isNotBlank(emails) && !emails.contains(",")) {
+                    // Only one email in mailto
+                    contactInfo.setEmails(Arrays.asList(emails));
+                }
+            } catch (MalformedURLException e) {
+                this.logger.warn("Invalid mailto URL: " + href);
+            }
+        }
+
+        return contactInfo;
     }
 }
