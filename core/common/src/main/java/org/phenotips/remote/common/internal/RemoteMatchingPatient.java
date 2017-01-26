@@ -27,6 +27,7 @@ import org.phenotips.data.PatientData;
 import org.phenotips.data.SimpleValuePatientData;
 import org.phenotips.remote.api.MatchingPatientGene;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.EntityReference;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -145,6 +146,24 @@ public class RemoteMatchingPatient implements Patient
 
     @Override
     public void updateFromJSON(JSONObject json)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getDescription()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getName()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public EntityReference getType()
     {
         throw new UnsupportedOperationException();
     }
