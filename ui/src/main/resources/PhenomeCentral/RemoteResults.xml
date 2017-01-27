@@ -91,7 +91,7 @@ $response.setContentType('application/json')##
   $jsontool.serialize($result)
   #break
 #end
-#set ($patient = $services.patients.getPatientById("$!{request.patientId}"))
+#set ($patient = $services.patients.get("$!{request.patientId}"))
 {
   "replyHTTPCode": $lastRequest.get("responseHTTPCode"),
   "resultsCount" : $matches.length(),
