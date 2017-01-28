@@ -37,6 +37,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -183,25 +184,18 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                         logger.error("Patient genomic features parser: gene has no id");
                         throw new ApiViolationException("A gene has no id");
                     }
-                    // TODO: check if name is a valid gene symbol or ensembl id
-                    VocabularyTerm geneTerm = this.ontologyService.getTerm(geneName);
-                    if (geneTerm == null) {
-                        logger.error("Patient genomic features parser: gene id [{}] was not found in the vocabulary",
-                            geneName);
-                        throw new ApiViolationException("A gene has unsupported id [" + geneName + "]");
-                    }
-                    String symbol;
+                    String geneId;
                     try {
-                        symbol = (String) (geneTerm.get("symbol"));
-                        if (!geneName.equals(symbol)) {
-                            this.logger.debug("Converted incoming gene id [{}] to symbol [{}]", geneName, symbol);
+                        geneId = normalizeGeneId(geneName);
+                        if (!geneName.equals(geneId)) {
+                            this.logger.debug("Converted incoming gene id [{}] to symbol [{}]", geneName, geneId);
                         }
                     } catch (Exception ex) {
                         logger.error("Patient genomic features parser: can not obtain gene symbol for gene ID [{}]",
                             geneName);
                         throw new ApiViolationException("Internal error processing gene id [" + geneName + "]");
                     }
-                    MatchingPatientGene gene = new RemotePatientGene(symbol);
+                    MatchingPatientGene gene = new RemotePatientGene(geneId);
                     geneSet.add(gene);
                     // TODO: variants
                 }
@@ -246,5 +240,25 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
         }
 
         return contactInfo;
+    }
+
+    /**
+     * Normalize the given gene symbol or identifier to an Ensembl ID. If a corresponding Ensembl ID is not found, the
+     * passed string is returned.
+     *
+     * @param geneId a gene symbol or identifier
+     * @return the string representation of the corresponding Ensembl ID, or {@code geneId} if the lookup failed.
+     */
+    private String normalizeGeneId(String geneId)
+    {
+        final VocabularyTerm term = this.ontologyService.getTerm(geneId);
+        if (term == null) {
+            logger.error("Patient genomic features parser: gene id [{}] was not found in the vocabulary", geneId);
+        }
+        @SuppressWarnings("unchecked")
+        final List<String> ensemblIdList = term != null ? (List<String>) term.get("ensembl_gene_id") : null;
+        final String ensemblId = ensemblIdList != null && !ensemblIdList.isEmpty() ? ensemblIdList.get(0) : null;
+        // Retain information as is if we can't find Ensembl ID.
+        return ensemblId != null ? ensemblId : geneId;
     }
 }
