@@ -97,7 +97,7 @@ public class DefaultOutgoingJSONGenerator implements OutgoingJSONGenerator
 
     private Patient getPatientByID(String patientID)
     {
-        Patient patient = this.patientRepository.getPatientById(patientID);
+        Patient patient = this.patientRepository.get(patientID);
         if (patient == null) {
             return null;
         }

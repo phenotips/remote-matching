@@ -236,7 +236,7 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
 
         // generate local scoring and feature-matching using the same algorithm we use for local similarity scores
         AccessType access = new DefaultAccessType(this.matchAccess, this.viewAccess, this.matchAccess);
-        Patient reference = this.patientRepository.getPatientById(request.getLocalReferencePatientId());
+        Patient reference = this.patientRepository.get(request.getLocalReferencePatientId());
 
         if (reference == null) {
             return resultsList;
