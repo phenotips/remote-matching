@@ -17,6 +17,7 @@
  */
 package org.phenotips.remote.common.internal.api;
 
+import org.phenotips.data.ContactInfo;
 import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
 import org.phenotips.data.FeatureMetadatum;
@@ -53,23 +54,22 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
 
     private Logger logger;
 
-    private final String apiVersion;
-
     private final Pattern hpoTerm; // not static: may be different from api version to api version
 
     public DefaultPatientToJSONConverter(String apiVersion, Logger logger)
     {
-        this.apiVersion = apiVersion;
         this.logger = logger;
 
         this.hpoTerm = Pattern.compile("^HP:\\d+$");
     }
 
+    @Override
     public JSONObject convert(Patient patient, boolean removePrivateData)
     {
         return this.convert(patient, removePrivateData, 0);
     }
 
+    @Override
     public JSONObject convert(Patient patient, boolean removePrivateData, int includedTopGenes)
     {
         JSONObject json = new JSONObject();
@@ -100,8 +100,8 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             json.put(ApiConfiguration.JSON_FEATURES, this.features(patient));
         }
         JSONArray genes =
-            removePrivateData ? DefaultPatientToJSONConverter.restrictedGenes(patient, includedTopGenes, logger)
-                : DefaultPatientToJSONConverter.genes(patient, includedTopGenes, logger);
+            removePrivateData ? DefaultPatientToJSONConverter.restrictedGenes(patient, includedTopGenes, this.logger)
+                : DefaultPatientToJSONConverter.genes(patient, includedTopGenes, this.logger);
         if (genes.length() > 0) {
             json.put(ApiConfiguration.JSON_GENES, genes);
         }
@@ -116,18 +116,19 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         String institution = "PhenomeCentral";
         String href = "mailto:matchmaker@phenomecentral.org";
 
-        PatientData<String> data = patient.getData("contact");
-        if (data != null && data.isNamed()) {
-            String contactName = data.get("name");
+        PatientData<ContactInfo> data = patient.getData("contact");
+        if (data != null && data.isIndexed() && data.size() > 0) {
+            ContactInfo contact = data.get(0);
+            String contactName = contact.getName();
             if (!StringUtils.isBlank(contactName)) {
                 name = contactName;
             }
             // Replace institution, even if blank
-            institution = data.get("institution");
+            institution = contact.getInstitution();
             // TODO: replace this with a URL to a match/contact page
-            String email = data.get("email");
-            if (!StringUtils.isBlank(email)) {
-                href = "mailto:" + email;
+            List<String> email = contact.getEmails();
+            if (!email.isEmpty() && !StringUtils.isBlank(email.get(0))) {
+                href = "mailto:" + email.get(0);
             }
         }
 
@@ -147,7 +148,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         for (Feature patientFeature : patient.getFeatures()) {
             String featureId = patientFeature.getId();
             if (featureId.isEmpty() || !this.hpoTerm.matcher(featureId).matches()) {
-                logger.error("Patient feature parser: ignoring term with non-HPO id [{}]", featureId);
+                this.logger.error("Patient feature parser: ignoring term with non-HPO id [{}]", featureId);
                 continue;
             }
             JSONObject featureJson = new JSONObject();
@@ -209,9 +210,9 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             return features;
         }
 
-        Map<String, Integer> featureCounts = new HashMap<String, Integer>();
-        Set<String> obfuscatedFeatures = new HashSet<String>();
-        Set<String> notMatchedFeatures = new HashSet<String>();
+        Map<String, Integer> featureCounts = new HashMap<>();
+        Set<String> obfuscatedFeatures = new HashSet<>();
+        Set<String> notMatchedFeatures = new HashSet<>();
 
         for (Object featureMatchUC : similarityFeaturesJson) {
             JSONObject featureMatch = (JSONObject) featureMatchUC;
@@ -258,7 +259,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
 
         for (String featureId : featureCounts.keySet()) {
             if (featureId.isEmpty() || !this.hpoTerm.matcher(featureId).matches()) {
-                logger.error("Patient feature parser: ignoring term with non-HPO id [{}]", featureId);
+                this.logger.error("Patient feature parser: ignoring term with non-HPO id [{}]", featureId);
                 continue;
             }
 
@@ -304,7 +305,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         try {
             PatientGenotype genotype = new DefaultPatientGenotype(patient);
 
-            Set<String> candidateGeneNames = new HashSet<String>(genotype.getCandidateGenes());
+            Set<String> candidateGeneNames = new HashSet<>(genotype.getCandidateGenes());
 
             if (includedTopGenes > 0 && candidateGeneNames.size() < includedTopGenes) {
                 // keep adding top exomiser genes until we have more than we want. Some of those may

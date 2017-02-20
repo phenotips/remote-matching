@@ -17,14 +17,10 @@
  */
 package org.phenotips.remote.common.internal;
 
-import java.util.Iterator;
-import java.util.Map.Entry;
-
-import org.phenotips.data.ContactInfo;
 import org.phenotips.data.Patient;
-import org.phenotips.data.PatientData;
 import org.phenotips.data.similarity.AccessType;
 import org.phenotips.data.similarity.internal.DefaultPatientSimilarityView;
+
 import org.json.JSONObject;
 
 public class RemotePatientSimilarityView extends DefaultPatientSimilarityView

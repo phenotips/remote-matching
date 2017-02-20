@@ -18,18 +18,18 @@
 package org.phenotips.remote.common.internal;
 
 import org.phenotips.data.ContactInfo;
-import org.phenotips.data.PatientContactsManager;
 import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
 import org.phenotips.data.IndexedPatientData;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
-import org.phenotips.data.SimpleValuePatientData;
 import org.phenotips.remote.api.MatchingPatientGene;
+
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -58,7 +58,7 @@ public class RemoteMatchingPatient implements Patient
 
     final private Set<MatchingPatientGene> genes;
 
-    final private PatientContactsManager contacts;
+    final private ContactInfo contactInfo;
 
     public RemoteMatchingPatient(String remotePatientId, String label, Set<Feature> features,
         Set<Disorder> disorders, Set<MatchingPatientGene> genes, ContactInfo contactInfo)
@@ -68,7 +68,7 @@ public class RemoteMatchingPatient implements Patient
         this.features = (features != null) ? features : new HashSet<Feature>();
         this.disorders = (disorders != null) ? disorders : new HashSet<Disorder>();
         this.genes = (genes != null) ? genes : new HashSet<MatchingPatientGene>();
-        this.contacts = new RemotePatientContactsManager(contactInfo);
+        this.contactInfo = contactInfo;
     }
 
     @Override
@@ -115,10 +115,10 @@ public class RemoteMatchingPatient implements Patient
         if (name == "genes") {
             Set<? extends MatchingPatientGene> genes = this.genes;
 
-            List<Map<String, String>> allGenes = new LinkedList<Map<String, String>>();
+            List<Map<String, String>> allGenes = new LinkedList<>();
 
             for (MatchingPatientGene gene : genes) {
-                Map<String, String> singleGene = new LinkedHashMap<String, String>();
+                Map<String, String> singleGene = new LinkedHashMap<>();
                 singleGene.put("gene", gene.getName());
                 allGenes.add(singleGene);
             }
@@ -126,7 +126,8 @@ public class RemoteMatchingPatient implements Patient
         }
 
         if (name == "contact") {
-            return (PatientData<T>) new SimpleValuePatientData<>("contact", this.contacts);
+            return (PatientData<T>) new IndexedPatientData<>("contact",
+                Collections.singletonList(this.contactInfo));
         }
 
         return null;

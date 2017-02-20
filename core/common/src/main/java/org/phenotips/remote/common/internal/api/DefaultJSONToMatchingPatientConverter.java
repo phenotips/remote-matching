@@ -21,7 +21,6 @@ import org.phenotips.data.ContactInfo;
 import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
 import org.phenotips.data.Patient;
-import org.phenotips.data.internal.DefaultContactInfo;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.ApiViolationException;
 import org.phenotips.remote.api.MatchingPatientGene;
@@ -35,7 +34,6 @@ import org.phenotips.vocabulary.VocabularyTerm;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -50,8 +48,6 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
 {
     private Logger logger;
 
-    private final String apiVersion;
-
     private final Pattern hpoTerm; // not static: may be different from api version to api version
 
     private final Pattern disorderTerm;
@@ -60,7 +56,6 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
 
     public DefaultJSONToMatchingPatientConverter(String apiVersion, Logger logger, Vocabulary ontologyService)
     {
-        this.apiVersion = apiVersion;
         this.logger = logger;
         this.ontologyService = ontologyService;
 
@@ -113,7 +108,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
     {
         try {
             if (json.has(ApiConfiguration.JSON_FEATURES)) {
-                Set<Feature> featureSet = new HashSet<Feature>();
+                Set<Feature> featureSet = new HashSet<>();
                 JSONArray featuresJson = (JSONArray) json.get(ApiConfiguration.JSON_FEATURES);
                 for (Object jsonFeatureUncast : featuresJson) {
                     JSONObject jsonFeature = (JSONObject) jsonFeatureUncast;
@@ -121,14 +116,14 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                     // TODO: throw an error if a term is not a supported one (HPO).
                     // TODO: maybe report an error, to be reviewed once spec is updated
                     if (!this.hpoTerm.matcher(id).matches()) {
-                        logger.error("Patient feature parser: ignoring unsupported term with ID [{}]", id);
+                        this.logger.error("Patient feature parser: ignoring unsupported term with ID [{}]", id);
                         continue;
                     }
                     String observed = jsonFeature.optString(ApiConfiguration.JSON_FEATURE_OBSERVED,
                         ApiConfiguration.JSON_FEATURE_OBSERVED_YES).toLowerCase();
                     if (!observed.equals(ApiConfiguration.JSON_FEATURE_OBSERVED_YES) &&
                         !observed.equals(ApiConfiguration.JSON_FEATURE_OBSERVED_NO)) {
-                        logger.error("Patient feature parser: ignoring term with unsupported observed status [{}]",
+                        this.logger.error("Patient feature parser: ignoring term with unsupported observed status [{}]",
                             observed);
                         continue;
                     }
@@ -148,13 +143,13 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
     {
         try {
             if (json.has(ApiConfiguration.JSON_DISORDERS)) {
-                Set<Disorder> disorderSet = new HashSet<Disorder>();
+                Set<Disorder> disorderSet = new HashSet<>();
                 JSONArray disorderJson = (JSONArray) json.get(ApiConfiguration.JSON_DISORDERS);
                 for (Object jsonDisorderUncast : disorderJson) {
                     JSONObject jsonDisorder = (JSONObject) jsonDisorderUncast;
                     String id = jsonDisorder.getString(ApiConfiguration.JSON_DISORDER_ID).toUpperCase();
                     if (!this.disorderTerm.matcher(id).matches()) {
-                        logger.error("Patient feature parser: ignoring unsupported term with ID [{}]", id);
+                        this.logger.error("Patient feature parser: ignoring unsupported term with ID [{}]", id);
                         continue;
                     }
                     Disorder disorder = new RemotePatientDisorder(id, null);
@@ -172,7 +167,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
     {
         try {
             if (json.has(ApiConfiguration.JSON_GENES)) {
-                Set<MatchingPatientGene> geneSet = new HashSet<MatchingPatientGene>();
+                Set<MatchingPatientGene> geneSet = new HashSet<>();
                 JSONArray genesJson = (JSONArray) json.get(ApiConfiguration.JSON_GENES);
 
                 for (Object jsonGeneUncast : genesJson) {
@@ -181,7 +176,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                     String geneName = (jsonGeneId != null)
                         ? jsonGeneId.optString(ApiConfiguration.JSON_GENES_GENE_ID).toUpperCase() : "";
                     if (geneName.length() == 0) {
-                        logger.error("Patient genomic features parser: gene has no id");
+                        this.logger.error("Patient genomic features parser: gene has no id");
                         throw new ApiViolationException("A gene has no id");
                     }
                     String geneId;
@@ -191,7 +186,8 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                             this.logger.debug("Converted incoming gene id [{}] to symbol [{}]", geneName, geneId);
                         }
                     } catch (Exception ex) {
-                        logger.error("Patient genomic features parser: can not obtain gene symbol for gene ID [{}]",
+                        this.logger.error(
+                            "Patient genomic features parser: can not obtain gene symbol for gene ID [{}]",
                             geneName);
                         throw new ApiViolationException("Internal error processing gene id [" + geneName + "]");
                     }
@@ -220,10 +216,10 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
         String href = submitter.optString(ApiConfiguration.JSON_CONTACT_HREF, null);
         String institution = submitter.optString(ApiConfiguration.JSON_CONTACT_INSTITUTION, null);
 
-        DefaultContactInfo contactInfo = new DefaultContactInfo();
-        contactInfo.setName(name);
-        contactInfo.setUrl(href);
-        contactInfo.setInstitution(institution);
+        ContactInfo.Builder contactInfo = new ContactInfo.Builder();
+        contactInfo.withName(name);
+        contactInfo.withUrl(href);
+        contactInfo.withInstitution(institution);
 
         if (href.startsWith("mailto:")) {
             URL emailUrl;
@@ -232,14 +228,14 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                 String emails = emailUrl.getPath();
                 if (StringUtils.isNotBlank(emails) && !emails.contains(",")) {
                     // Only one email in mailto
-                    contactInfo.setEmails(Arrays.asList(emails));
+                    contactInfo.withEmail(emails);
                 }
             } catch (MalformedURLException e) {
                 this.logger.warn("Invalid mailto URL: " + href);
             }
         }
 
-        return contactInfo;
+        return contactInfo.build();
     }
 
     /**
@@ -253,7 +249,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
     {
         final VocabularyTerm term = this.ontologyService.getTerm(geneId);
         if (term == null) {
-            logger.error("Patient genomic features parser: gene id [{}] was not found in the vocabulary", geneId);
+            this.logger.error("Patient genomic features parser: gene id [{}] was not found in the vocabulary", geneId);
         }
         @SuppressWarnings("unchecked")
         final List<String> ensemblIdList = term != null ? (List<String>) term.get("ensembl_gene_id") : null;
