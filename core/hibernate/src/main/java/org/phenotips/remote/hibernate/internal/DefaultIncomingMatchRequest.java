@@ -17,8 +17,8 @@
  */
 package org.phenotips.remote.hibernate.internal;
 
+import org.phenotips.data.Patient;
 import org.phenotips.remote.api.IncomingMatchRequest;
-import org.phenotips.remote.api.MatchingPatient;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -36,7 +36,7 @@ import org.json.JSONObject;
 public class DefaultIncomingMatchRequest extends AbstractSearchRequest implements IncomingMatchRequest
 {
     @Transient
-    private MatchingPatient remotePatient;
+    private Patient remotePatient;
 
     /**
      * Hibernate requires a no-args constructor
@@ -50,7 +50,7 @@ public class DefaultIncomingMatchRequest extends AbstractSearchRequest implement
      *            be assigned when the request is stored in the database
      */
     public DefaultIncomingMatchRequest(String remoteServerId, String apiVersionUsed,
-        String request, MatchingPatient remotePatient)
+        String request, Patient remotePatient)
     {
         super(remoteServerId, apiVersionUsed, request, null);
 
@@ -63,7 +63,7 @@ public class DefaultIncomingMatchRequest extends AbstractSearchRequest implement
         this.setResponse(response.toString());
     }
 
-    public MatchingPatient getModelPatient()
+    public Patient getModelPatient()
     {
         return this.remotePatient;
     }

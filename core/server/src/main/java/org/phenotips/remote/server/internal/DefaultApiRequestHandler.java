@@ -73,7 +73,7 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
     @Override
     public Response matchPost(String json) throws XWikiRestException
     {
-        this.logger.error("MME MATCH REQUEST; INPUT JSON: [{}]", json);
+        this.logger.debug("MME MATCH REQUEST; INPUT JSON: [{}]", json);
 
         try {
             JSONObject jsonResponse;
@@ -127,7 +127,7 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
                 apiVersion = ApiConfiguration.LATEST_API_VERSION_STRING;
             }
 
-            this.logger.error("RESPONSE JSON: [{}]", jsonResponse.toString());
+            this.logger.debug("RESPONSE JSON: [{}]", jsonResponse.toString());
 
             Integer status = (Integer) jsonResponse.remove(ApiConfiguration.REPLY_JSON_HTTP_STATUS);
             if (status == null) {
@@ -149,7 +149,7 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
     {
         String result = apiHeader.replaceAll("^" + Pattern.quote(ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX) +
             "(\\d+\\.\\d+)" + Pattern.quote(ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX) + "(.*)$", "$1");
-        logger.error("Request api version: [{}]", result);
+        logger.debug("Request api version: [{}]", result);
         return result;
     }
 
