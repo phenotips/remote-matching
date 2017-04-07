@@ -240,9 +240,7 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
             return resultsList;
         }
 
-        DefaultJSONToMatchingPatientConverter patientConverter =
-            new DefaultJSONToMatchingPatientConverter(ApiConfiguration.LATEST_API_VERSION_STRING, logger,
-                ontologyService);
+        DefaultJSONToMatchingPatientConverter patientConverter = new DefaultJSONToMatchingPatientConverter();
 
         // JSONArray processedResults = new JSONArray();
 
