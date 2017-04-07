@@ -174,7 +174,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                     JSONObject jsonGenomicFeature = (JSONObject) jsonGeneUncast;
                     JSONObject jsonGeneId = jsonGenomicFeature.optJSONObject(ApiConfiguration.JSON_GENES_GENE);
                     String geneName = (jsonGeneId != null)
-                        ? jsonGeneId.optString(ApiConfiguration.JSON_GENES_GENE_ID).toUpperCase() : "";
+                        ? jsonGeneId.optString(ApiConfiguration.JSON_GENES_GENE_ID) : "";
                     if (geneName.length() == 0) {
                         this.logger.error("Patient genomic features parser: gene has no id");
                         throw new ApiViolationException("A gene has no id");
