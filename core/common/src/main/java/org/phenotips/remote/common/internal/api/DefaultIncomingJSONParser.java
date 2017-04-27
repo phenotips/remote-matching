@@ -23,7 +23,6 @@ import org.phenotips.remote.api.IncomingMatchRequest;
 import org.phenotips.remote.api.fromjson.IncomingJSONParser;
 import org.phenotips.remote.api.fromjson.JSONToMatchingPatientConverter;
 import org.phenotips.remote.hibernate.internal.DefaultIncomingMatchRequest;
-import org.phenotips.vocabulary.Vocabulary;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
@@ -38,12 +37,10 @@ public class DefaultIncomingJSONParser implements IncomingJSONParser
 
     private final String apiVersion;
 
-    public DefaultIncomingJSONParser(String apiVersion, Logger logger, Vocabulary ontologyService)
+    public DefaultIncomingJSONParser(String apiVersion)
     {
         this.apiVersion = apiVersion;
-        this.logger = logger;
-
-        this.patientConverter = new DefaultJSONToMatchingPatientConverter(apiVersion, logger, ontologyService);
+        this.patientConverter = new DefaultJSONToMatchingPatientConverter();
     }
 
     @Override
