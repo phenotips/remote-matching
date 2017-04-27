@@ -61,12 +61,12 @@
       <name>PhenoTips Releases repository</name>
       <url>https://nexus.phenotips.org/nexus/content/repositories/releases/</url>
       <releases>
-	<enabled>true</enabled>
-	<checksumPolicy>fail</checksumPolicy>
+        <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
       </releases>
       <snapshots>
-	<enabled>false</enabled>
-	<checksumPolicy>fail</checksumPolicy>
+        <enabled>false</enabled>
+        <checksumPolicy>fail</checksumPolicy>
       </snapshots>
     </repository>
     <repository>
@@ -74,12 +74,12 @@
       <name>PhenoTips Snapshots repository</name>
       <url>https://nexus.phenotips.org/nexus/content/repositories/snapshots/</url>
       <releases>
-	<enabled>false</enabled>
-	<checksumPolicy>fail</checksumPolicy>
+        <enabled>false</enabled>
+        <checksumPolicy>fail</checksumPolicy>
       </releases>
       <snapshots>
-	<enabled>true</enabled>
-	<checksumPolicy>fail</checksumPolicy>
+        <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
       </snapshots>
     </repository>
   </repositories>
