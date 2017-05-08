@@ -23,15 +23,17 @@ import org.phenotips.remote.api.IncomingMatchRequest;
 import org.phenotips.remote.api.fromjson.IncomingJSONParser;
 import org.phenotips.remote.api.fromjson.JSONToMatchingPatientConverter;
 import org.phenotips.remote.hibernate.internal.DefaultIncomingMatchRequest;
+
 import org.json.JSONObject;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * TODO note: designed to be able to handle multiple (slightly different) versions of the Matching API
  */
 public class DefaultIncomingJSONParser implements IncomingJSONParser
 {
-    private Logger logger;
+    private Logger logger = LoggerFactory.getLogger(DefaultIncomingJSONParser.class);
 
     private JSONToMatchingPatientConverter patientConverter;
 
