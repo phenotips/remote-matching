@@ -25,9 +25,22 @@
     <artifactId>remote-matching-core</artifactId>
     <version>1.2-SNAPSHOT</version>
   </parent>
+  <properties>
+    <coverage.instructionRatio>0.23</coverage.instructionRatio>
+  </properties>
   <artifactId>remote-matching-core-client</artifactId>
   <name>Remote Matching - Core - Client</name>
   <dependencies>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-rest-api</artifactId>
+      <version>${xwiki.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-rest-server</artifactId>
+      <version>${xwiki.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.xwiki.commons</groupId>
       <artifactId>xwiki-commons-component-api</artifactId>
@@ -73,17 +86,27 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.phenotips</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>patient-data-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.phenotips</groupId>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>phenotips-rest-commons</artifactId>
+      <version>${phenotips.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>patient-data-rest</artifactId>
+      <version>${phenotips.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>patient-similarity-data-api</artifactId>
       <version>${patientNetwork.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.phenotips</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>matching-notification-api</artifactId>
       <version>${patientNetwork.version}</version>
     </dependency>
@@ -94,6 +117,18 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <!-- Test dependencies -->
+    <dependency>
+      <groupId>org.xwiki.commons</groupId>
+      <artifactId>xwiki-commons-tool-test-component</artifactId>
+      <version>${xwiki.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>
