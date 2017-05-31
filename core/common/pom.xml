@@ -25,6 +25,9 @@
     <artifactId>remote-matching-core</artifactId>
     <version>1.1-SNAPSHOT</version>
   </parent>
+  <properties>
+    <coverage.instructionRatio>0.07</coverage.instructionRatio>
+  </properties>
   <artifactId>remote-matching-core-common</artifactId>
   <name>Remote Matching - Core - Common</name>
   <dependencies>
@@ -89,6 +92,15 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>component-registry</artifactId>
+      <version>${phenotips.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>annotations</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
     </dependency>
@@ -99,6 +111,13 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <!-- Test dependencies -->
+    <dependency>
+      <groupId>org.xwiki.commons</groupId>
+      <artifactId>xwiki-commons-tool-test-component</artifactId>
+      <version>${xwiki.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>
