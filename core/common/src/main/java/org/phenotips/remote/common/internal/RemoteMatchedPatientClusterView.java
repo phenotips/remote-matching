@@ -23,6 +23,7 @@ import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.OutgoingMatchRequest;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -148,6 +149,18 @@ public class RemoteMatchedPatientClusterView implements MatchedPatientClusterVie
      */
     private JSONArray buildMatchesJSONArray(final int fromIndex, final int toIndex)
     {
+        // Sort by score
+        Collections.sort(this.remoteMatches, new Comparator<RemotePatientSimilarityView>()
+        {
+            @Override
+            public int compare(RemotePatientSimilarityView o1, RemotePatientSimilarityView o2)
+            {
+                double score1 = o1.getScore();
+                double score2 = o2.getScore();
+                return (int) Math.signum(score2 - score1);
+            }
+        });
+
         final JSONArray matchesJson = new JSONArray();
 
         for (int i = fromIndex; i <= toIndex; i++) {
