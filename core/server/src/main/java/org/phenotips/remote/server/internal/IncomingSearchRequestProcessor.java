@@ -17,7 +17,7 @@
  */
 package org.phenotips.remote.server.internal;
 
-import org.phenotips.data.ConsentManager;
+import org.phenotips.consents.ConsentManager;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.matchingnotification.MatchingNotificationManager;
 import org.phenotips.remote.api.ApiDataConverter;

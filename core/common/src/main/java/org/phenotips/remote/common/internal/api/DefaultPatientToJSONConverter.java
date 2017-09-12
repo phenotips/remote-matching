@@ -24,7 +24,7 @@ import org.phenotips.data.FeatureMetadatum;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
 import org.phenotips.data.similarity.PatientGenotype;
-import org.phenotips.data.similarity.internal.DefaultPatientGenotype;
+import org.phenotips.data.similarity.genotype.DefaultPatientGenotype;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.tojson.PatientToJSONConverter;
 import org.phenotips.remote.common.ApplicationConfiguration;
