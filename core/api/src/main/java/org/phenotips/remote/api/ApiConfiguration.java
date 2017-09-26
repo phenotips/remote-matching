@@ -93,6 +93,8 @@ public interface ApiConfiguration
 
     String JSON_DISORDERS = "disorders";
 
+    String JSON_DIAGNOSIS = "clinical_diagnosis";
+
     // JSON disorder subfields
     String JSON_DISORDER_ID = "id";
 
