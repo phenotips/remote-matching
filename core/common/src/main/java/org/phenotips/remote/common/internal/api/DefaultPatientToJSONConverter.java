@@ -31,6 +31,7 @@ import org.phenotips.remote.common.ApplicationConfiguration;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -89,6 +90,11 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         JSONArray disorders = DefaultPatientToJSONConverter.disorders(patient);
         if (disorders.length() > 0) {
             json.put(ApiConfiguration.JSON_DISORDERS, disorders);
+        }
+
+        JSONArray clinicalDisorders = DefaultPatientToJSONConverter.clinicalDisorders(patient);
+        if (disorders.length() > 0) {
+            json.put(ApiConfiguration.JSON_DIAGNOSIS, clinicalDisorders);
         }
 
         // TODO: rework this part, as Patient may be an instance of a Patient (for outgoing requests) or
@@ -293,6 +299,22 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             JSONObject disorderJson = new JSONObject();
             disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, disease.getId());
             disorders.put(disorderJson);
+        }
+        return disorders;
+    }
+
+    private static JSONArray clinicalDisorders(Patient patient)
+    {
+        JSONArray disorders = new JSONArray();
+        PatientData<Disorder> data = patient.getData("clinical-diagnosis");
+        if (data != null) {
+            Iterator<Disorder> iterator = data.iterator();
+            while (iterator.hasNext()) {
+              Disorder disorder = iterator.next();
+              JSONObject disorderJson = new JSONObject();
+              disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, disorder.getId());
+              disorders.put(disorderJson);
+            }
         }
         return disorders;
     }

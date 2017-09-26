@@ -56,12 +56,14 @@ public class RemoteMatchingPatient implements Patient
 
     final private Set<? extends Disorder> disorders;
 
+    final private Set<? extends Disorder> clinicalDisorders;
+
     final private Set<MatchingPatientGene> genes;
 
     final private ContactInfo contactInfo;
 
-    public RemoteMatchingPatient(String remotePatientId, String label, Set<Feature> features,
-        Set<Disorder> disorders, Set<MatchingPatientGene> genes, ContactInfo contactInfo)
+    public RemoteMatchingPatient(String remotePatientId, String label, Set<Feature> features, Set<Disorder> disorders,
+        Set<Disorder> clinicalDisorders, Set<MatchingPatientGene> genes, ContactInfo contactInfo)
     {
         this.remotePatientId = remotePatientId;
         this.label = label;
@@ -69,6 +71,7 @@ public class RemoteMatchingPatient implements Patient
         this.disorders = (disorders != null) ? disorders : new HashSet<Disorder>();
         this.genes = (genes != null) ? genes : new HashSet<MatchingPatientGene>();
         this.contactInfo = contactInfo;
+        this.clinicalDisorders = clinicalDisorders;
     }
 
     @Override
@@ -128,6 +131,11 @@ public class RemoteMatchingPatient implements Patient
         if (name == "contact") {
             return (PatientData<T>) new IndexedPatientData<>("contact",
                 Collections.singletonList(this.contactInfo));
+        }
+
+        if (name == "clinical-diagnosis") {
+            return (PatientData<T>) new IndexedPatientData<>("clinical-diagnosis",
+                Collections.singletonList(this.clinicalDisorders));
         }
 
         return null;
