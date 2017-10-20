@@ -58,34 +58,42 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
 
     private final Pattern disorderTerm;
 
+    private final Pattern clinicalDisorderTerm;
+
     private static final Vocabulary MIM_VOCABULARY;
 
     private static final Vocabulary HPO_VOCABULARY;
 
     private static final Vocabulary HGNC_VOCABULARY;
 
+    private static final Vocabulary ORDO_VOCABULARY;
+
     static {
         Vocabulary mim = null;
         Vocabulary hpo  = null;
         Vocabulary hgnc = null;
+        Vocabulary ordo = null;
         try {
             ComponentManager ccm = ComponentManagerRegistry.getContextComponentManager();
             VocabularyManager vm = ccm.getInstance(VocabularyManager.class);
             mim  = vm.getVocabulary("MIM");
             hpo  = vm.getVocabulary("HPO");
             hgnc = vm.getVocabulary("HGNC");
+            ordo = vm.getVocabulary("ORDO");
         } catch (ComponentLookupException e) {
             LOGGER.error("Error loading static components: {}", e.getMessage(), e);
         }
         MIM_VOCABULARY  = mim;
         HPO_VOCABULARY  = hpo;
         HGNC_VOCABULARY = hgnc;
+        ORDO_VOCABULARY = ordo;
     }
 
     public DefaultJSONToMatchingPatientConverter()
     {
         this.hpoTerm = Pattern.compile("^HP:\\d+$");
-        this.disorderTerm = Pattern.compile("^MIM:\\d+$"); // TODO: Orphanet:#####
+        this.disorderTerm = Pattern.compile("^MIM:\\d+$");
+        this.clinicalDisorderTerm = Pattern.compile("^Orphanet:\\d+$");
     }
 
     @Override
@@ -104,7 +112,10 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
             }
 
             Set<Feature> features = this.convertFeatures(patientJSON);
-            Set<Disorder> disorders = this.convertDisorders(patientJSON);
+            Set<Disorder> disorders = this.convertDisorders(patientJSON, this.disorderTerm,
+                MIM_VOCABULARY, ApiConfiguration.JSON_DISORDERS);
+            Set<Disorder> clinicalDisorders = this.convertDisorders(patientJSON, this.clinicalDisorderTerm,
+                ORDO_VOCABULARY, ApiConfiguration.JSON_DIAGNOSIS);
             Set<MatchingPatientGene> genes = this.convertGenes(patientJSON);
 
             if ((features == null || features.isEmpty()) &&
@@ -117,8 +128,8 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
             ContactInfo contactInfo = this.parseContactInfo(patientJSON);
             String label = patientJSON.optString(ApiConfiguration.JSON_PATIENT_LABEL, null);
 
-            RemoteMatchingPatient patient =
-                new RemoteMatchingPatient(remotePatientId, label, features, disorders, genes, contactInfo);
+            RemoteMatchingPatient patient = new RemoteMatchingPatient(remotePatientId, label, features, disorders,
+                clinicalDisorders, genes, contactInfo);
 
             return patient;
         } catch (ApiViolationException ex) {
@@ -167,21 +178,21 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
         return null;
     }
 
-    private Set<Disorder> convertDisorders(JSONObject json)
+    private Set<Disorder> convertDisorders(JSONObject json, Pattern pattern, Vocabulary vocabulary, String name)
     {
         try {
-            if (json.has(ApiConfiguration.JSON_DISORDERS)) {
+            if (json.has(name)) {
                 Set<Disorder> disorderSet = new HashSet<>();
-                JSONArray disorderJson = (JSONArray) json.get(ApiConfiguration.JSON_DISORDERS);
+                JSONArray disorderJson = (JSONArray) json.get(name);
                 for (Object jsonDisorderUncast : disorderJson) {
                     JSONObject jsonDisorder = (JSONObject) jsonDisorderUncast;
                     String id = jsonDisorder.getString(ApiConfiguration.JSON_DISORDER_ID).toUpperCase();
-                    if (!this.disorderTerm.matcher(id).matches()) {
-                        LOGGER.error("Patient feature parser: ignoring unsupported term with ID [{}]", id);
+                    if (!pattern.matcher(id).matches()) {
+                        LOGGER.error("Patient disorder parser: ignoring unsupported term with ID [{}]", id);
                         continue;
                     }
                     // resolve the given disease identifier to a MIM ontology disease ID
-                    VocabularyTerm term = MIM_VOCABULARY.getTerm(id);
+                    VocabularyTerm term = vocabulary.getTerm(id);
                     id = (term != null) ? term.getId() : id;
                     Disorder disorder = new RemotePatientDisorder(id, null);
                     disorderSet.add(disorder);
