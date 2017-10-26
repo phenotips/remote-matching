@@ -28,6 +28,7 @@ import org.phenotips.remote.api.MatchingPatientGene;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -133,9 +134,9 @@ public class RemoteMatchingPatient implements Patient
                 Collections.singletonList(this.contactInfo));
         }
 
-        if (name == "clinical-diagnosis") {
+        if (name == "clinical-diagnosis" && this.clinicalDisorders != null) {
             return (PatientData<T>) new IndexedPatientData<>("clinical-diagnosis",
-                Collections.singletonList(this.clinicalDisorders));
+                new ArrayList<>(this.clinicalDisorders));
         }
 
         return null;
