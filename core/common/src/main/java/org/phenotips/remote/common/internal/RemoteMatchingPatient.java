@@ -23,6 +23,7 @@ import org.phenotips.data.Feature;
 import org.phenotips.data.IndexedPatientData;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
+import org.phenotips.data.PatientWritePolicy;
 import org.phenotips.remote.api.MatchingPatientGene;
 
 import org.xwiki.model.reference.DocumentReference;
@@ -39,6 +40,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.json.JSONObject;
+
+import com.xpn.xwiki.api.Document;
+import com.xpn.xwiki.doc.XWikiDocument;
 
 /**
  * Implementation of {@link org.phenotips.data.Patient} based on the data obtained from the remote server for use in the
@@ -158,6 +162,30 @@ public class RemoteMatchingPatient implements Patient
     public void updateFromJSON(JSONObject json)
     {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void updateFromJSON(JSONObject json, PatientWritePolicy policy)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Document getSecureDocument()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public XWikiDocument getXDocument()
+    {
+        return null;
+    }
+    
+    @Override
+    public DocumentReference getDocumentReference()
+    {
+        return null;
     }
 
     @Override
