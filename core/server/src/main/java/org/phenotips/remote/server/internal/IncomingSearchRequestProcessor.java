@@ -32,7 +32,6 @@ import org.xwiki.component.annotation.Component;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -68,7 +67,7 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
 
     @Override
     public JSONObject processHTTPSearchRequest(ApiDataConverter apiVersionSpecificConverter, String stringJson,
-        ExecutorService queue, String remoteServerId, HttpServletRequest httpRequest)
+        String remoteServerId, HttpServletRequest httpRequest)
     {
         this.logger.debug("Received JSON search request: <<{}>>", stringJson);
         boolean requestIncomplete = true;
