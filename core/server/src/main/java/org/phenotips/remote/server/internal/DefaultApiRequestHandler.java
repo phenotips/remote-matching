@@ -29,8 +29,6 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.rest.XWikiResource;
 import org.xwiki.rest.XWikiRestException;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
 import javax.inject.Inject;
@@ -105,10 +103,8 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
                     String remoteServerId =
                         remoteServerConfiguration.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_ID);
 
-                    // Using futures to queue tasks and to retrieve results.
-                    ExecutorService queue = Executors.newSingleThreadExecutor();
                     jsonResponse = this.searchRequestProcessor.processHTTPSearchRequest(
-                        apiVersionSpecificConverter, json, queue, remoteServerId, httpRequest);
+                        apiVersionSpecificConverter, json, remoteServerId, httpRequest);
                 }
             } catch (IllegalArgumentException ex) {
                 this.logger.error("Incorrect incoming request: unsupported API version: [{}]", apiVersion);
