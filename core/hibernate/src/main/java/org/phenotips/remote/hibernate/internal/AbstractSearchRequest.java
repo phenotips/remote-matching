@@ -98,7 +98,7 @@ public abstract class AbstractSearchRequest implements MatchRequest
     public JSONObject getRequestJSON()
     {
         try {
-            return new JSONObject(request);
+            return new JSONObject(this.request);
         } catch (JSONException ex) {
             return null;
         }
@@ -108,7 +108,7 @@ public abstract class AbstractSearchRequest implements MatchRequest
     public JSONObject getResponseJSON()
     {
         try {
-            return new JSONObject(response);
+            return new JSONObject(this.response);
         } catch (JSONException | NullPointerException ex) {
             return null;
         }

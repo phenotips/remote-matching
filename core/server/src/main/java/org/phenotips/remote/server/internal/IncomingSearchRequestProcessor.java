@@ -80,7 +80,7 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
 
             this.logger.debug("...handling...");
 
-            List<PatientSimilarityView> matches = patientsFinder.findSimilarPatients(request.getModelPatient());
+            List<PatientSimilarityView> matches = this.patientsFinder.findSimilarPatients(request.getModelPatient());
 
             List<PatientSimilarityView> filteredMatches = filterMatches(matches);
 
@@ -91,7 +91,7 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
             request.addResponse(responseJSON);
 
             // save for audit purposes only
-            requestStorageManager.saveIncomingRequest(request);
+            this.requestStorageManager.saveIncomingRequest(request);
 
             return responseJSON;
         } catch (JSONException ex) {
@@ -114,7 +114,7 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
         IncomingMatchRequest request =
             new DefaultIncomingMatchRequest(remoteServerId, apiVersion, requestString, null);
 
-        requestStorageManager.saveIncomingRequest(request);
+        this.requestStorageManager.saveIncomingRequest(request);
     }
 
     private List<PatientSimilarityView> filterMatches(List<PatientSimilarityView> matches)
@@ -127,7 +127,7 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
         List<PatientSimilarityView> filteredMatches = new LinkedList<PatientSimilarityView>();
 
         for (PatientSimilarityView match : matches) {
-            if (consentManager.hasConsent(match.getId(), "matching")) {
+            if (this.consentManager.hasConsent(match.getId(), "matching")) {
                 // For now, only include results where the genotype score is high enough to indicate a candidate
                 // gene matched (exome data gives max score of 0.5, and candidate genes have score of 1.0)
                 //
@@ -137,7 +137,7 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
                     filteredMatches.add(match);
                 }
             } else {
-                logger.error("Patient [{}] is excluded form match results because match consent is unchecked",
+                this.logger.error("Patient [{}] is excluded form match results because match consent is unchecked",
                     match.getId());
             }
         }

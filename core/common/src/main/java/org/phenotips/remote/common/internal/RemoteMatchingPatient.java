@@ -53,19 +53,19 @@ import com.xpn.xwiki.doc.XWikiDocument;
  */
 public class RemoteMatchingPatient implements Patient
 {
-    final private String remotePatientId;
+    private final String remotePatientId;
 
-    final private String label;
+    private final String label;
 
-    final private Set<? extends Feature> features;
+    private final Set<? extends Feature> features;
 
-    final private Set<? extends Disorder> disorders;
+    private final Set<? extends Disorder> disorders;
 
-    final private Set<? extends Disorder> clinicalDisorders;
+    private final Set<? extends Disorder> clinicalDisorders;
 
-    final private Set<MatchingPatientGene> genes;
+    private final Set<MatchingPatientGene> genes;
 
-    final private ContactInfo contactInfo;
+    private final ContactInfo contactInfo;
 
     public RemoteMatchingPatient(String remotePatientId, String label, Set<Feature> features, Set<Disorder> disorders,
         Set<Disorder> clinicalDisorders, Set<MatchingPatientGene> genes, ContactInfo contactInfo)
@@ -120,12 +120,12 @@ public class RemoteMatchingPatient implements Patient
     public <T> PatientData<T> getData(String name)
     {
         // TODO: somehow reuse GeneController.load()?
-        if (name == "genes") {
-            Set<? extends MatchingPatientGene> genes = this.genes;
+        if ("genes".equals(name)) {
+            Set<? extends MatchingPatientGene> matchingPatientGenes = this.genes;
 
             List<Map<String, String>> allGenes = new LinkedList<>();
 
-            for (MatchingPatientGene gene : genes) {
+            for (MatchingPatientGene gene : matchingPatientGenes) {
                 Map<String, String> singleGene = new LinkedHashMap<>();
                 singleGene.put("gene", gene.getName());
                 allGenes.add(singleGene);
@@ -133,12 +133,12 @@ public class RemoteMatchingPatient implements Patient
             return (PatientData<T>) new IndexedPatientData<>("genes", allGenes);
         }
 
-        if (name == "contact") {
+        if ("contact".equals(name)) {
             return (PatientData<T>) new IndexedPatientData<>("contact",
                 Collections.singletonList(this.contactInfo));
         }
 
-        if (name == "clinical-diagnosis" && this.clinicalDisorders != null) {
+        if ("clinical-diagnosis".equals(name) && this.clinicalDisorders != null) {
             return (PatientData<T>) new IndexedPatientData<>("clinical-diagnosis",
                 new ArrayList<>(this.clinicalDisorders));
         }
@@ -181,7 +181,7 @@ public class RemoteMatchingPatient implements Patient
     {
         return null;
     }
-    
+
     @Override
     public DocumentReference getDocumentReference()
     {

@@ -37,16 +37,16 @@ public interface ApiRequestHandler
 {
     /**
      * Place a search request to this server.
-     * 
+     *
      * TODO fix the doc.
      */
     @Path("match")
     @Consumes({ MediaType.APPLICATION_JSON,
-    ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX +
-        ApiConfiguration.LATEST_API_VERSION_STRING +
-        ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX,
-    ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SIMPLE,
-    "application/*+json" })
+        ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX
+        + ApiConfiguration.LATEST_API_VERSION_STRING
+        + ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX,
+        ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SIMPLE,
+        "application/*+json" })
     @POST
     Response matchPost(String json) throws XWikiRestException;
 }
