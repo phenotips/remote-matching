@@ -44,14 +44,14 @@ public class DefaultApiFactory implements ApiFactory, Initializable
     @Override
     public void initialize()
     {
-        allApiDataConverters.put("1.0", this.apiDataConverterV1);
+        this.allApiDataConverters.put("1.0", this.apiDataConverterV1);
     }
 
     @Override
     public ApiDataConverter getApiVersion(String apiVersion)
     {
-        if (allApiDataConverters.containsKey(apiVersion)) {
-            return allApiDataConverters.get(apiVersion);
+        if (this.allApiDataConverters.containsKey(apiVersion)) {
+            return this.allApiDataConverters.get(apiVersion);
         }
         throw new IllegalArgumentException("Unsupported API version [" + apiVersion + "]");
     }
@@ -59,6 +59,6 @@ public class DefaultApiFactory implements ApiFactory, Initializable
     @Override
     public Set<String> getSupportedApiVersions()
     {
-        return allApiDataConverters.keySet();
+        return this.allApiDataConverters.keySet();
     }
 }

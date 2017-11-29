@@ -45,13 +45,13 @@ import org.slf4j.Logger;
 
 public class DefaultPatientToJSONConverter implements PatientToJSONConverter
 {
-    private final static String PATIENTMATCHING_JSON_FEATUREMATCHES = "featureMatches";
+    private static final String PATIENTMATCHING_JSON_FEATUREMATCHES = "featureMatches";
 
-    private final static String PATIENTMATCHING_JSON_CATEGORY = "category";
+    private static final String PATIENTMATCHING_JSON_CATEGORY = "category";
 
-    private final static String PATIENTMATCHING_JSON_CATEGORY_ID = "id";
+    private static final String PATIENTMATCHING_JSON_CATEGORY_ID = "id";
 
-    private final static String PATIENTMATCHING_JSON_MATCH = "match";
+    private static final String PATIENTMATCHING_JSON_MATCH = "match";
 
     private Logger logger;
 
@@ -310,10 +310,10 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         if (data != null) {
             Iterator<Disorder> iterator = data.iterator();
             while (iterator.hasNext()) {
-              Disorder disorder = iterator.next();
-              JSONObject disorderJson = new JSONObject();
-              disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, disorder.getId());
-              disorders.put(disorderJson);
+                Disorder disorder = iterator.next();
+                JSONObject disorderJson = new JSONObject();
+                disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, disorder.getId());
+                disorders.put(disorderJson);
             }
         }
         return disorders;

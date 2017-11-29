@@ -42,7 +42,6 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
@@ -62,10 +61,10 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
     private Logger logger;
 
     @Inject
-    SearchRequestProcessor searchRequestProcessor;
+    private SearchRequestProcessor searchRequestProcessor;
 
     @Inject
-    ApiFactory apiFactory;
+    private ApiFactory apiFactory;
 
     @Inject
     private RemoteConfigurationManager remoteConfigurationManager;
@@ -139,23 +138,22 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
             response.type(this.generateContentType(apiVersion));
             return response.build();
         } catch (Exception ex) {
-            Logger logger = LoggerFactory.getLogger(DefaultApiRequestHandler.class);
-            logger.error("Could not process remote matching request: {}", ex.getMessage(), ex);
+            this.logger.error("Could not process remote matching request: {}", ex.getMessage(), ex);
             return Response.status(ApiConfiguration.HTTP_SERVER_ERROR).build();
         }
     }
 
     private String parseApiVersion(String apiHeader)
     {
-        String result = apiHeader.replaceAll("^" + Pattern.quote(ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX) +
-            "(\\d+\\.\\d+)" + Pattern.quote(ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX) + "(.*)$", "$1");
-        logger.debug("Request api version: [{}]", result);
+        String result = apiHeader.replaceAll("^" + Pattern.quote(ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX)
+            + "(\\d+\\.\\d+)" + Pattern.quote(ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX) + "(.*)$", "$1");
+        this.logger.debug("Request api version: [{}]", result);
         return result;
     }
 
     private String generateContentType(String apiVersion)
     {
-        return ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX + apiVersion +
-            ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX;
+        return ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX + apiVersion
+            + ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX;
     }
 }
