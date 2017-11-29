@@ -15,16 +15,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/
  */
-package org.phenotips.remote.client.internal;
+package org.phenotips.remote.rest.internal;
 
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientRepository;
 import org.phenotips.data.similarity.MatchedPatientClusterView;
 import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.client.RemoteMatchingService;
-import org.phenotips.remote.client.RemotePatientMatchResource;
 import org.phenotips.remote.common.internal.RemoteMatchedPatientClusterView;
 import org.phenotips.remote.common.internal.RemotePatientSimilarityView;
+import org.phenotips.remote.rest.RemotePatientMatchResource;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.container.Container;
@@ -53,7 +53,7 @@ import org.slf4j.Logger;
  * @since 1.2
  */
 @Component
-@Named("org.phenotips.remote.client.internal.DefaultRemotePatientMatchResource")
+@Named("org.phenotips.remote.rest.internal.DefaultRemotePatientMatchResource")
 @Singleton
 public class DefaultRemotePatientMatchResource extends XWikiResource implements RemotePatientMatchResource
 {

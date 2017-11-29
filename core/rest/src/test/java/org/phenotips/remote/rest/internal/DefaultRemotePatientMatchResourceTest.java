@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/
  */
-package org.phenotips.remote.client.internal;
+package org.phenotips.remote.rest.internal;
 
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientRepository;
 import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.client.RemoteMatchingService;
-import org.phenotips.remote.client.RemotePatientMatchResource;
 import org.phenotips.remote.common.internal.RemotePatientSimilarityView;
+import org.phenotips.remote.rest.RemotePatientMatchResource;
 
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
@@ -113,7 +113,7 @@ public class DefaultRemotePatientMatchResourceTest
 
     @Rule
     public MockitoComponentMockingRule<RemotePatientMatchResource> mocker =
-        new MockitoComponentMockingRule<RemotePatientMatchResource>(DefaultRemotePatientMatchResource.class);
+        new MockitoComponentMockingRule<>(DefaultRemotePatientMatchResource.class);
 
     @Mock
     private Patient reference;
@@ -141,8 +141,6 @@ public class DefaultRemotePatientMatchResourceTest
 
     private RemoteMatchingService matchingService;
 
-    private Container container;
-
     private JSONObject expectedAll;
 
     @Before
@@ -163,7 +161,6 @@ public class DefaultRemotePatientMatchResourceTest
         this.logger = this.mocker.getMockedLogger();
         this.repository = this.mocker.getInstance(PatientRepository.class, SECURE);
         this.matchingService = this.mocker.getInstance(RemoteMatchingService.class);
-        this.container = this.mocker.getInstance(Container.class);
 
         // Mock the reference patient.
         when(this.repository.get(REFERENCE)).thenReturn(this.reference);
@@ -180,8 +177,9 @@ public class DefaultRemotePatientMatchResourceTest
         when(this.response.getResponseJSON()).thenReturn(new JSONObject().put(RESPONSE_JSON, RESPONSE_JSON));
         when(this.response.gotValidReply()).thenReturn(true);
 
+        final Container container = this.mocker.getInstance(Container.class);
         // Mock container interactions.
-        when(this.container.getRequest()).thenReturn(this.request);
+        when(container.getRequest()).thenReturn(this.request);
 
         // Mock request data.
         when(this.request.getProperty(SERVER)).thenReturn(REMOTE_SERVER);
