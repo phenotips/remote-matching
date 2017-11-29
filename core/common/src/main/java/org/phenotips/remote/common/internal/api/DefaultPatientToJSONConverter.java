@@ -92,11 +92,6 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             json.put(ApiConfiguration.JSON_DISORDERS, disorders);
         }
 
-        JSONArray clinicalDisorders = DefaultPatientToJSONConverter.clinicalDisorders(patient);
-        if (disorders.length() > 0) {
-            json.put(ApiConfiguration.JSON_DIAGNOSIS, clinicalDisorders);
-        }
-
         // TODO: rework this part, as Patient may be an instance of a Patient (for outgoing requests) or
         // RestrictedSimilarityView (for returning replies to incoming requests), and the two
         // behave differently
@@ -300,12 +295,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, disease.getId());
             disorders.put(disorderJson);
         }
-        return disorders;
-    }
 
-    private static JSONArray clinicalDisorders(Patient patient)
-    {
-        JSONArray disorders = new JSONArray();
         PatientData<Disorder> data = patient.getData("clinical-diagnosis");
         if (data != null) {
             Iterator<Disorder> iterator = data.iterator();

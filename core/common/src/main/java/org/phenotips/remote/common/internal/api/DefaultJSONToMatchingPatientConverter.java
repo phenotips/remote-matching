@@ -112,14 +112,12 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
             }
 
             Set<Feature> features = this.convertFeatures(patientJSON);
-            Set<Disorder> disorders = this.convertDisorders(patientJSON, this.disorderTerm,
-                MIM_VOCABULARY, ApiConfiguration.JSON_DISORDERS);
-            Set<Disorder> clinicalDisorders = this.convertDisorders(patientJSON, this.clinicalDisorderTerm,
-                ORDO_VOCABULARY, ApiConfiguration.JSON_DIAGNOSIS);
+            Set<Disorder> disorders = null;
+            Set<Disorder> clinicalDisorders = null;
+            this.convertDisorders(patientJSON, disorders, clinicalDisorders);
             Set<MatchingPatientGene> genes = this.convertGenes(patientJSON);
 
-            if ((features == null || features.isEmpty()) &&
-                (genes == null || genes.isEmpty())) {
+            if ((features == null || features.isEmpty()) && (genes == null || genes.isEmpty())) {
                 LOGGER.error("There are no features and no genes: violates API requirements (patient JSON: [{}])",
                     patientJSON.toString());
                 throw new ApiViolationException("There are no features and no genes");
@@ -172,27 +170,33 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                 return featureSet;
             }
         } catch (Exception ex) {
-            // TODO: catch only json exceptions, and throw other type upwads if feature id is unsupported
+            // TODO: catch only json exceptions, and throw other type upwards if feature id is unsupported
             LOGGER.error("Error converting features: [{}]", ex);
         }
         return null;
     }
 
-    private Set<Disorder> convertDisorders(JSONObject json, Pattern pattern, Vocabulary vocabulary, String name)
+    private Set<Disorder> convertDisorders(JSONObject json, Set<Disorder> disorders, Set<Disorder> clinicalDisorders)
     {
         try {
-            if (json.has(name)) {
+            if (json.has(ApiConfiguration.JSON_DISORDERS)) {
                 Set<Disorder> disorderSet = new HashSet<>();
-                JSONArray disorderJson = (JSONArray) json.get(name);
+                JSONArray disorderJson = (JSONArray) json.get(ApiConfiguration.JSON_DISORDERS);
                 for (Object jsonDisorderUncast : disorderJson) {
                     JSONObject jsonDisorder = (JSONObject) jsonDisorderUncast;
                     String id = jsonDisorder.getString(ApiConfiguration.JSON_DISORDER_ID).toUpperCase();
-                    if (!pattern.matcher(id).matches()) {
+                    VocabularyTerm term = null;
+                    // resolve the given disease identifier to a MIM ontology disease ID
+                    if (this.disorderTerm.matcher(id).matches()) {
+                        term = MIM_VOCABULARY.getTerm(id);
+                     // resolve the given disease identifier to a ORDO ontology disease ID
+                    } else if (this.clinicalDisorderTerm.matcher(id).matches()) {
+                        term = ORDO_VOCABULARY.getTerm(id);
+                    } else {
                         LOGGER.error("Patient disorder parser: ignoring unsupported term with ID [{}]", id);
                         continue;
                     }
-                    // resolve the given disease identifier to a MIM ontology disease ID
-                    VocabularyTerm term = vocabulary.getTerm(id);
+
                     id = (term != null) ? term.getId() : id;
                     Disorder disorder = new RemotePatientDisorder(id, null);
                     disorderSet.add(disorder);
