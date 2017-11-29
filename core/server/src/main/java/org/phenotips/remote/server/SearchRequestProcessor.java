@@ -21,8 +21,6 @@ import org.phenotips.remote.api.ApiDataConverter;
 
 import org.xwiki.component.annotation.Role;
 
-import java.util.concurrent.ExecutorService;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.json.JSONObject;
@@ -34,5 +32,5 @@ import org.json.JSONObject;
 public interface SearchRequestProcessor
 {
     JSONObject processHTTPSearchRequest(ApiDataConverter apiVersionSpecificConverter, String json,
-        ExecutorService queue, String remoteServerId, HttpServletRequest httpRequest) throws Exception;
+        String remoteServerId, HttpServletRequest httpRequest) throws Exception;
 }
