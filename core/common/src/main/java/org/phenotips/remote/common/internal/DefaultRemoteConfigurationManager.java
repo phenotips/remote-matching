@@ -58,7 +58,7 @@ public class DefaultRemoteConfigurationManager implements RemoteConfigurationMan
 
             remotes = prefsDoc.getXObjects(ApplicationConfiguration.REMOTE_CONFIGURATION_OBJECT_REFERENCE);
         } catch (Exception ex) {
-            logger.error("Remote matching admin section is absent or empty - can not process request: [{}] {}",
+            this.logger.error("Remote matching admin section is absent or empty - can not process request: [{}] {}",
                 ex.getMessage(), ex);
         }
 
@@ -86,13 +86,13 @@ public class DefaultRemoteConfigurationManager implements RemoteConfigurationMan
             }
             String url = remote.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_BASE_URL_FIELD);
             if (StringUtils.equalsIgnoreCase(url, baseURL)) {
-                logger.info("Matched configuration with URL: " + url);
+                this.logger.info("Matched configuration with URL: " + url);
                 return remote;
             }
         }
-        logger.error(
-            "Could not find any remote configuration objects or no match was found. Configurations list size: " +
-                configurations.size());
+        this.logger.error(
+            "Could not find any remote configuration objects or no match was found. Configurations list size: "
+                + configurations.size());
         // FIXME. Not exactly true.
         throw new XWikiException();
     }
@@ -129,35 +129,35 @@ public class DefaultRemoteConfigurationManager implements RemoteConfigurationMan
                             continue;
                         }
                     } catch (MalformedURLException ex) {
-                        logger.error(
+                        this.logger.error(
                             "One of the configured remote matching servers has an incorrectly formatted URL [{}]: {}",
                             configuredURL, ex.getMessage());
                     } catch (UnknownHostException ex) {
-                        logger.error(
+                        this.logger.error(
                             "One of the configured remote matching server URLs has no valid DNS record [{}]: {}",
                             configuredURL, ex.getMessage());
                     }
 
                     if (!StringUtils.equalsIgnoreCase(providedToken, configuredToken)) {
-                        logger.error("Remote server token validation failed for server [{}]: Provided: {}",
+                        this.logger.error("Remote server token validation failed for server [{}]: Provided: {}",
                             remoteServerName, providedToken);
                         return null;
                     }
-                    logger.error("Remote server IP and token validated OK for server [{}] (remote IP {})",
+                    this.logger.error("Remote server IP and token validated OK for server [{}] (remote IP {})",
                         remoteServerName, remoteIP);
                     return remote;
                 } else {
                     if (StringUtils.equalsIgnoreCase(providedToken, configuredToken)) {
-                        logger.error("Remote server token validated OK for server [{}] (remote IP {})",
+                        this.logger.error("Remote server token validated OK for server [{}] (remote IP {})",
                             remoteServerName, remoteIP);
                         return remote;
                     }
                 }
             }
         } catch (Exception ex) {
-            logger.warn("Error while getting server info for IP [{}]: [{}] {}", remoteIP, ex.getMessage(), ex);
+            this.logger.warn("Error while getting server info for IP [{}]: [{}] {}", remoteIP, ex.getMessage(), ex);
         }
-        logger.error("Remote server token validation failed for remote IP {}", remoteIP);
+        this.logger.error("Remote server token validation failed for remote IP {}", remoteIP);
         return null;
     }
 
@@ -179,7 +179,7 @@ public class DefaultRemoteConfigurationManager implements RemoteConfigurationMan
                 }
             }
         } catch (Exception ex) {
-            logger.error("Error while getting server info for serverID [{}]: [{}] {}",
+            this.logger.error("Error while getting server info for serverID [{}]: [{}] {}",
                 remoteServerID, ex.getMessage(), ex);
         }
         return null;

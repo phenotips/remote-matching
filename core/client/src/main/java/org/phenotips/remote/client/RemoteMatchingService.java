@@ -34,9 +34,9 @@ import java.util.List;
 @Role
 public interface RemoteMatchingService
 {
-    public OutgoingMatchRequest sendRequest(String patientId, String remoteServerId, int addTopNGenes);
+    OutgoingMatchRequest sendRequest(String patientId, String remoteServerId, int addTopNGenes);
 
-    public OutgoingMatchRequest getLastRequestSent(String patientId, String remoteServerId);
+    OutgoingMatchRequest getLastRequestSent(String patientId, String remoteServerId);
 
-    public List<RemotePatientSimilarityView> getSimilarityResults(OutgoingMatchRequest request);
+    List<RemotePatientSimilarityView> getSimilarityResults(OutgoingMatchRequest request);
 }

@@ -67,7 +67,7 @@ public class RemoteMatchFinder extends AbstractMatchFinder implements MatchFinde
     private DocumentReferenceResolver<EntityReference> entityResolver;
 
     @Inject
-    private RemoteConfigurationManager RemoteConfigurationManager;
+    private RemoteConfigurationManager remoteConfigurationManager;
 
     @Inject
     private RemoteMatchingService matchingService;
@@ -140,7 +140,7 @@ public class RemoteMatchFinder extends AbstractMatchFinder implements MatchFinde
     private Set<String> getRemotesList()
     {
         XWikiContext context = this.contextProvider.get();
-        List<BaseObject> potentialRemotes = this.RemoteConfigurationManager.getListOfRemotes(context);
+        List<BaseObject> potentialRemotes = this.remoteConfigurationManager.getListOfRemotes(context);
 
         Set<String> remoteIdsList = new HashSet<>();
         for (BaseObject remote : potentialRemotes) {

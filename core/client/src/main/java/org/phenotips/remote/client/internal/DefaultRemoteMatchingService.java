@@ -90,29 +90,30 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
     private Execution execution;
 
     @Inject
-    ApiFactory apiFactory;
+    private ApiFactory apiFactory;
 
     @Inject
     @Named("view")
-    protected AccessLevel viewAccess;
+    private AccessLevel viewAccess;
 
     @Inject
     @Named("match")
-    protected AccessLevel matchAccess;
+    private AccessLevel matchAccess;
 
     @Inject
     @Named("hgnc")
     private Vocabulary ontologyService;
 
     @Inject
-    PatientRepository patientRepository;
+    private PatientRepository patientRepository;
 
     @Inject
     private RemoteMatchingStorageManager requestStorageManager;
 
+    // injected so that static data is initialized.
+    // TODO: review static data usage
     @Inject
-    private PatientSimilarityViewFactory similarityViewFactory; // injected so that static data is initialized. TODO:
-                                                                // review static data usage
+    private PatientSimilarityViewFactory similarityViewFactory;
 
     @Inject
     private RemoteConfigurationManager remoteConfigurationManager;
@@ -132,7 +133,7 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
             this.remoteConfigurationManager.getRemoteConfigurationGivenRemoteServerID(remoteServerId, context);
 
         if (configurationObject == null) {
-            logger.error("Requested matching server is not configured: [{}]", remoteServerId);
+            this.logger.error("Requested matching server is not configured: [{}]", remoteServerId);
             return this.generateErrorRequest(ApiConfiguration.ERROR_NOT_SENT,
                 "requested matching server [" + remoteServerId + "] is not configured", request);
         }
@@ -160,9 +161,9 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
 
         // TODO: hack to make charset lower-cased so that GeneMatcher accepts it
         // jsonEntity.setContentType("application/json; charset=utf-8");
-        String mimeType = ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX +
-            ApiConfiguration.LATEST_API_VERSION_STRING +
-            ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX;
+        String mimeType = ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX
+            + ApiConfiguration.LATEST_API_VERSION_STRING
+            + ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX;
         jsonEntity.setContentType(mimeType + "; charset=utf-8");
         this.logger.debug("Setting Content-Type: [{}]", jsonEntity.getContentType().toString());
 
@@ -204,7 +205,7 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
             request.addRequestJSON(requestJSON);
             request.addResponseString(stringReply);
             request.setReplayHTTPStatus(httpStatus);
-            requestStorageManager.saveOutgoingRequest(request);
+            this.requestStorageManager.saveOutgoingRequest(request);
 
             List<RemotePatientSimilarityView> parsedResults = this.getSimilarityResults(request);
             this.notificationManager.saveOutgoingMatches(parsedResults, patientId, request.getRemoteServerId());
@@ -238,7 +239,7 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
     @Override
     public OutgoingMatchRequest getLastRequestSent(String patientId, String remoteServerId)
     {
-        return requestStorageManager.loadCachedOutgoingRequest(patientId, remoteServerId);
+        return this.requestStorageManager.loadCachedOutgoingRequest(patientId, remoteServerId);
     }
 
     @Override

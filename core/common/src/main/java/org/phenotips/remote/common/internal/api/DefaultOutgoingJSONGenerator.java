@@ -63,7 +63,7 @@ public class DefaultOutgoingJSONGenerator implements OutgoingJSONGenerator
     {
         Patient referencePatient = this.getPatientByID(localPatientId);
         if (referencePatient == null) {
-            logger.error("Unable to get patient with id [{}]", localPatientId);
+            this.logger.error("Unable to get patient with id [{}]", localPatientId);
             // can't access the requested patient
             return null;
         }
@@ -71,10 +71,10 @@ public class DefaultOutgoingJSONGenerator implements OutgoingJSONGenerator
         try {
             JSONObject patientJson = this.patientToJSONConverter.convert(referencePatient, includedTopGenes);
 
-            if ((!patientJson.has(ApiConfiguration.JSON_FEATURES) ||
-                patientJson.getJSONArray(ApiConfiguration.JSON_FEATURES).length() == 0) &&
-                (!patientJson.has(ApiConfiguration.JSON_GENES) ||
-                    patientJson.getJSONArray(ApiConfiguration.JSON_GENES).length() == 0)) {
+            if ((!patientJson.has(ApiConfiguration.JSON_FEATURES)
+                || patientJson.getJSONArray(ApiConfiguration.JSON_FEATURES).length() == 0)
+                && (!patientJson.has(ApiConfiguration.JSON_GENES)
+                    || patientJson.getJSONArray(ApiConfiguration.JSON_GENES).length() == 0)) {
                 this.logger.error("Can't send a query for a patient with no features and no genes");
                 throw new ApiViolationException("Can't send a query for a patient with no features and no genes");
             }

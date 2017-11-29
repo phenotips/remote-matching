@@ -47,9 +47,9 @@ public class RemotePatientFeature extends AbstractPhenoTipsVocabularyProperty im
     @Override
     public String getType()
     {
-        if (this.observedStatus.equals("yes")) {
+        if ("yes".equals(this.observedStatus)) {
             return "phenotype";
-        } else if (this.observedStatus.equals("no")) {
+        } else if ("no".equals(this.observedStatus)) {
             return "negative_phenotype";
         } else {
             return "";
@@ -59,7 +59,7 @@ public class RemotePatientFeature extends AbstractPhenoTipsVocabularyProperty im
     @Override
     public boolean isPresent()
     {
-        return this.observedStatus.equals("yes");
+        return "yes".equals(this.observedStatus);
     }
 
     @Override

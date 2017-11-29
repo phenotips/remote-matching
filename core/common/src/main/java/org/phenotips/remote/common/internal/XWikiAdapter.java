@@ -36,7 +36,7 @@ import com.xpn.xwiki.objects.BaseObject;
  */
 public class XWikiAdapter
 {
-    static public BaseObject getSubmitter(String userId, XWiki wiki, XWikiContext context,
+    public static BaseObject getSubmitter(String userId, XWiki wiki, XWikiContext context,
         DocumentReferenceResolver<String> resolver) throws XWikiException
     {
         // Fixme. Does not check if the document is a user, but will return null if not.
@@ -46,12 +46,12 @@ public class XWikiAdapter
         return wiki.getDocument(userReference, context).getXObject(ApplicationConfiguration.USER_OBJECT_REFERENCE);
     }
 
-    static public Patient getPatient(XWikiDocument doc)
+    public static Patient getPatient(XWikiDocument doc)
     {
         return new PhenoTipsPatient(doc);
     }
 
-    static public XWikiDocument getPatientDoc(String patientId, XWikiContext context)
+    public static XWikiDocument getPatientDoc(String patientId, XWikiContext context)
     {
         try {
             EntityReference patientReference =
