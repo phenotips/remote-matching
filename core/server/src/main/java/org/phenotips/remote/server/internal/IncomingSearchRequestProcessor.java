@@ -84,6 +84,7 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
 
             List<PatientSimilarityView> filteredMatches = filterMatches(matches);
 
+            // save into matching notification database
             this.notificationManager.saveIncomingMatches(filteredMatches, remoteServerId);
 
             JSONObject responseJSON = apiVersionSpecificConverter.generateServerResponse(request, filteredMatches);
@@ -96,16 +97,19 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
             return responseJSON;
         } catch (JSONException ex) {
             this.logger.error("Incorrect incoming request: misformatted JSON");
+            // save raw request data for audit purposes only
+            this.saveUnprocessedRequest(stringJson, remoteServerId, apiVersionSpecificConverter.getApiVersion());
             return apiVersionSpecificConverter.generateWrongInputDataResponse("misformatted JSON");
         } catch (ApiViolationException ex) {
             this.logger.error("Error converting JSON to incoming request");
+            // save raw request data for audit purposes only
+            this.saveUnprocessedRequest(stringJson, remoteServerId, apiVersionSpecificConverter.getApiVersion());
             return apiVersionSpecificConverter.generateWrongInputDataResponse(ex.getMessage());
         } catch (Exception ex) {
             this.logger.error("CODE Error: {}", ex);
-            return apiVersionSpecificConverter.generateInternalServerErrorResponse(null);
-        } finally {
             // save raw request data for audit purposes only
             this.saveUnprocessedRequest(stringJson, remoteServerId, apiVersionSpecificConverter.getApiVersion());
+            return apiVersionSpecificConverter.generateInternalServerErrorResponse(null);
         }
     }
 
@@ -121,8 +125,8 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
     {
         // check consent level for each of the patient: exclude patients without explicit MME consent
         //
-        // TODO: use CollectionUtils.filter once a) updated Apache Commons that support parametrized types are used
-        // and b) a workaround for anonymous classes only being able to use final local variables is testd
+        // TODO: use CollectionUtils.filter once a) updated Apache Commons that support parameterized types are used
+        // and b) a workaround for anonymous classes only being able to use final local variables is tested
 
         List<PatientSimilarityView> filteredMatches = new LinkedList<PatientSimilarityView>();
 
