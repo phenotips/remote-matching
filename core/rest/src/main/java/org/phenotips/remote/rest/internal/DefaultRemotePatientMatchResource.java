@@ -20,6 +20,9 @@ package org.phenotips.remote.rest.internal;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientRepository;
 import org.phenotips.data.similarity.MatchedPatientClusterView;
+import org.phenotips.data.similarity.PatientSimilarityView;
+import org.phenotips.data.similarity.internal.DefaultPatientSimilarityView;
+import org.phenotips.matchingnotification.MatchingNotificationManager;
 import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.client.RemoteMatchingService;
 import org.phenotips.remote.common.internal.RemoteMatchedPatientClusterView;
@@ -31,6 +34,7 @@ import org.xwiki.container.Container;
 import org.xwiki.container.Request;
 import org.xwiki.rest.XWikiResource;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -83,6 +87,9 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
     /** The XWiki container. */
     @Inject
     private Container container;
+
+    @Inject
+    private MatchingNotificationManager notificationManager;
 
     @Override
     public Response findRemoteMatchingPatients(final String patientId)
@@ -186,6 +193,7 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
         final int reqNo)
     {
         final List<RemotePatientSimilarityView> matches = this.matchingService.getSimilarityResults(remoteResponse);
+        this.saveOutgoingMatches(matches, remoteResponse.getRemoteServerId());
         final MatchedPatientClusterView matchedCluster =
             new RemoteMatchedPatientClusterView(patient, remoteResponse, matches);
         final JSONObject matchesJson = !matches.isEmpty()
@@ -210,5 +218,20 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
         final int lastItemIdx = totalSize - 1;
         final int requestedLast = limit >= 0 ? offset + limit - 2 : lastItemIdx;
         return requestedLast <= lastItemIdx ? requestedLast : lastItemIdx;
+    }
+
+    /**
+     * Saves a list of matches that were found by a remote outgoing request.
+     *
+     * @param matches list of remote similarity views
+     * @param serverId id of remote server
+     */
+    private void saveOutgoingMatches(List<RemotePatientSimilarityView> matches, String serverId)
+    {
+        List<PatientSimilarityView> castedMatches = new LinkedList<>();
+        for (RemotePatientSimilarityView match : matches) {
+            castedMatches.add((DefaultPatientSimilarityView) match);
+        }
+        this.notificationManager.saveIncomingMatches(castedMatches, serverId);
     }
 }
