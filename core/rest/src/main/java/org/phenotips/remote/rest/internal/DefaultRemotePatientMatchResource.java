@@ -140,9 +140,9 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
                 this.logger.error("Patient with ID: {} could not be found.", patientId);
                 return Response.status(Response.Status.BAD_REQUEST).build();
             }
-            // FIXME: Magic number taken from PhenomeCentral.RemoteResults
+            // don't send any top Exomiser genes in outgoing requests
             final OutgoingMatchRequest remoteResponse = newRequest
-                ? this.matchingService.sendRequest(patientId, server, 5)
+                ? this.matchingService.sendRequest(patientId, server, 0)
                 : this.matchingService.getLastRequestSent(patientId, server);
             // If the response is null, the request was never initiated.
             if (remoteResponse == null) {

@@ -168,7 +168,7 @@ public class DefaultRemotePatientMatchResourceTest
 
         // Mock matches search.
         final List<RemotePatientSimilarityView> matches = Arrays.asList(this.match1, this.match2, this.match3);
-        when(this.matchingService.sendRequest(REFERENCE, REMOTE_SERVER, 5)).thenReturn(this.response);
+        when(this.matchingService.sendRequest(REFERENCE, REMOTE_SERVER, 0)).thenReturn(this.response);
         when(this.matchingService.getLastRequestSent(REFERENCE, REMOTE_SERVER)).thenReturn(this.response);
         when(this.matchingService.getSimilarityResults(this.response)).thenReturn(matches);
 
@@ -369,7 +369,7 @@ public class DefaultRemotePatientMatchResourceTest
     {
         when(this.request.getProperty(SEND_NEW_REQUEST)).thenReturn("true");
         final Response response = this.component.findRemoteMatchingPatients(REFERENCE);
-        verify(this.matchingService, times(1)).sendRequest(REFERENCE, REMOTE_SERVER, 5);
+        verify(this.matchingService, times(1)).sendRequest(REFERENCE, REMOTE_SERVER, 0);
         verify(this.matchingService, never()).getLastRequestSent(anyString(), anyString());
         Assert.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         Assert.assertTrue(this.expectedAll.similar(response.getEntity()));
