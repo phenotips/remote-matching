@@ -1,3 +1,2 @@
 org.phenotips.remote.client.internal.DefaultRemoteMatchingService
-org.phenotips.remote.client.script.RemoteMatchingScriptService
 org.phenotips.remote.client.internal.RemoteMatchFinder
