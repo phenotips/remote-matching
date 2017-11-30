@@ -460,52 +460,50 @@ td input[type="text"]:focus {
     <guid>a7c27acb-19f4-4e13-9182-2579f52a70e0</guid>
     <property>
       <content>{{velocity}}
-    #if (!$services.patientconsents.hasConsent($doc.getName(), "matching"))
-      #break
+#if (!$services.patientconsents.hasConsent($doc.getName(), "matching"))
+  #break
+#end
+$xwiki.ssx.use('PhenomeCentral.RemoteMatching')##
+=== Matches in partner [[MME&gt;&gt;http://www.matchmakerexchange.org/||title="Matchmaker Exchange" rel="__blank"]] databases ===
+##=======================================
+## Get list of remote configurations and
+## only display those which have a non-empty token and the checkbox to show in UI is checked
+##=======================================
+#set ($preferenceDoc = $xwiki.getDocumentAsAuthor("XWiki.XWikiPreferences"))
+#set ($allRemotes = $preferenceDoc.getObjects("PhenomeCentral.RemoteMatchingServiceConfiguration"))
+#foreach ($config in $allRemotes)
+  #if ($config.getProperty('remoteAuthToken').getValue() != "" &amp;&amp; $config.getProperty('serverId').getValue() != "" &amp;&amp; $config.getProperty('includeInUI').getValue() == 1)
+    #if ($foreach.index &gt; 0)
+      {{html clean=false}}&lt;hr&gt;{{/html}}##
     #end
-    #if ($services.remoteMatching)
-      $xwiki.ssx.use('PhenomeCentral.RemoteMatching')##
-      === Matches in partner [[MME&gt;&gt;http://www.matchmakerexchange.org/||title="Matchmaker Exchange" rel="__blank"]] databases ===
-      ##=======================================
-      ## Get list of remote configurations and
-      ## only display those which have a non-empty token and the checkbox to show in UI is checked
-      ##=======================================
-      #set ($preferenceDoc = $xwiki.getDocumentAsAuthor("XWiki.XWikiPreferences"))
-      #set ($allRemotes = $preferenceDoc.getObjects("PhenomeCentral.RemoteMatchingServiceConfiguration"))
-      #foreach ($config in $allRemotes)
-        #if ($config.getProperty('remoteAuthToken').getValue() != "" &amp;&amp; $config.getProperty('serverId').getValue() != "" &amp;&amp; $config.getProperty('includeInUI').getValue() == 1)
-          #if ($foreach.index &gt; 0)
-            {{html clean=false}}&lt;hr&gt;{{/html}}##
-          #end
-          #set ($headerID = "mme-header-${foreach.count}")
-          #set ($serverID = $config.getProperty('serverId').getValue())
-          #set ($serverName = $config.getProperty('humanReadableName').getValue())
-          #if ($serverName == "")
-            #set ($serverName = $serverID)
-          #end
-          #set ($resultsURL = $xwiki.webAppPath + 'rest/patients/' + $doc.getName() + '/similar-remote-cases')
-          #set ($disclaimer = $config.getProperty('disclaimer').getValue())
-          {{html clean=false}}##
-          &lt;h4 class="similarity-mme-server-name-header" id="$headerID"&gt;$escapetool.xml($serverName)&lt;/h4&gt;
-          {{/html}}##
-          ## Pagination
-          $xwiki.ssfx.use('js/xwiki/table/livetable.css', true)##
-          (% class="similarity-results-container-mme" %)(((
-            (% class="similarity-results-container" id="similar-remote-patients-container-${escapetool.xml($serverID)}" %)((({{html clean=false}}
-              &lt;input type="hidden" name="service" value="$escapetool.xml($resultsURL)"/&gt;
-              &lt;input type="hidden" name="mmeServer" value="$escapetool.xml($serverID)"/&gt;
-              &lt;input type="hidden" name="serviceDisclaimer" value="$escapetool.xml($disclaimer)"/&gt;{{/html}})))##
-            {{html clean=false}}&lt;span class="xwiki-livetable-pagination" id="pagination-similar-cases-${escapetool.xml($serverID)}"&gt;&lt;span class="controlPagination"&gt;
-                &lt;a title="$escapetool.xml($services.localization.render('platform.livetable.paginationPagePrevTitle'))" class="prevPagination" id="pagination-prev-${escapetool.xml($serverID)}" href="#"&gt;&lt;span class="hidden"&gt;$services.localization.render('platform.livetable.paginationPagePrevTitle')&lt;/span&gt;&lt;/a&gt;
-                &lt;a title="$escapetool.xml($services.localization.render('platform.livetable.paginationPageNextTitle'))" class="nextPagination" id="pagination-next-${escapetool.xml($serverID)}" href="#"&gt;&lt;span class="hidden"&gt;$services.localization.render('platform.livetable.paginationPageNextTitle')&lt;/span&gt;&lt;/a&gt;
-              &lt;/span&gt;
-              &lt;span class="pagination"&gt;
-                &lt;span class="xwiki-livetable-pagination-text"&gt;$services.localization.render('platform.livetable.paginationPage')&lt;/span&gt;
-                &lt;span class="xwiki-livetable-pagination-content" id="pagination-content-${escapetool.xml($serverID)}"&gt;&lt;/span&gt;
-              &lt;/span&gt;&lt;/span&gt;{{/html}})))##
-        #end
-      #end
+    #set ($headerID = "mme-header-${foreach.count}")
+    #set ($serverID = $config.getProperty('serverId').getValue())
+    #set ($serverName = $config.getProperty('humanReadableName').getValue())
+    #if ($serverName == "")
+      #set ($serverName = $serverID)
     #end
+    #set ($resultsURL = $xwiki.webAppPath + 'rest/patients/' + $doc.getName() + '/similar-remote-cases')
+    #set ($disclaimer = $config.getProperty('disclaimer').getValue())
+    {{html clean=false}}##
+    &lt;h4 class="similarity-mme-server-name-header" id="$headerID"&gt;$escapetool.xml($serverName)&lt;/h4&gt;
+    {{/html}}##
+    ## Pagination
+    $xwiki.ssfx.use('js/xwiki/table/livetable.css', true)##
+    (% class="similarity-results-container-mme" %)(((
+      (% class="similarity-results-container" id="similar-remote-patients-container-${escapetool.xml($serverID)}" %)((({{html clean=false}}
+        &lt;input type="hidden" name="service" value="$escapetool.xml($resultsURL)"/&gt;
+        &lt;input type="hidden" name="mmeServer" value="$escapetool.xml($serverID)"/&gt;
+        &lt;input type="hidden" name="serviceDisclaimer" value="$escapetool.xml($disclaimer)"/&gt;{{/html}})))##
+      {{html clean=false}}&lt;span class="xwiki-livetable-pagination" id="pagination-similar-cases-${escapetool.xml($serverID)}"&gt;&lt;span class="controlPagination"&gt;
+          &lt;a title="$escapetool.xml($services.localization.render('platform.livetable.paginationPagePrevTitle'))" class="prevPagination" id="pagination-prev-${escapetool.xml($serverID)}" href="#"&gt;&lt;span class="hidden"&gt;$services.localization.render('platform.livetable.paginationPagePrevTitle')&lt;/span&gt;&lt;/a&gt;
+          &lt;a title="$escapetool.xml($services.localization.render('platform.livetable.paginationPageNextTitle'))" class="nextPagination" id="pagination-next-${escapetool.xml($serverID)}" href="#"&gt;&lt;span class="hidden"&gt;$services.localization.render('platform.livetable.paginationPageNextTitle')&lt;/span&gt;&lt;/a&gt;
+        &lt;/span&gt;
+        &lt;span class="pagination"&gt;
+          &lt;span class="xwiki-livetable-pagination-text"&gt;$services.localization.render('platform.livetable.paginationPage')&lt;/span&gt;
+          &lt;span class="xwiki-livetable-pagination-content" id="pagination-content-${escapetool.xml($serverID)}"&gt;&lt;/span&gt;
+        &lt;/span&gt;&lt;/span&gt;{{/html}})))##
+  #end
+#end
 {{/velocity}}</content>
     </property>
     <property>
