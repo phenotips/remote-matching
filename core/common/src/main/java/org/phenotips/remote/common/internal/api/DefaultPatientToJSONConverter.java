@@ -115,7 +115,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         // Default contact info
         String name = "PhenomeCentral Support";
         String institution = "PhenomeCentral";
-        String href = "mailto:matchmaker@phenomecentral.org";
+        String href = "mailto:";
 
         PatientData<ContactInfo> data = patient.getData("contact");
         if (data != null && data.isIndexed() && data.size() > 0) {
@@ -129,7 +129,9 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             // TODO: replace this with a URL to a match/contact page
             List<String> email = contact.getEmails();
             if (!email.isEmpty() && !StringUtils.isBlank(email.get(0))) {
-                href += "," + email.get(0);
+                href += email.get(0) + ",matchmaker@phenomecentral.org";
+            } else {
+                href += "matchmaker@phenomecentral.org";
             }
         }
 
