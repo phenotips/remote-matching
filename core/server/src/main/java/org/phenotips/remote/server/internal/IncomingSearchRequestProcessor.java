@@ -69,6 +69,7 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
         ExecutorService queue, String remoteServerId, HttpServletRequest httpRequest)
     {
         this.logger.debug("Received JSON search request: <<{}>>", stringJson);
+        boolean requestIncomplete = true;
 
         try {
             JSONObject json = new JSONObject(stringJson);
@@ -93,23 +94,22 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
 
             // save for audit purposes only
             this.requestStorageManager.saveIncomingRequest(request);
-
+            requestIncomplete = false;
             return responseJSON;
         } catch (JSONException ex) {
             this.logger.error("Incorrect incoming request: misformatted JSON");
-            // save raw request data for audit purposes only
-            this.saveUnprocessedRequest(stringJson, remoteServerId, apiVersionSpecificConverter.getApiVersion());
             return apiVersionSpecificConverter.generateWrongInputDataResponse("misformatted JSON");
         } catch (ApiViolationException ex) {
             this.logger.error("Error converting JSON to incoming request");
-            // save raw request data for audit purposes only
-            this.saveUnprocessedRequest(stringJson, remoteServerId, apiVersionSpecificConverter.getApiVersion());
             return apiVersionSpecificConverter.generateWrongInputDataResponse(ex.getMessage());
         } catch (Exception ex) {
             this.logger.error("CODE Error: {}", ex);
-            // save raw request data for audit purposes only
-            this.saveUnprocessedRequest(stringJson, remoteServerId, apiVersionSpecificConverter.getApiVersion());
             return apiVersionSpecificConverter.generateInternalServerErrorResponse(null);
+        } finally {
+            if (requestIncomplete) {
+                // save raw request data for audit purposes only
+                this.saveUnprocessedRequest(stringJson, remoteServerId, apiVersionSpecificConverter.getApiVersion());
+            }
         }
     }
 
