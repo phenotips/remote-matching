@@ -86,7 +86,8 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
             List<PatientSimilarityView> filteredMatches = filterMatches(matches);
 
             // save into matching notification database
-            this.notificationManager.saveIncomingMatches(filteredMatches, remoteServerId);
+            this.notificationManager.saveIncomingMatches(filteredMatches, request.getModelPatient().getId(),
+                remoteServerId);
 
             JSONObject responseJSON = apiVersionSpecificConverter.generateServerResponse(request, filteredMatches);
 

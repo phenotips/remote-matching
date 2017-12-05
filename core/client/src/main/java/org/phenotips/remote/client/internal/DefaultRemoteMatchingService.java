@@ -23,6 +23,7 @@ import org.phenotips.data.permissions.AccessLevel;
 import org.phenotips.data.similarity.AccessType;
 import org.phenotips.data.similarity.PatientSimilarityViewFactory;
 import org.phenotips.data.similarity.internal.DefaultAccessType;
+import org.phenotips.matchingnotification.MatchingNotificationManager;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.ApiDataConverter;
 import org.phenotips.remote.api.ApiViolationException;
@@ -36,6 +37,7 @@ import org.phenotips.remote.common.internal.api.DefaultJSONToMatchingPatientConv
 import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
 import org.phenotips.remote.hibernate.internal.DefaultOutgoingMatchRequest;
 import org.phenotips.vocabulary.Vocabulary;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
 import org.xwiki.stability.Unstable;
@@ -99,6 +101,9 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
 
     @Inject
     private RemoteConfigurationManager remoteConfigurationManager;
+
+    @Inject
+    private MatchingNotificationManager notificationManager;
 
     @Override
     public OutgoingMatchRequest sendRequest(String patientId, String remoteServerId, int addTopNGenes)
@@ -178,12 +183,15 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
 
             logger.error("Reply to matching request: STATUS: [{}], DATA: [{}]", httpStatus, stringReply);
 
-            // store sent request and recived response in the request object which will be stored for audit purposes
+            // store sent request and received response in the request object which will be stored for audit purposes
             // this will b stored even if reply is incorrect
             request.addRequestJSON(requestJSON);
             request.addResponseString(stringReply);
             request.setReplayHTTPStatus(httpStatus);
             requestStorageManager.saveOutgoingRequest(request);
+
+            List<RemotePatientSimilarityView> parsedResults = this.getSimilarityResults(request);
+            this.notificationManager.saveOutgoingMatches(parsedResults, patientId, request.getRemoteServerId());
 
             return request;
         } catch (Exception ex) {
