@@ -20,6 +20,7 @@ package org.phenotips.remote.rest.internal;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientRepository;
 import org.phenotips.data.similarity.MatchedPatientClusterView;
+import org.phenotips.matchingnotification.MatchingNotificationManager;
 import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.client.RemoteMatchingService;
 import org.phenotips.remote.common.internal.RemoteMatchedPatientClusterView;
@@ -83,6 +84,9 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
     /** The XWiki container. */
     @Inject
     private Container container;
+
+    @Inject
+    private MatchingNotificationManager notificationManager;
 
     @Override
     public Response findRemoteMatchingPatients(final String patientId)
@@ -186,6 +190,7 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
         final int reqNo)
     {
         final List<RemotePatientSimilarityView> matches = this.matchingService.getSimilarityResults(remoteResponse);
+        this.notificationManager.saveOutgoingMatches(matches, remoteResponse.getRemoteServerId());
         final MatchedPatientClusterView matchedCluster =
             new RemoteMatchedPatientClusterView(patient, remoteResponse, matches);
         final JSONObject matchesJson = !matches.isEmpty()
