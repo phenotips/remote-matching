@@ -158,7 +158,7 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
         }
         String targetURL = baseURL + ApiConfiguration.REMOTE_URL_SEARCH_ENDPOINT;
 
-        this.logger.error("Sending matching request to [" + targetURL + "]: " + requestJSON.toString());
+        this.logger.error("Sending matching request to [" + targetURL + "] for patient " + patientId);
 
         CloseableHttpResponse httpResponse;
         try {
@@ -166,7 +166,7 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
             httpRequest.setEntity(jsonEntity);
             httpRequest.setHeader(ApiConfiguration.HTTPHEADER_KEY_PARAMETER, key);
             httpRequest.setHeader(ApiConfiguration.HTTPHEADER_API_VERSION, mimeType);
-            this.logger.error("Setting {}: [{}]", ApiConfiguration.HTTPHEADER_API_VERSION, mimeType);
+            this.logger.debug("Setting {}: [{}]", ApiConfiguration.HTTPHEADER_API_VERSION, mimeType);
             httpResponse = client.execute(httpRequest);
         } catch (javax.net.ssl.SSLHandshakeException ex) {
             this.logger.error("Error sending matching request to [" + targetURL +
@@ -181,7 +181,8 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
             Integer httpStatus = (Integer) httpResponse.getStatusLine().getStatusCode();
             String stringReply = EntityUtils.toString(httpResponse.getEntity());
 
-            logger.error("Reply to matching request: STATUS: [{}], DATA: [{}]", httpStatus, stringReply);
+            logger.error("Reply to matching request: STATUS: [{}]", httpStatus);
+            logger.debug("Reply to matching request: DATA: [{}]", stringReply);
 
             // store sent request and received response in the request object which will be stored for audit purposes
             // this will b stored even if reply is incorrect
