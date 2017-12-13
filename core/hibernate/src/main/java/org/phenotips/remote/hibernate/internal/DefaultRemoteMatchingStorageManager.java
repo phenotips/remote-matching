@@ -20,17 +20,18 @@ package org.phenotips.remote.hibernate.internal;
 import org.phenotips.remote.api.IncomingMatchRequest;
 import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
-
 import org.xwiki.component.annotation.Component;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.hibernate.HibernateException;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Property;
 import org.hibernate.criterion.Restrictions;
+
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.store.hibernate.HibernateSessionFactory;
@@ -121,10 +122,39 @@ public class DefaultRemoteMatchingStorageManager implements RemoteMatchingStorag
             }
             return data;
         } catch (HibernateException ex) {
-            this.logger.error("loadOutgoingRequest: ERROR: [{}]", ex);
+            this.logger.error("ERROR loading last outgoing request for local patient [{}] to server [{}]: {}",
+                    patientId, remoteServerId, ex);
         } finally {
             session.close();
         }
         return null;
+    }
+
+    @Override
+    public void deleteMatchesForLocalPatient(String patientId)
+    {
+        if (patientId == null) {
+            return;
+        }
+        Session session = this.sessionFactory.getSessionFactory().openSession();
+        Transaction t = session.beginTransaction();
+        try {
+            Query query = session.createQuery("delete DefaultOutgoingMatchRequest where localReferencePatientId = :localId");
+            query.setParameter("localId", patientId);
+
+            int numDeleted = query.executeUpdate();
+
+            t.commit();
+            session.flush();
+
+            this.logger.info("Removed [{}] stored outgoing match requests", numDeleted);
+        } catch (HibernateException ex) {
+            this.logger.error("ERROR deleting outgoing request for local patient [{}]: {}", patientId, ex);
+            if (t != null) {
+                t.rollback();
+            }
+        } finally {
+            session.close();
+        }
     }
 }

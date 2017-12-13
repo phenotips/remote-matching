@@ -40,4 +40,10 @@ public interface RemoteMatchingStorageManager
      * null if no responses are currently cached.
      */
     OutgoingMatchRequest loadCachedOutgoingRequest(String remoteServerId, String patientId);
+
+    /**
+     * Removes all outgoing matches for the given patient (presumably because the patient is deleted)
+     * @param patientId the local patient ID for whom the outgoing matches should be deleted
+     */
+    void deleteMatchesForLocalPatient(String patientId);
 }

@@ -1,2 +1,3 @@
 org.phenotips.remote.hibernate.internal.ORMRegistrationHandler
 org.phenotips.remote.hibernate.internal.DefaultRemoteMatchingStorageManager
+org.phenotips.remote.client.events.RemoteMatchesRemover
