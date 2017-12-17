@@ -256,6 +256,7 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
         JSONArray matches = replyJSON.optJSONArray("results");
         if (matches == null) {
             this.logger.error("No key 'results' in reply JSON");
+            return resultsList;
         }
 
         for (int i = 0; i < matches.length(); ++i) {
