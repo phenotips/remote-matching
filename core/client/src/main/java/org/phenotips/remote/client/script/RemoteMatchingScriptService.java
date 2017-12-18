@@ -111,7 +111,7 @@ public class RemoteMatchingScriptService implements ScriptService
 
                 result.put("matches", matches);
             } catch (Exception ex) {
-                result.put("errorDetails", ex.getMessage());
+                result.put("errorDetails", (ex.getMessage() != null ? ex.getMessage() : ex.toString()));
             }
         } else {
             result.put("remoteResponseReceived", false);
