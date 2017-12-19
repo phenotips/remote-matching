@@ -144,6 +144,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
     {
         try {
             if (json.has(ApiConfiguration.JSON_FEATURES)) {
+                Set<String> ignoredTerms = new HashSet<>();
                 Set<Feature> featureSet = new HashSet<>();
                 JSONArray featuresJson = (JSONArray) json.get(ApiConfiguration.JSON_FEATURES);
                 for (Object jsonFeatureUncast : featuresJson) {
@@ -152,7 +153,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                     // TODO: throw an error if a term is not a supported one (HPO).
                     // TODO: maybe report an error, to be reviewed once spec is updated
                     if (!this.hpoTerm.matcher(id).matches()) {
-                        LOGGER.error("Patient feature parser: ignoring unsupported term with ID [{}]", id);
+                        ignoredTerms.add(id);
                         continue;
                     }
                     // resolve the given feature identifier to an human phenotype ontology feature ID
@@ -168,6 +169,12 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                     }
                     Feature feature = new RemotePatientFeature(id, observed);
                     featureSet.add(feature);
+                }
+                if (ignoredTerms.size() > 0) {
+                    // print all rejected terms together in order not to clutter the log
+                    // (since some remote servers send a LOT of unsupported terms)
+                    LOGGER.error("Patient feature parser: ignored {} unsupported terms: [{}]",
+                            ignoredTerms.size(), String.join(",",ignoredTerms));
                 }
                 return featureSet;
             }
