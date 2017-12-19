@@ -101,7 +101,7 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
         // Get the other parameters, if specified, or set the defaults.
-        final int offset =  NumberUtils.toInt((String) request.getProperty(OFFSET), 1);
+        final int offset = NumberUtils.toInt((String) request.getProperty(OFFSET), 1);
         if (offset < 1) {
             this.logger.error("The requested offset is out of bounds: {}", offset);
             return Response.status(Response.Status.BAD_REQUEST).build();
@@ -124,6 +124,7 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
      * @param reqNo the current request number
      * @return a {@link Response} containing the matched patients data, or an error code if unsuccessful
      */
+    @SuppressWarnings("ReturnCount")
     private Response buildResponse(
         @Nonnull final String patientId,
         @Nonnull final String server,

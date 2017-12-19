@@ -61,6 +61,7 @@ public interface RemotePatientMatchResource
      * <dd>true iff a new request should be sent to the remote matching server; default value is false</dd>
      * </dl>
      *
+     * @param patientId the identifier of the patient to fetch matches for
      * @return a response containing the reference patient and matched patients data, or an error code if unsuccessful
      */
     @POST
