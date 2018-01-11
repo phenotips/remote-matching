@@ -377,6 +377,9 @@ td input[type="text"]:focus {
   padding: 5px 0 0;
 }
 .similarity-mme-server-name-header .similarity-results-refresh {
+}
+.matching-run-info-table td {
+  text-align: left;
 }</code>
     </property>
     <property>
@@ -516,7 +519,6 @@ td input[type="text"]:focus {
 #set ($displayDocumentName = 'PhenomeCentral.RemoteMatching')
 #set ($displayDocument = $xwiki.getDocument($displayDocumentName))
 #set ($serverConfigurationClassname = 'PhenomeCentral.RemoteMatchingServiceConfiguration')
-#set ($existingServers = $preferencesDoc.getObjects($serverConfigurationClassname))
 
 $xwiki.ssx.use($displayDocumentName) ##
 {{/velocity}}
@@ -546,6 +548,25 @@ $xwiki.ssx.use($displayDocumentName) ##
   &lt;/div&gt;
 &lt;/form&gt;
 {{/html}}
+#end
+
+#set ($infoDoc = $xwiki.getDocument('PhenomeCentral.MatchingRunInfo'))
+#set ($dataObjects = $infoDoc.getObjects('PhenomeCentral.MatchingRunInfoClass'))
+#if ($dataObjects.size() > 0)
+  #set($dataClass = $xwiki.getDocument('PhenomeCentral.MatchingRunInfoClass').xWikiClass)
+  (% class="extradata-list matching-run-info-table %)
+  #foreach($prop in $dataClass.properties)|=(% class="col-label $prop.name" %)$prop.translatedPrettyName#end
+
+  #foreach ($o in $dataObjects)
+    #foreach($prop in $dataClass.properties)|(% class="$prop.name" %)
+      #if("$!prop.type" == 'StringClass')
+        $!{services.rendering.escape($o.getValue($prop.name), $doc.syntax)}##
+      #else
+        $o.getValue($prop.name)##
+      #end
+    #end
+
+  #end
 #end
 {{/velocity}}</content>
 </xwikidoc>
