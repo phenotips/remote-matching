@@ -29,10 +29,14 @@ import org.phenotips.remote.common.RemoteConfigurationManager;
 import org.phenotips.remote.common.internal.RemotePatientSimilarityView;
 
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.phase.Initializable;
+import org.xwiki.component.phase.InitializationException;
+import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -45,6 +49,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 
 /**
@@ -53,8 +59,16 @@ import com.xpn.xwiki.objects.BaseObject;
 @Component
 @Named("remote")
 @Singleton
-public class RemoteMatchFinder implements MatchFinder
+public class RemoteMatchFinder implements MatchFinder, Initializable
 {
+    private static final EntityReference PHENOMECENTRAL_SPACE = new EntityReference("PhenomeCentral", EntityType.SPACE);
+
+    private static final EntityReference MATCHING_RUN_INFO_CLASS = new EntityReference(
+        "MatchingRunInfoClass", EntityType.DOCUMENT, PHENOMECENTRAL_SPACE);
+
+    private static final EntityReference MATCHING_RUN_INFO_DOCUMENT =
+        new EntityReference("MatchingRunInfo", EntityType.DOCUMENT, PHENOMECENTRAL_SPACE);
+
     private static final int ADD_TOP_N_GENES_PARAMETER = 0;
 
     private static final String REMOTE_MATCHING_CONSENT_ID = "matching";
@@ -77,6 +91,45 @@ public class RemoteMatchFinder implements MatchFinder
 
     @Inject
     private ConsentManager consentManager;
+
+    @Inject
+    private Provider<XWikiContext> provider;
+
+    private XWikiDocument prefsDoc;
+
+    private List<String> remoteIdsList;
+
+    @Override
+    public void initialize() throws InitializationException
+    {
+        this.remoteIdsList = this.getRemotesList();
+        this.prefsDoc = this.getMatchingRunInfoDoc();
+    }
+
+    private XWikiDocument getMatchingRunInfoDoc()
+    {
+        try {
+            XWikiContext context = this.provider.get();
+            XWikiDocument doc = context.getWiki().getDocument(MATCHING_RUN_INFO_DOCUMENT, context);
+
+            if (doc != null && !doc.isNew()) {
+
+                for (String remoteId : this.remoteIdsList) {
+                    BaseObject object = doc.getXObject(MATCHING_RUN_INFO_CLASS, "serverName", remoteId, false);
+                    if (object == null) {
+                        object = doc.newXObject(MATCHING_RUN_INFO_CLASS, context);
+                        object.setStringValue("serverName", remoteId);
+                    }
+                }
+                context.getWiki().saveDocument(doc, context);
+                return doc;
+            }
+        } catch (XWikiException e) {
+            this.logger.error("Failed to modify matching run info document: {}", e.getMessage(), e);
+        }
+
+        return null;
+    }
 
     @Override
     public int getPriority()
@@ -173,5 +226,39 @@ public class RemoteMatchFinder implements MatchFinder
         }
 
         return remoteIdsList;
+    }
+
+    @Override
+    public void recordStartMatchesSearch()
+    {
+        if (this.prefsDoc == null) {
+            return;
+        }
+
+        XWikiContext context = this.provider.get();
+        BaseObject object = this.prefsDoc.getXObject(MATCHING_RUN_INFO_CLASS, "serverName", "localhost", false);
+        object.setDateValue("startedTime", new Date());
+        try {
+            context.getWiki().saveDocument(this.prefsDoc, context);
+        } catch (XWikiException e) {
+            this.logger.error("Failed to save matching run start time for localhost {}.");
+        }
+    }
+
+    @Override
+    public void recordEndMatchesSearch()
+    {
+        if (this.prefsDoc == null) {
+            return;
+        }
+
+        XWikiContext context = this.provider.get();
+        BaseObject object = this.prefsDoc.getXObject(MATCHING_RUN_INFO_CLASS, "serverName", "localhost", false);
+        object.setDateValue("completedTime", new Date());
+        try {
+            context.getWiki().saveDocument(this.prefsDoc, context);
+        } catch (XWikiException e) {
+            this.logger.error("Failed to save matching run start time for localhost {}.");
+        }
     }
 }
