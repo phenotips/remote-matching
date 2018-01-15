@@ -97,12 +97,9 @@ public class RemoteMatchFinder implements MatchFinder, Initializable
 
     private XWikiDocument prefsDoc;
 
-    private List<String> remoteIdsList;
-
     @Override
     public void initialize() throws InitializationException
     {
-        this.remoteIdsList = this.getRemotesList();
         this.prefsDoc = this.getMatchingRunInfoDoc();
     }
 
@@ -113,19 +110,13 @@ public class RemoteMatchFinder implements MatchFinder, Initializable
             XWikiDocument doc = context.getWiki().getDocument(MATCHING_RUN_INFO_DOCUMENT, context);
 
             if (doc != null && !doc.isNew()) {
-
-                for (String remoteId : this.remoteIdsList) {
-                    BaseObject object = doc.getXObject(MATCHING_RUN_INFO_CLASS, "serverName", remoteId, false);
-                    if (object == null) {
-                        object = doc.newXObject(MATCHING_RUN_INFO_CLASS, context);
-                        object.setStringValue("serverName", remoteId);
-                    }
-                }
-                context.getWiki().saveDocument(doc, context);
                 return doc;
+            } else {
+                this.logger.error("Failed to retrieve matching run info document");
             }
+
         } catch (XWikiException e) {
-            this.logger.error("Failed to modify matching run info document: {}", e.getMessage(), e);
+            this.logger.error("Failed to get matching run info document: {}", e.getMessage(), e);
         }
 
         return null;
@@ -231,34 +222,36 @@ public class RemoteMatchFinder implements MatchFinder, Initializable
     @Override
     public void recordStartMatchesSearch()
     {
-        if (this.prefsDoc == null) {
-            return;
-        }
-
-        XWikiContext context = this.provider.get();
-        BaseObject object = this.prefsDoc.getXObject(MATCHING_RUN_INFO_CLASS, "serverName", "localhost", false);
-        object.setDateValue("startedTime", new Date());
-        try {
-            context.getWiki().saveDocument(this.prefsDoc, context);
-        } catch (XWikiException e) {
-            this.logger.error("Failed to save matching run start time for localhost {}.");
-        }
+        this.recordMatchesSearchTime("startedTime");
     }
 
     @Override
     public void recordEndMatchesSearch()
     {
+        this.recordMatchesSearchTime("completedTime");
+    }
+
+    private void recordMatchesSearchTime(String propertyName)
+    {
         if (this.prefsDoc == null) {
             return;
         }
 
-        XWikiContext context = this.provider.get();
-        BaseObject object = this.prefsDoc.getXObject(MATCHING_RUN_INFO_CLASS, "serverName", "localhost", false);
-        object.setDateValue("completedTime", new Date());
         try {
+            XWikiContext context = this.provider.get();
+
+            List<String> remoteIds = this.getRemotesList();
+            for (String remoteId : remoteIds) {
+                BaseObject object = this.prefsDoc.getXObject(MATCHING_RUN_INFO_CLASS, "serverName", remoteId, false);
+                if (object == null) {
+                    object = this.prefsDoc.newXObject(MATCHING_RUN_INFO_CLASS, context);
+                    object.setStringValue("serverName", remoteId);
+                }
+                object.setDateValue(propertyName, new Date());
+            }
             context.getWiki().saveDocument(this.prefsDoc, context);
         } catch (XWikiException e) {
-            this.logger.error("Failed to save matching run start time for localhost {}.");
+            this.logger.error("Failed to save matching run {}.", propertyName, e);
         }
     }
 }
