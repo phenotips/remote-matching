@@ -43,6 +43,11 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
+/**
+ * Patient to MME JSON represenation conveter.
+ *
+ * See https://github.com/ga4gh/mme-apis/blob/master/search-api.md
+ */
 public class DefaultPatientToJSONConverter implements PatientToJSONConverter
 {
     private final static String PATIENTMATCHING_JSON_FEATUREMATCHES = "featureMatches";
@@ -298,9 +303,11 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
     {
         JSONArray disorders = new JSONArray();
         for (Disorder disease : patient.getDisorders()) {
-            JSONObject disorderJson = new JSONObject();
-            disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, disease.getId());
-            disorders.put(disorderJson);
+            if (!StringUtils.isBlank(disease.getId())) {
+                JSONObject disorderJson = new JSONObject();
+                disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, disease.getId());
+                disorders.put(disorderJson);
+            }
         }
         return disorders;
     }
@@ -313,9 +320,11 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             Iterator<Disorder> iterator = data.iterator();
             while (iterator.hasNext()) {
               Disorder disorder = iterator.next();
-              JSONObject disorderJson = new JSONObject();
-              disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, disorder.getId());
-              disorders.put(disorderJson);
+              if (!StringUtils.isBlank(disorder.getId())) {
+                  JSONObject disorderJson = new JSONObject();
+                  disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, disorder.getId());
+                  disorders.put(disorderJson);
+              }
             }
         }
         return disorders;
@@ -348,10 +357,10 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
                 JSONObject gene = new JSONObject();
                 gene.put(ApiConfiguration.JSON_GENES_GENE_ID, geneName);
 
-                JSONObject nextGene = new JSONObject();
-                nextGene.put(ApiConfiguration.JSON_GENES_GENE, gene);
+                JSONObject nextGenomicFeature = new JSONObject();
+                nextGenomicFeature.put(ApiConfiguration.JSON_GENES_GENE, gene);
 
-                genes.put(nextGene);
+                genes.put(nextGenomicFeature);
             }
         } catch (Exception ex) {
             logger.error("Error getting genes for patient [{}]: [{}]", patient.getId(), ex);
