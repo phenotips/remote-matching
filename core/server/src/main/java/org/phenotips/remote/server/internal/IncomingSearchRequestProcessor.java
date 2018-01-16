@@ -49,6 +49,8 @@ import org.slf4j.Logger;
 @Singleton
 public class IncomingSearchRequestProcessor implements SearchRequestProcessor
 {
+    private static final String REMOTE_MATCHING_CONSENT_ID = "matching";
+
     @Inject
     private Logger logger;
 
@@ -81,7 +83,8 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
 
             this.logger.debug("...handling...");
 
-            List<PatientSimilarityView> matches = patientsFinder.findSimilarPatients(request.getModelPatient());
+            List<PatientSimilarityView> matches =
+                    patientsFinder.findSimilarPatients(request.getModelPatient(), REMOTE_MATCHING_CONSENT_ID);
 
             List<PatientSimilarityView> filteredMatches = filterMatches(matches);
 
