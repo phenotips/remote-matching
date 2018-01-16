@@ -87,14 +87,15 @@ public class RemoteMatchFinder implements MatchFinder
     @Override
     public List<PatientMatch> findMatches(Patient patient)
     {
+        List<PatientMatch> patientMatches = new LinkedList<>();
+
         // Checking if a patient has a consent for remote matching
         if (!this.consentManager.hasConsent(patient, REMOTE_MATCHING_CONSENT_ID)) {
             this.logger.debug("Skipping patient {}. No consent for remote matching", patient.getId());
+            return patientMatches;
         }
 
         this.logger.debug("Finding remote matches for patient {}.", patient.getId());
-
-        List<PatientMatch> patientMatches = new LinkedList<>();
 
         List<String> remoteIds = this.getRemotesList();
         for (String remoteId : remoteIds) {
