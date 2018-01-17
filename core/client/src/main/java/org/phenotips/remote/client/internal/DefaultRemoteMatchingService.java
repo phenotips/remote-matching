@@ -264,6 +264,11 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
                 JSONObject next = matches.getJSONObject(i);
                 JSONObject nextPatient = next.getJSONObject("patient");
 
+                // skip test patients (it seems that API allows mixing real and test patients in the same response)
+                if (nextPatient.optBoolean(ApiConfiguration.JSON_PATIENT_TEST, false)) {
+                    continue;
+                }
+
                 Patient modelRemotePatient = patientConverter.convert(nextPatient);
 
                 double patientScore = 0;

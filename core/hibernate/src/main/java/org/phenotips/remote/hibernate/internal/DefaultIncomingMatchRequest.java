@@ -38,6 +38,9 @@ public class DefaultIncomingMatchRequest extends AbstractSearchRequest implement
     @Transient
     private Patient remotePatient;
 
+    @Transient
+    private boolean isTestRequest;
+
     /**
      * Hibernate requires a no-args constructor
      */
@@ -50,11 +53,12 @@ public class DefaultIncomingMatchRequest extends AbstractSearchRequest implement
      *            be assigned when the request is stored in the database
      */
     public DefaultIncomingMatchRequest(String remoteServerId, String apiVersionUsed,
-        String request, Patient remotePatient)
+        String request, Patient remotePatient, boolean isTestRequest)
     {
         super(remoteServerId, apiVersionUsed, request, null);
 
         this.remotePatient = remotePatient;
+        this.isTestRequest = isTestRequest;
     }
 
     @Override
@@ -63,8 +67,15 @@ public class DefaultIncomingMatchRequest extends AbstractSearchRequest implement
         this.setResponse(response.toString());
     }
 
+    @Override
     public Patient getModelPatient()
     {
         return this.remotePatient;
+    }
+
+    @Override
+    public boolean isTestRequest()
+    {
+        return this.isTestRequest;
     }
 }

@@ -76,21 +76,19 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
         try {
             JSONObject json = new JSONObject(stringJson);
 
-            this.logger.debug("...parsing input...");
-
             IncomingMatchRequest request =
                 apiVersionSpecificConverter.getIncomingJSONParser().parseIncomingRequest(json, remoteServerId);
-
-            this.logger.debug("...handling...");
 
             List<PatientSimilarityView> matches =
                     patientsFinder.findSimilarPatients(request.getModelPatient(), REMOTE_MATCHING_CONSENT_ID);
 
             List<PatientSimilarityView> filteredMatches = filterMatches(matches);
 
-            // save into matching notification database
-            this.notificationManager.saveIncomingMatches(filteredMatches, request.getModelPatient().getId(),
-                remoteServerId);
+            // save into matching notification database (unless request is for a test patient)
+            if (!request.isTestRequest()) {
+                this.notificationManager.saveIncomingMatches(filteredMatches, request.getModelPatient().getId(),
+                    remoteServerId);
+            }
 
             JSONObject responseJSON = apiVersionSpecificConverter.generateServerResponse(request, filteredMatches);
 
@@ -121,7 +119,7 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
     public void saveUnprocessedRequest(String requestString, String remoteServerId, String apiVersion)
     {
         IncomingMatchRequest request =
-            new DefaultIncomingMatchRequest(remoteServerId, apiVersion, requestString, null);
+            new DefaultIncomingMatchRequest(remoteServerId, apiVersion, requestString, null, false);
 
         requestStorageManager.saveIncomingRequest(request);
     }
