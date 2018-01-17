@@ -115,7 +115,7 @@ public class RemoteMatchFinder implements MatchFinder, Initializable
                 this.logger.error("Failed to retrieve matching run info document");
             }
 
-        } catch (XWikiException e) {
+        } catch (Exception e) {
             this.logger.error("Failed to get matching run info document: {}", e.getMessage(), e);
         }
 
@@ -222,12 +222,17 @@ public class RemoteMatchFinder implements MatchFinder, Initializable
     @Override
     public void recordStartMatchesSearch()
     {
+        // note: error() is used intentionally since this is important information we always want to have in the logs
+        this.logger.error("Starting find all MME matches run...");
+
         this.recordMatchesSearchTime("startedTime");
     }
 
     @Override
     public void recordEndMatchesSearch()
     {
+        this.logger.error("Finished find all MME matches run");
+
         this.recordMatchesSearchTime("completedTime");
     }
 
@@ -250,7 +255,7 @@ public class RemoteMatchFinder implements MatchFinder, Initializable
                 object.setDateValue(propertyName, new Date());
             }
             context.getWiki().saveDocument(this.prefsDoc, context);
-        } catch (XWikiException e) {
+        } catch (Exception e) {
             this.logger.error("Failed to save matching run {}.", propertyName, e);
         }
     }
