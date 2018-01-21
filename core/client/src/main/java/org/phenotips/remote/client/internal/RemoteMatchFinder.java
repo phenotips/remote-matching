@@ -20,6 +20,7 @@ package org.phenotips.remote.client.internal;
 import org.phenotips.data.ConsentManager;
 import org.phenotips.data.Patient;
 import org.phenotips.matchingnotification.finder.MatchFinder;
+import org.phenotips.matchingnotification.finder.internal.AbstractMatchFinder;
 import org.phenotips.matchingnotification.match.PatientMatch;
 import org.phenotips.matchingnotification.match.internal.DefaultPatientMatch;
 import org.phenotips.remote.api.OutgoingMatchRequest;
@@ -27,15 +28,12 @@ import org.phenotips.remote.client.RemoteMatchingService;
 import org.phenotips.remote.common.ApplicationConfiguration;
 import org.phenotips.remote.common.RemoteConfigurationManager;
 import org.phenotips.remote.common.internal.RemotePatientSimilarityView;
+
 import org.xwiki.component.annotation.Component;
-import org.xwiki.component.phase.Initializable;
-import org.xwiki.component.phase.InitializationException;
-import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -45,10 +43,8 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 
 /**
@@ -57,28 +53,11 @@ import com.xpn.xwiki.objects.BaseObject;
 @Component
 @Named("remote")
 @Singleton
-public class RemoteMatchFinder implements MatchFinder, Initializable
+public class RemoteMatchFinder extends AbstractMatchFinder implements MatchFinder
 {
-    private static final EntityReference PHENOMECENTRAL_SPACE = new EntityReference("PhenomeCentral", EntityType.SPACE);
-
-    private static final EntityReference MATCHING_RUN_INFO_CLASS = new EntityReference(
-        "MatchingRunInfoClass", EntityType.DOCUMENT, PHENOMECENTRAL_SPACE);
-
-    private static final EntityReference MATCHING_RUN_INFO_DOCUMENT =
-        new EntityReference("MatchingRunInfo", EntityType.DOCUMENT, PHENOMECENTRAL_SPACE);
-
     private static final int ADD_TOP_N_GENES_PARAMETER = 0;
 
     private static final String REMOTE_MATCHING_CONSENT_ID = "matching";
-
-    private static final String RUN_INFO_DOCUMENT_SERVERNAME = "serverName";
-
-    private static final String RUN_INFO_DOCUMENT_STARTTIME = "startedTime";
-
-    private static final String RUN_INFO_DOCUMENT_ENDTIME = "completedTime";
-
-    private static final String RUN_INFO_DOCUMENT_PATIENTCOUNT = "numPatientsUsedForLastMatchRun";
-
 
     @Inject
     private Provider<XWikiContext> contextProvider;
@@ -94,42 +73,7 @@ public class RemoteMatchFinder implements MatchFinder, Initializable
     private RemoteMatchingService matchingService;
 
     @Inject
-    private Logger logger;
-
-    @Inject
     private ConsentManager consentManager;
-
-    @Inject
-    private Provider<XWikiContext> provider;
-
-    private XWikiDocument runInfoDoc;
-
-    private Integer numPatientsTestedForMatches;
-
-    @Override
-    public void initialize() throws InitializationException
-    {
-        this.runInfoDoc = this.getMatchingRunInfoDoc();
-    }
-
-    private XWikiDocument getMatchingRunInfoDoc()
-    {
-        try {
-            XWikiContext context = this.provider.get();
-            XWikiDocument doc = context.getWiki().getDocument(MATCHING_RUN_INFO_DOCUMENT, context);
-
-            if (doc != null && !doc.isNew()) {
-                return doc;
-            } else {
-                this.logger.error("Failed to retrieve existing matching run info document");
-            }
-
-        } catch (Exception e) {
-            this.logger.error("Failed to get matching run info document: {}", e.getMessage(), e);
-        }
-
-        return null;
-    }
 
     @Override
     public int getPriority()
@@ -138,13 +82,29 @@ public class RemoteMatchFinder implements MatchFinder, Initializable
     }
 
     @Override
-    public List<PatientMatch> findMatches(Patient patient)
+    public String getName()
+    {
+        return "MME";
+    }
+
+    @Override
+    protected List<String> getRunInfoDocumentIdList()
+    {
+        return this.getRemotesList();
+    }
+
+    @Override
+    public List<PatientMatch> findMatches(Patient patient, boolean onlyUpdatedAfterLastRun)
     {
         List<PatientMatch> patientMatches = new LinkedList<>();
 
         // Checking if a patient has a consent for remote matching
         if (!this.consentManager.hasConsent(patient, REMOTE_MATCHING_CONSENT_ID)) {
             this.logger.debug("Skipping patient {}. No consent for remote matching", patient.getId());
+            return patientMatches;
+        }
+
+        if (onlyUpdatedAfterLastRun && this.isPatientUpdatedAfterLastRun(patient)) {
             return patientMatches;
         }
 
@@ -166,6 +126,7 @@ public class RemoteMatchFinder implements MatchFinder, Initializable
         List<PatientMatch> patientMatchList = new ArrayList<>();
 
         this.logger.debug("Processing request for patientId {}, remoteId {}.", patientId, remoteId);
+
         OutgoingMatchRequest request =
             this.matchingService.sendRequest(patientId, remoteId, ADD_TOP_N_GENES_PARAMETER);
 
@@ -228,50 +189,5 @@ public class RemoteMatchFinder implements MatchFinder, Initializable
         }
 
         return remoteIdsList;
-    }
-
-    @Override
-    public void recordStartMatchesSearch()
-    {
-        // note: error() is used intentionally since this is important information we always want to have in the logs
-        this.logger.error("Starting find all MME matches run...");
-
-        this.numPatientsTestedForMatches = 0;
-
-        this.recordMatchSearchStatus(RUN_INFO_DOCUMENT_STARTTIME);
-    }
-
-    @Override
-    public void recordEndMatchesSearch()
-    {
-        this.logger.error("Finished find all MME matches run");
-
-        this.recordMatchSearchStatus(RUN_INFO_DOCUMENT_ENDTIME);
-    }
-
-    private void recordMatchSearchStatus(String timePropertyName)
-    {
-        if (this.runInfoDoc == null) {
-            return;
-        }
-
-        try {
-            XWikiContext context = this.provider.get();
-
-            List<String> remoteIds = this.getRemotesList();
-            for (String remoteId : remoteIds) {
-                BaseObject object = this.runInfoDoc.getXObject(MATCHING_RUN_INFO_CLASS, RUN_INFO_DOCUMENT_SERVERNAME,
-                        remoteId, false);
-                if (object == null) {
-                    object = this.runInfoDoc.newXObject(MATCHING_RUN_INFO_CLASS, context);
-                    object.setStringValue(RUN_INFO_DOCUMENT_SERVERNAME, remoteId);
-                }
-                object.setIntValue(RUN_INFO_DOCUMENT_PATIENTCOUNT, this.numPatientsTestedForMatches);
-                object.setDateValue(timePropertyName, new Date());
-            }
-            context.getWiki().saveDocument(this.runInfoDoc, context);
-        } catch (Exception e) {
-            this.logger.error("Failed to save remote matching run status {}.", timePropertyName, e);
-        }
     }
 }
