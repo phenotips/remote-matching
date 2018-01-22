@@ -53,7 +53,8 @@ public class DefaultIncomingJSONParser implements IncomingJSONParser
         Patient requestPatient = this.patientConverter.convert(patientJSON);
 
         DefaultIncomingMatchRequest request =
-            new DefaultIncomingMatchRequest(remoteServerId, this.apiVersion, jsonRequest.toString(), requestPatient);
+            new DefaultIncomingMatchRequest(remoteServerId, this.apiVersion, jsonRequest.toString(),
+                    requestPatient, patientJSON.optBoolean(ApiConfiguration.JSON_PATIENT_TEST, false));
 
         this.logger.debug("JSON->IncomingRequest done");
 

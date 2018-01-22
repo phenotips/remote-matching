@@ -62,6 +62,8 @@ public interface ApiConfiguration
 
     String JSON_PATIENT_ID = "id";
 
+    String JSON_PATIENT_TEST = "test";
+
     String JSON_PATIENT_LABEL = "label";
 
     String JSON_PATIENT_GENDER = "sex";

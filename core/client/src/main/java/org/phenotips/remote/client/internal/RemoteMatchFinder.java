@@ -20,6 +20,7 @@ package org.phenotips.remote.client.internal;
 import org.phenotips.data.ConsentManager;
 import org.phenotips.data.Patient;
 import org.phenotips.matchingnotification.finder.MatchFinder;
+import org.phenotips.matchingnotification.finder.internal.AbstractMatchFinder;
 import org.phenotips.matchingnotification.match.PatientMatch;
 import org.phenotips.matchingnotification.match.internal.DefaultPatientMatch;
 import org.phenotips.remote.api.OutgoingMatchRequest;
@@ -42,7 +43,6 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.objects.BaseObject;
@@ -53,7 +53,7 @@ import com.xpn.xwiki.objects.BaseObject;
 @Component
 @Named("remote")
 @Singleton
-public class RemoteMatchFinder implements MatchFinder
+public class RemoteMatchFinder extends AbstractMatchFinder implements MatchFinder
 {
     private static final int ADD_TOP_N_GENES_PARAMETER = 0;
 
@@ -73,9 +73,6 @@ public class RemoteMatchFinder implements MatchFinder
     private RemoteMatchingService matchingService;
 
     @Inject
-    private Logger logger;
-
-    @Inject
     private ConsentManager consentManager;
 
     @Override
@@ -85,22 +82,41 @@ public class RemoteMatchFinder implements MatchFinder
     }
 
     @Override
-    public List<PatientMatch> findMatches(Patient patient)
+    public String getName()
     {
+        return "MME";
+    }
+
+    @Override
+    protected List<String> getRunInfoDocumentIdList()
+    {
+        return this.getRemotesList();
+    }
+
+    @Override
+    public List<PatientMatch> findMatches(Patient patient, boolean onlyUpdatedAfterLastRun)
+    {
+        List<PatientMatch> patientMatches = new LinkedList<>();
+
         // Checking if a patient has a consent for remote matching
         if (!this.consentManager.hasConsent(patient, REMOTE_MATCHING_CONSENT_ID)) {
             this.logger.debug("Skipping patient {}. No consent for remote matching", patient.getId());
+            return patientMatches;
+        }
+
+        if (onlyUpdatedAfterLastRun && this.isPatientUpdatedAfterLastRun(patient)) {
+            return patientMatches;
         }
 
         this.logger.debug("Finding remote matches for patient {}.", patient.getId());
-
-        List<PatientMatch> patientMatches = new LinkedList<>();
 
         List<String> remoteIds = this.getRemotesList();
         for (String remoteId : remoteIds) {
             List<PatientMatch> currentMatches = this.sendAndProcessRequest(patient.getId(), remoteId);
             patientMatches.addAll(currentMatches);
         }
+
+        this.numPatientsTestedForMatches++;
 
         return patientMatches;
     }
@@ -110,6 +126,7 @@ public class RemoteMatchFinder implements MatchFinder
         List<PatientMatch> patientMatchList = new ArrayList<>();
 
         this.logger.debug("Processing request for patientId {}, remoteId {}.", patientId, remoteId);
+
         OutgoingMatchRequest request =
             this.matchingService.sendRequest(patientId, remoteId, ADD_TOP_N_GENES_PARAMETER);
 

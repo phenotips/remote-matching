@@ -23,12 +23,18 @@ import org.phenotips.data.Patient;
 public interface IncomingMatchRequest extends MatchRequest
 {
     /**
-     * @return
+     * @return the model patient stuffed into a Phenotips Patient class
      */
     Patient getModelPatient();
 
     /**
-     * @param response
+     * @param response the raw response sent back to the requesting server as a reply to this incoming request
      */
     void addResponse(JSONObject response);
+
+    /**
+     * @return true iff the model patient is a test patient (and thus resulting matches are not "real"
+     *              and should not be stored and reported to users => request is a "test request")
+     */
+    boolean isTestRequest();
 }

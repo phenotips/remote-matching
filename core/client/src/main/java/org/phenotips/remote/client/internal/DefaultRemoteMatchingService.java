@@ -149,7 +149,7 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
             ApiConfiguration.LATEST_API_VERSION_STRING +
             ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX;
         jsonEntity.setContentType(mimeType + "; charset=utf-8");
-        this.logger.error("Setting Content-Type: [{}]", jsonEntity.getContentType().toString());
+        this.logger.debug("Setting Content-Type: [{}]", jsonEntity.getContentType().toString());
 
         String key = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_KEY_FIELD);
         String baseURL = configurationObject.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_BASE_URL_FIELD);
@@ -263,6 +263,11 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
             try {
                 JSONObject next = matches.getJSONObject(i);
                 JSONObject nextPatient = next.getJSONObject("patient");
+
+                // skip test patients (it seems that API allows mixing real and test patients in the same response)
+                if (nextPatient.optBoolean(ApiConfiguration.JSON_PATIENT_TEST, false)) {
+                    continue;
+                }
 
                 Patient modelRemotePatient = patientConverter.convert(nextPatient);
 
