@@ -22,34 +22,36 @@ import java.util.Date;
 import org.json.JSONObject;
 
 /**
+ * This is a raw request/response pair. The original JSONs are stored as-is.
  *
+ * @version $Id$
  */
 public interface MatchRequest
 {
     /**
-     * The id of the other server (for both incoming and outgoing requests)
+     * The id of the other server (for both incoming and outgoing requests).
      *
-     * @return
+     * @return a short identifier
      */
     String getRemoteServerId();
 
     /**
-     * @return
+     * @return the whole request JSON
      */
     JSONObject getRequestJSON();
 
     /**
-     * @return
+     * @return the whole response JSON
      */
     JSONObject getResponseJSON();
 
     /**
-     * @return
+     * @return the time when the request was sent or received
      */
     Date getRequestTime();
 
     /**
-     * @return
+     * @return the version used for the request
      */
     String getApiVersionUsed();
 }

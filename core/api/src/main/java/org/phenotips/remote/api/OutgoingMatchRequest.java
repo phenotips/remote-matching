@@ -17,25 +17,30 @@
  */
 package org.phenotips.remote.api;
 
+/**
+ * A raw request/response pair, sent from the local server to a connected MME node.
+ *
+ * @version $Id$
+ */
 public interface OutgoingMatchRequest extends MatchRequest
 {
     /**
-     * @return
+     * @return the identifier of the local patient sent in the match request
      */
     String getLocalReferencePatientId();
 
     /**
-     * @return
+     * @return {@code true} if the request was sent already
      */
     boolean wasSent();
 
     /**
-     * @return
+     * @return {@code true} if the remote server replied with a valid response
      */
     boolean gotValidReply();
 
     /**
-     * @return
+     * @return the HTTP status code received from the server
      */
     Integer getRequestStatusCode();
 }

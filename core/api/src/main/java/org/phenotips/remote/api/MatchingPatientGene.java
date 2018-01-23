@@ -18,9 +18,13 @@
 package org.phenotips.remote.api;
 
 /**
- * TODO.
+ * @version $Id$
  */
 public interface MatchingPatientGene
 {
+    /**
+     * @return an Ensembl gene identifier, or a HGNC gene name if there's no Ensembl identifier assigned to the gene
+     *         name
+     */
     String getName();
 }

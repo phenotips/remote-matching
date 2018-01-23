@@ -17,13 +17,19 @@
  */
 package org.phenotips.remote.api;
 
-import org.json.JSONObject;
 import org.phenotips.data.Patient;
 
+import org.json.JSONObject;
+
+/**
+ * A raw request/response pair, received from a connected MME node.
+ *
+ * @version $Id$
+ */
 public interface IncomingMatchRequest extends MatchRequest
 {
     /**
-     * @return the model patient stuffed into a Phenotips Patient class
+     * @return the model patient sent by the remote server, stuffed into a Phenotips Patient class
      */
     Patient getModelPatient();
 
@@ -33,8 +39,8 @@ public interface IncomingMatchRequest extends MatchRequest
     void addResponse(JSONObject response);
 
     /**
-     * @return true iff the model patient is a test patient (and thus resulting matches are not "real"
-     *              and should not be stored and reported to users => request is a "test request")
+     * @return true iff the model patient is a test patient (and thus resulting matches are not "real" and should not be
+     *         stored and reported to users), which makes this a "test request"
      */
     boolean isTestRequest();
 }
