@@ -36,6 +36,7 @@ import org.xwiki.model.reference.EntityReference;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -82,42 +83,36 @@ public class RemoteMatchFinder extends AbstractMatchFinder implements MatchFinde
     }
 
     @Override
-    public String getName()
-    {
-        return "MME";
-    }
-
-    @Override
-    protected List<String> getRunInfoDocumentIdList()
-    {
-        return this.getRemotesList();
-    }
-
-    @Override
-    public List<PatientMatch> findMatches(Patient patient, boolean onlyUpdatedAfterLastRun)
+    public List<PatientMatch> findMatches(List<Patient> patients, Set<String> serverIds, boolean onlyUpdatedAfterLastRun)
     {
         List<PatientMatch> patientMatches = new LinkedList<>();
+        serverIds.retainAll(this.getRemotesList());
 
-        // Checking if a patient has a consent for remote matching
-        if (!this.consentManager.hasConsent(patient, REMOTE_MATCHING_CONSENT_ID)) {
-            this.logger.debug("Skipping patient {}. No consent for remote matching", patient.getId());
-            return patientMatches;
+        for (String remoteId : serverIds) {
+
+            this.recordStartMatchesSearch(remoteId);
+
+            for (Patient patient : patients) {
+                // Checking if a patient has a consent for remote matching
+                if (!this.consentManager.hasConsent(patient, REMOTE_MATCHING_CONSENT_ID)) {
+                    this.logger.debug("Skipping patient {}. No consent for remote matching", patient.getId());
+                    return patientMatches;
+                }
+
+                if (onlyUpdatedAfterLastRun && this.isPatientUpdatedAfterLastRun(patient)) {
+                    return patientMatches;
+                }
+
+                this.logger.debug("Finding remote matches for patient {}.", patient.getId());
+
+                List<PatientMatch> currentMatches = this.sendAndProcessRequest(patient.getId(), remoteId);
+                patientMatches.addAll(currentMatches);
+
+                this.numPatientsTestedForMatches++;
+            }
+
+            this.recordEndMatchesSearch(remoteId);
         }
-
-        if (onlyUpdatedAfterLastRun && this.isPatientUpdatedAfterLastRun(patient)) {
-            return patientMatches;
-        }
-
-        this.logger.debug("Finding remote matches for patient {}.", patient.getId());
-
-        List<String> remoteIds = this.getRemotesList();
-        for (String remoteId : remoteIds) {
-            List<PatientMatch> currentMatches = this.sendAndProcessRequest(patient.getId(), remoteId);
-            patientMatches.addAll(currentMatches);
-        }
-
-        this.numPatientsTestedForMatches++;
-
         return patientMatches;
     }
 
