@@ -83,7 +83,7 @@ public class RemoteMatchFinder extends AbstractMatchFinder implements MatchFinde
     }
 
     @Override
-    public List<PatientMatch> findMatches(List<Patient> patients, Set<String> serverIds, boolean onlyUpdatedAfterLastRun)
+    public List<PatientMatch> findMatches(List<String> patientIds, Set<String> serverIds, boolean onlyUpdatedAfterLastRun)
     {
         List<PatientMatch> patientMatches = new LinkedList<>();
         serverIds.retainAll(this.getRemotesList());
@@ -92,15 +92,16 @@ public class RemoteMatchFinder extends AbstractMatchFinder implements MatchFinde
 
             this.recordStartMatchesSearch(remoteId);
 
-            for (Patient patient : patients) {
+            for (String patientId : patientIds) {
+                Patient patient = this.getPatientForTheMatchSearch(patientId, onlyUpdatedAfterLastRun);
+                if (patient == null) {
+                    continue;
+                }
+
                 // Checking if a patient has a consent for remote matching
                 if (!this.consentManager.hasConsent(patient, REMOTE_MATCHING_CONSENT_ID)) {
                     this.logger.debug("Skipping patient {}. No consent for remote matching", patient.getId());
-                    return patientMatches;
-                }
-
-                if (onlyUpdatedAfterLastRun && this.isPatientUpdatedAfterLastRun(patient)) {
-                    return patientMatches;
+                    continue;
                 }
 
                 this.logger.debug("Finding remote matches for patient {}.", patient.getId());
