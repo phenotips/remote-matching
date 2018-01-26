@@ -24,6 +24,7 @@ import javax.persistence.Basic;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Index;
 import org.json.JSONObject;
 
 /**
@@ -33,9 +34,15 @@ import org.json.JSONObject;
  */
 @Entity
 @Table(name = "remote_matching_outgoing_requests")
+
+// Can not add an @Index annotation in superclass, so have to add the index manually
+@org.hibernate.annotations.Table(appliesTo = "remote_matching_outgoing_requests", indexes =
+             { @Index(name = "outgoingmme_remoteServerIdIndex", columnNames = { "remoteServerId" }) })
+
 public class DefaultOutgoingMatchRequest extends AbstractSearchRequest implements OutgoingMatchRequest
 {
     @Basic
+    @Index(name = "localRefPatientId")
     private String localReferencePatientId;
 
     @Basic
