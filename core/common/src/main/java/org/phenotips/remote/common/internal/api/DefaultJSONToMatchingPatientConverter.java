@@ -68,6 +68,18 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
 
     private static final Vocabulary ORDO_VOCABULARY;
 
+    /**
+     * Parsing some patients generates a huge amount of errors, which may spam the server log.
+     * So this implementation supports grouping all errors together and displaying them on request,
+     * the the goal of displaying only one error message per match response (not one per patient).
+     * This is not a very clean solution, but otherwise server log is way too busy with these.
+     */
+    private boolean groupMinorErrors;
+
+    private Set<String> groupedUnsupportedFeatures = new HashSet<String>();
+
+    private Set<String> groupedUnsupportedDisorders = new HashSet<String>();
+
     static {
         Vocabulary mim = null;
         Vocabulary hpo  = null;
@@ -91,9 +103,45 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
 
     public DefaultJSONToMatchingPatientConverter()
     {
+        this(false);
+    }
+
+    public DefaultJSONToMatchingPatientConverter(boolean groupMinorErrors)
+    {
         this.hpoTerm = Pattern.compile("^HP:\\d+$");
         this.disorderTerm = Pattern.compile("^MIM:\\d+$");
         this.clinicalDisorderTerm = Pattern.compile("^Orphanet:\\d+$");
+
+        this.groupMinorErrors = groupMinorErrors;
+    }
+
+    public void logGroupedMinorErrors()
+    {
+        this.logUnsuportedFeatures(this.groupedUnsupportedFeatures);
+        this.logUnsuportedDisorders(this.groupedUnsupportedDisorders);
+        this.groupedUnsupportedFeatures.clear();
+        this.groupedUnsupportedDisorders.clear();
+    }
+
+    public boolean hasLoggedMinorErrors()
+    {
+        return !this.groupedUnsupportedFeatures.isEmpty() || !this.groupedUnsupportedDisorders.isEmpty() ;
+    }
+
+    private void logUnsuportedFeatures(Set<String> unsupportedFeatureIdList)
+    {
+        if (unsupportedFeatureIdList.size() > 0) {
+            LOGGER.error("Patient feature parser: ignored {} unsupported terms: [{}]",
+                    unsupportedFeatureIdList.size(), String.join(",",unsupportedFeatureIdList));
+        }
+    }
+
+    private void logUnsuportedDisorders(Set<String> unsupportedDisorderIdList)
+    {
+        if (unsupportedDisorderIdList.size() > 0) {
+            LOGGER.error("Patient disorders parser: ignored {} unsupported disorders: [{}]",
+                    unsupportedDisorderIdList.size(), String.join(",",unsupportedDisorderIdList));
+        }
     }
 
     @Override
@@ -170,11 +218,16 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                     Feature feature = new RemotePatientFeature(id, observed);
                     featureSet.add(feature);
                 }
+
+                // print all rejected terms together in order not to clutter the log
+                // (since some remote servers send a LOT of unsupported terms)
                 if (ignoredTerms.size() > 0) {
-                    // print all rejected terms together in order not to clutter the log
-                    // (since some remote servers send a LOT of unsupported terms)
-                    LOGGER.error("Patient feature parser: ignored {} unsupported terms: [{}]",
-                            ignoredTerms.size(), String.join(",",ignoredTerms));
+                    if (this.groupMinorErrors) {
+                        // group them even further, with the goal to group unsuported features over multiple patients
+                        this.groupedUnsupportedFeatures.addAll(ignoredTerms);
+                    } else {
+                        this.logUnsuportedFeatures(ignoredTerms);
+                    }
                 }
                 return featureSet;
             }
@@ -189,13 +242,14 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
     {
         try {
             if (json.has(name)) {
+                Set<String> ignoredTerms = new HashSet<>();
                 Set<Disorder> disorderSet = new HashSet<>();
                 JSONArray disorderJson = (JSONArray) json.get(name);
                 for (Object jsonDisorderUncast : disorderJson) {
                     JSONObject jsonDisorder = (JSONObject) jsonDisorderUncast;
                     String id = jsonDisorder.getString(ApiConfiguration.JSON_DISORDER_ID).toUpperCase();
                     if (!pattern.matcher(id).matches()) {
-                        LOGGER.error("Patient disorder parser: ignoring unsupported term with ID [{}]", id);
+                        ignoredTerms.add(id);
                         continue;
                     }
                     // resolve the given disease identifier to a MIM ontology disease ID
@@ -203,6 +257,15 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                     id = (term != null) ? term.getId() : id;
                     Disorder disorder = new RemotePatientDisorder(id, null);
                     disorderSet.add(disorder);
+                }
+                // print all rejected disorders together in order not to clutter the log
+                if (ignoredTerms.size() > 0) {
+                    if (this.groupMinorErrors) {
+                        // group them even further, with the goal to group unsuported features over multiple patients
+                        this.groupedUnsupportedDisorders.addAll(ignoredTerms);
+                    } else {
+                        this.logUnsuportedDisorders(ignoredTerms);
+                    }
                 }
                 return disorderSet;
             }

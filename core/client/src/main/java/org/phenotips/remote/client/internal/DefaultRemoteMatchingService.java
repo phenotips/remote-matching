@@ -249,7 +249,7 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
             return resultsList;
         }
 
-        DefaultJSONToMatchingPatientConverter patientConverter = new DefaultJSONToMatchingPatientConverter();
+        DefaultJSONToMatchingPatientConverter patientConverter = new DefaultJSONToMatchingPatientConverter(true);
 
         // JSONArray processedResults = new JSONArray();
 
@@ -291,6 +291,12 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
             } catch (Exception ex) {
                 this.logger.error("Error parsing one of the patients from JSON: [{}]", ex);
             }
+        }
+
+        if (patientConverter.hasLoggedMinorErrors()) {
+            this.logger.error("While parsing [{}] server response for patient [{}] the following minor errors"
+                    + " were encountered:", request.getRemoteServerId(), request.getLocalReferencePatientId());
+            patientConverter.logGroupedMinorErrors();
         }
 
         // replyJSON.element("results", processedResults);
