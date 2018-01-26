@@ -93,8 +93,6 @@ public interface ApiConfiguration
 
     String JSON_FEATURE_MATCHED = "matched";
 
-    String JSON_FEATURE_OBFUSCATED = "obfuscated";
-
     String JSON_DISORDERS = "disorders";
 
     String JSON_DIAGNOSIS = "clinical_diagnosis";
