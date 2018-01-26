@@ -156,7 +156,7 @@ public class RemoteMatchFinder extends AbstractMatchFinder implements MatchFinde
         if (!request.gotValidReply()) {
             this.logger.error("Request for patientId {}, remoteId {} returned with status code: {}",
                 patientId, remoteId, request.getRequestStatusCode());
-            this.logger.error("and error details {}.", request.getRequestJSON());
+            this.logger.error("and error details {}.", request.getResponseJSON());
             return false;
         }
 
