@@ -95,10 +95,12 @@ public interface ApiConfiguration
 
     String JSON_DISORDERS = "disorders";
 
-    String JSON_DIAGNOSIS = "clinical_diagnosis";
+    String JSON_DISORDER_ORPHANET_PREFIX = "Orphanet:";
 
     // JSON disorder subfields
     String JSON_DISORDER_ID = "id";
+
+    String JSON_DISORDER_LABEL = "label";
 
     String JSON_GENES = "genomicFeatures";
 
