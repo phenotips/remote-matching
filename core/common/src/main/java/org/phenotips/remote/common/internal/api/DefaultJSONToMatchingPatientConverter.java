@@ -131,7 +131,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
     private void logUnsuportedFeatures(Set<String> unsupportedFeatureIdList)
     {
         if (unsupportedFeatureIdList.size() > 0) {
-            LOGGER.error("Patient feature parser: ignored {} unsupported terms: [{}]",
+            LOGGER.error("Patient feature parser: received {} unsupported terms: [{}]",
                     unsupportedFeatureIdList.size(), String.join(",",unsupportedFeatureIdList));
         }
     }
@@ -198,11 +198,13 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                 for (Object jsonFeatureUncast : featuresJson) {
                     JSONObject jsonFeature = (JSONObject) jsonFeatureUncast;
                     String id = jsonFeature.getString(ApiConfiguration.JSON_FEATURE_ID).toUpperCase();
-                    // TODO: throw an error if a term is not a supported one (HPO).
-                    // TODO: maybe report an error, to be reviewed once spec is updated
                     if (!this.hpoTerm.matcher(id).matches()) {
                         ignoredTerms.add(id);
-                        continue;
+                        // save this term as a free text term using its label, if available
+                        String label = jsonFeature.getString(ApiConfiguration.JSON_FEATURE_LABEL);
+                        if (StringUtils.isNotBlank(label)) {
+                            id = label;
+                        }
                     }
                     // resolve the given feature identifier to an human phenotype ontology feature ID
                     VocabularyTerm term = HPO_VOCABULARY.getTerm(id);
