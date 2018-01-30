@@ -79,6 +79,8 @@ public interface ApiConfiguration
     // JSON Feature subfields
     String JSON_FEATURE_ID = "id";
 
+    String JSON_FEATURE_LABEL = "label";
+
     String JSON_FEATURE_AGE_OF_ONSET = "ageOfOnset";
 
     String JSON_FEATURE_OBSERVED = "observed";

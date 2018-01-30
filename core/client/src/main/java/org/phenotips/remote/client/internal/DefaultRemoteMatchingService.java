@@ -68,6 +68,21 @@ import com.xpn.xwiki.objects.BaseObject;
 @Singleton
 public class DefaultRemoteMatchingService implements RemoteMatchingService
 {
+    /**
+     * Some remote servers reply with matches which they score highly but that have a local score of
+     * 0.00000xxx or lower, in some cases with 1000s of such matches. After a review, it appears
+     * all or most such matches are incorrect and are produced by an imporfect scoring algorithm on their end;
+     * in some cases it is a matter of sending data encoded incorrectly (e.g. unsupported feature vocabularies).
+     * In any case our users will never be able to process all those matches (eithe rbecause there are 1000s
+     * of them, or because we will not display them incorrectly sent data anyway) - but the database may
+     * be filled twith those matches slowing things down a lot. So it was decided to not save matches with
+     * extremely low score (as computed by our algorithm) into the matching notification table and not to
+     * display them on the patient page in the matching section.
+     *
+     * TODO: review the threshold, and/or make it configurable from the remote matching admin section.
+     */
+    private static final Double MATCHING_NOTIFICATION_OUR_SCORE_THRESHOLD = 0.001;
+
     @Inject
     private Logger logger;
 
@@ -283,7 +298,9 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
                 RemotePatientSimilarityView similarityView = new RemotePatientSimilarityView(modelRemotePatient,
                     reference, access, patientScore);
 
-                resultsList.add(similarityView);
+                if (similarityView.getScore() >= MATCHING_NOTIFICATION_OUR_SCORE_THRESHOLD) {
+                    resultsList.add(similarityView);
+                }
             } catch (ApiViolationException ex) {
                 this.logger.error(
                     "Parsing incoming patients: one of the patients did not satisfy API requirements: [{}]",
