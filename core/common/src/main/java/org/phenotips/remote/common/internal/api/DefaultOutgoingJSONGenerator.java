@@ -69,7 +69,7 @@ public class DefaultOutgoingJSONGenerator implements OutgoingJSONGenerator
         }
 
         try {
-            JSONObject patientJson = this.patientToJSONConverter.convert(referencePatient, false, includedTopGenes);
+            JSONObject patientJson = this.patientToJSONConverter.convert(referencePatient, includedTopGenes);
 
             if ((!patientJson.has(ApiConfiguration.JSON_FEATURES) ||
                 patientJson.getJSONArray(ApiConfiguration.JSON_FEATURES).length() == 0) &&

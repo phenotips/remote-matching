@@ -23,7 +23,7 @@ import org.json.JSONObject;
 
 public interface PatientToJSONConverter
 {
-    JSONObject convert(Patient patient, boolean removePrivateData);
+    JSONObject convert(Patient patient);
 
-    JSONObject convert(Patient patient, boolean removePrivateData, int includedTopGenes);
+    JSONObject convert(Patient patient, int includedTopGenes);
 }
