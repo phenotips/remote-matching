@@ -170,7 +170,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         for (Disorder disease : patient.getDisorders()) {
             if (!StringUtils.isBlank(disease.getId())) {
                 JSONObject disorderJson = new JSONObject();
-                disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, disease.getId());
+                disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, getMMEDisorderID(disease.getId()));
                 disorderJson.put(ApiConfiguration.JSON_DISORDER_LABEL, disease.getName());
                 disorders.put(disorderJson);
             }
@@ -183,15 +183,18 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
               Disorder disorder = iterator.next();
               if (!StringUtils.isBlank(disorder.getId())) {
                   JSONObject disorderJson = new JSONObject();
-                  String id = disorder.getId();
-                  id = id.replace("ORDO:", ApiConfiguration.JSON_DISORDER_ORPHANET_PREFIX);
-                  disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, id);
+                  disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, getMMEDisorderID(disorder.getId()));
                   disorderJson.put(ApiConfiguration.JSON_DISORDER_LABEL, disorder.getName());
                   disorders.put(disorderJson);
               }
             }
         }
         return disorders;
+    }
+
+    private static String getMMEDisorderID(String id)
+    {
+        return id.replace("ORDO:", ApiConfiguration.JSON_DISORDER_ORPHANET_PREFIX);
     }
 
     private static JSONArray genes(Patient patient, int includedTopGenes, Logger logger)
