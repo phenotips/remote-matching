@@ -88,11 +88,6 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             json.put(ApiConfiguration.JSON_DISORDERS, disorders);
         }
 
-        JSONArray clinicalDisorders = DefaultPatientToJSONConverter.clinicalDisorders(patient);
-        if (disorders.length() > 0) {
-            json.put(ApiConfiguration.JSON_DIAGNOSIS, clinicalDisorders);
-        }
-
         json.put(ApiConfiguration.JSON_FEATURES, this.features(patient));
 
         JSONArray genes = DefaultPatientToJSONConverter.genes(patient, includedTopGenes, this.logger);
@@ -175,16 +170,12 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         for (Disorder disease : patient.getDisorders()) {
             if (!StringUtils.isBlank(disease.getId())) {
                 JSONObject disorderJson = new JSONObject();
-                disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, disease.getId());
+                disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, getMMEDisorderID(disease.getId()));
+                disorderJson.put(ApiConfiguration.JSON_DISORDER_LABEL, disease.getName());
                 disorders.put(disorderJson);
             }
         }
-        return disorders;
-    }
 
-    private static JSONArray clinicalDisorders(Patient patient)
-    {
-        JSONArray disorders = new JSONArray();
         PatientData<Disorder> data = patient.getData("clinical-diagnosis");
         if (data != null) {
             Iterator<Disorder> iterator = data.iterator();
@@ -192,12 +183,18 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
               Disorder disorder = iterator.next();
               if (!StringUtils.isBlank(disorder.getId())) {
                   JSONObject disorderJson = new JSONObject();
-                  disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, disorder.getId());
+                  disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, getMMEDisorderID(disorder.getId()));
+                  disorderJson.put(ApiConfiguration.JSON_DISORDER_LABEL, disorder.getName());
                   disorders.put(disorderJson);
               }
             }
         }
         return disorders;
+    }
+
+    private static String getMMEDisorderID(String id)
+    {
+        return id.replace("ORDO:", ApiConfiguration.JSON_DISORDER_ORPHANET_PREFIX);
     }
 
     private static JSONArray genes(Patient patient, int includedTopGenes, Logger logger)

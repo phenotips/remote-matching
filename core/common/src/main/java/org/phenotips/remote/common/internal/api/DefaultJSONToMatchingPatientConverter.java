@@ -54,11 +54,14 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJSONToMatchingPatientConverter.class);
 
-    private final Pattern hpoTerm; // not static: may be different from api version to api version
+    // note: different API versions may have different patterns, may need to add support
+    //       for multiple patterns when we support multiple API versions
 
-    private final Pattern disorderTerm;
+    private static final Pattern HPO_TERM_PATTERN = Pattern.compile("^HP:\\d+$");
 
-    private final Pattern clinicalDisorderTerm;
+    private static final Pattern MIM_DISORDER_TERM_PATTERN = Pattern.compile("^MIM:\\d+$");
+
+    private static final Pattern ORPHANET_DISORDER_TERM_PATTERN = Pattern.compile("^Orphanet:\\d+$");
 
     private static final Vocabulary MIM_VOCABULARY;
 
@@ -108,10 +111,6 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
 
     public DefaultJSONToMatchingPatientConverter(boolean groupMinorErrors)
     {
-        this.hpoTerm = Pattern.compile("^HP:\\d+$");
-        this.disorderTerm = Pattern.compile("^MIM:\\d+$");
-        this.clinicalDisorderTerm = Pattern.compile("^Orphanet:\\d+$");
-
         this.groupMinorErrors = groupMinorErrors;
     }
 
@@ -160,14 +159,10 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
             }
 
             Set<Feature> features = this.convertFeatures(patientJSON);
-            Set<Disorder> disorders = this.convertDisorders(patientJSON, this.disorderTerm,
-                MIM_VOCABULARY, ApiConfiguration.JSON_DISORDERS);
-            Set<Disorder> clinicalDisorders = this.convertDisorders(patientJSON, this.clinicalDisorderTerm,
-                ORDO_VOCABULARY, ApiConfiguration.JSON_DIAGNOSIS);
+            Set<Disorder> disorders = this.convertDisorders(patientJSON);
             Set<MatchingPatientGene> genes = this.convertGenes(patientJSON);
 
-            if ((features == null || features.isEmpty()) &&
-                (genes == null || genes.isEmpty())) {
+            if ((features == null || features.isEmpty()) && (genes == null || genes.isEmpty())) {
                 LOGGER.error("There are no features and no genes: violates API requirements (patient JSON: [{}])",
                     patientJSON.toString());
                 throw new ApiViolationException("There are no features and no genes");
@@ -177,7 +172,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
             String label = patientJSON.optString(ApiConfiguration.JSON_PATIENT_LABEL, null);
 
             RemoteMatchingPatient patient = new RemoteMatchingPatient(remotePatientId, label, features, disorders,
-                clinicalDisorders, genes, contactInfo);
+                 genes, contactInfo);
 
             return patient;
         } catch (ApiViolationException ex) {
@@ -191,86 +186,110 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
     private Set<Feature> convertFeatures(JSONObject json)
     {
         try {
-            if (json.has(ApiConfiguration.JSON_FEATURES)) {
-                Set<String> ignoredTerms = new HashSet<>();
-                Set<Feature> featureSet = new HashSet<>();
-                JSONArray featuresJson = (JSONArray) json.get(ApiConfiguration.JSON_FEATURES);
-                for (Object jsonFeatureUncast : featuresJson) {
-                    JSONObject jsonFeature = (JSONObject) jsonFeatureUncast;
-                    String id = jsonFeature.getString(ApiConfiguration.JSON_FEATURE_ID).toUpperCase();
-                    if (!this.hpoTerm.matcher(id).matches()) {
-                        ignoredTerms.add(id);
-                        // save this term as a free text term using its label, if available
-                        String label = jsonFeature.getString(ApiConfiguration.JSON_FEATURE_LABEL);
-                        if (StringUtils.isNotBlank(label)) {
-                            id = label;
-                        }
+            if (!json.has(ApiConfiguration.JSON_FEATURES)) {
+                return null;
+            }
+
+            Set<String> ignoredTerms = new HashSet<>();
+            Set<Feature> featureSet = new HashSet<>();
+            JSONArray featuresJson = json.optJSONArray(ApiConfiguration.JSON_FEATURES);
+
+            for (Object jsonFeatureUncast : featuresJson) {
+                JSONObject jsonFeature = (JSONObject) jsonFeatureUncast;
+                String id = jsonFeature.getString(ApiConfiguration.JSON_FEATURE_ID).toUpperCase();
+
+                if (!HPO_TERM_PATTERN.matcher(id).matches()) {
+                    ignoredTerms.add(id);
+                    // save this term as a free text term using its label, if available
+                    String label = jsonFeature.getString(ApiConfiguration.JSON_FEATURE_LABEL);
+                    if (StringUtils.isNotBlank(label)) {
+                        id = label;
                     }
-                    // resolve the given feature identifier to an human phenotype ontology feature ID
-                    VocabularyTerm term = HPO_VOCABULARY.getTerm(id);
-                    id = (term != null) ? term.getId() : id;
-                    String observed = jsonFeature.optString(ApiConfiguration.JSON_FEATURE_OBSERVED,
-                        ApiConfiguration.JSON_FEATURE_OBSERVED_YES).toLowerCase();
-                    if (!observed.equals(ApiConfiguration.JSON_FEATURE_OBSERVED_YES) &&
-                        !observed.equals(ApiConfiguration.JSON_FEATURE_OBSERVED_NO)) {
-                        LOGGER.error("Patient feature parser: ignoring term with unsupported observed status [{}]",
-                            observed);
-                        continue;
-                    }
-                    Feature feature = new RemotePatientFeature(id, observed);
-                    featureSet.add(feature);
                 }
 
-                // print all rejected terms together in order not to clutter the log
-                // (since some remote servers send a LOT of unsupported terms)
-                if (ignoredTerms.size() > 0) {
-                    if (this.groupMinorErrors) {
-                        // group them even further, with the goal to group unsuported features over multiple patients
-                        this.groupedUnsupportedFeatures.addAll(ignoredTerms);
-                    } else {
-                        this.logUnsuportedFeatures(ignoredTerms);
-                    }
+                // resolve the given feature identifier to an human phenotype ontology feature ID
+                VocabularyTerm term = HPO_VOCABULARY.getTerm(id);
+                id = (term != null) ? term.getId() : id;
+
+                String observed = jsonFeature.optString(ApiConfiguration.JSON_FEATURE_OBSERVED,
+                    ApiConfiguration.JSON_FEATURE_OBSERVED_YES).toLowerCase();
+                if (!observed.equals(ApiConfiguration.JSON_FEATURE_OBSERVED_YES) &&
+                    !observed.equals(ApiConfiguration.JSON_FEATURE_OBSERVED_NO)) {
+                    LOGGER.error("Patient feature parser: ignoring term with unsupported observed status [{}]",
+                        observed);
+                    continue;
                 }
-                return featureSet;
+
+                Feature feature = new RemotePatientFeature(id, observed);
+                featureSet.add(feature);
             }
+
+            // print all rejected terms together in order not to clutter the log
+            // (since some remote servers send a LOT of unsupported terms)
+            if (ignoredTerms.size() > 0) {
+                if (this.groupMinorErrors) {
+                    // group them even further, with the goal to group unsupported features over multiple patients
+                    this.groupedUnsupportedFeatures.addAll(ignoredTerms);
+                } else {
+                    this.logUnsuportedFeatures(ignoredTerms);
+                }
+            }
+
+            return featureSet;
         } catch (Exception ex) {
-            // TODO: catch only json exceptions, and throw other type upwads if feature id is unsupported
             LOGGER.error("Error converting features: [{}]", ex);
         }
         return null;
     }
 
-    private Set<Disorder> convertDisorders(JSONObject json, Pattern pattern, Vocabulary vocabulary, String name)
+    private Set<Disorder> convertDisorders(JSONObject json)
     {
         try {
-            if (json.has(name)) {
-                Set<String> ignoredTerms = new HashSet<>();
-                Set<Disorder> disorderSet = new HashSet<>();
-                JSONArray disorderJson = (JSONArray) json.get(name);
-                for (Object jsonDisorderUncast : disorderJson) {
-                    JSONObject jsonDisorder = (JSONObject) jsonDisorderUncast;
-                    String id = jsonDisorder.getString(ApiConfiguration.JSON_DISORDER_ID).toUpperCase();
-                    if (!pattern.matcher(id).matches()) {
-                        ignoredTerms.add(id);
-                        continue;
-                    }
-                    // resolve the given disease identifier to a MIM ontology disease ID
-                    VocabularyTerm term = vocabulary.getTerm(id);
-                    id = (term != null) ? term.getId() : id;
-                    Disorder disorder = new RemotePatientDisorder(id, null);
-                    disorderSet.add(disorder);
-                }
-                // print all rejected disorders together in order not to clutter the log
-                if (ignoredTerms.size() > 0) {
-                    if (this.groupMinorErrors) {
-                        // group them even further, with the goal to group unsuported features over multiple patients
-                        this.groupedUnsupportedDisorders.addAll(ignoredTerms);
-                    } else {
-                        this.logUnsuportedDisorders(ignoredTerms);
-                    }
-                }
-                return disorderSet;
+            if (!json.has(ApiConfiguration.JSON_DISORDERS)) {
+                return null;
             }
+
+            Set<String> ignoredTerms = new HashSet<>();
+            Set<Disorder> disorderSet = new HashSet<>();
+            JSONArray disorderJson = json.optJSONArray(ApiConfiguration.JSON_DISORDERS);
+
+            for (Object jsonDisorderUncast : disorderJson) {
+                JSONObject jsonDisorder = (JSONObject) jsonDisorderUncast;
+                String id = jsonDisorder.getString(ApiConfiguration.JSON_DISORDER_ID);
+                String label = jsonDisorder.optString(ApiConfiguration.JSON_DISORDER_LABEL, null);
+
+                if (MIM_DISORDER_TERM_PATTERN.matcher(id).matches()) {
+                    // resolve the given disease identifier to a MIM ontology disease ID
+                    VocabularyTerm term = MIM_VOCABULARY.getTerm(id);
+                    // since MIM vocabulary terms ids are stored in solr without prefix
+                    // prefix has to be manually added to every id
+                    id = (term != null) ? "MIM:" + term.getId() : id;
+                } else if (ORPHANET_DISORDER_TERM_PATTERN.matcher(id).matches()) {
+                    id = id.replace(ApiConfiguration.JSON_DISORDER_ORPHANET_PREFIX, "ORDO:");
+                    // resolve the given disease identifier to a ORDO ontology disease ID
+                    VocabularyTerm term = ORDO_VOCABULARY.getTerm(id);
+                    id = (term != null) ? term.getId() : id;
+                } else {
+                    ignoredTerms.add(id);
+                    continue;
+                }
+
+                Disorder disorder = new RemotePatientDisorder(id, label);
+                disorderSet.add(disorder);
+            }
+
+            // print all rejected disorders together in order not to clutter the log
+            // (since some remote servers send a LOT of unsupported terms)
+            if (ignoredTerms.size() > 0) {
+                if (this.groupMinorErrors) {
+                    // group them even further, with the goal to group unsupported features over multiple patients
+                    this.groupedUnsupportedDisorders.addAll(ignoredTerms);
+                } else {
+                    this.logUnsuportedDisorders(ignoredTerms);
+                }
+            }
+
+            return disorderSet;
         } catch (Exception ex) {
             LOGGER.error("Error converting disorders: {}", ex);
         }
@@ -280,39 +299,40 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
     private Set<MatchingPatientGene> convertGenes(JSONObject json)
     {
         try {
-            if (json.has(ApiConfiguration.JSON_GENES)) {
-                Set<MatchingPatientGene> geneSet = new HashSet<>();
-                JSONArray genesJson = (JSONArray) json.get(ApiConfiguration.JSON_GENES);
-
-                for (Object jsonGeneUncast : genesJson) {
-                    JSONObject jsonGenomicFeature = (JSONObject) jsonGeneUncast;
-                    JSONObject jsonGeneId = jsonGenomicFeature.optJSONObject(ApiConfiguration.JSON_GENES_GENE);
-                    String geneName = (jsonGeneId != null)
-                        ? jsonGeneId.optString(ApiConfiguration.JSON_GENES_GENE_ID) : "";
-                    if (geneName.length() == 0) {
-                        LOGGER.error("Patient genomic features parser: gene has no id");
-                        throw new ApiViolationException("A gene has no id");
-                    }
-                    String geneId;
-                    try {
-                        geneId = normalizeGeneId(geneName);
-                        if (!geneName.equals(geneId)) {
-                            LOGGER.debug("Converted incoming gene id [{}] to symbol [{}]", geneName, geneId);
-                        }
-                    } catch (Exception ex) {
-                        LOGGER.error(
-                            "Patient genomic features parser: can not obtain gene symbol for gene ID [{}]",
-                            geneName);
-                        throw new ApiViolationException("Internal error processing gene id [" + geneName + "]");
-                    }
-                    MatchingPatientGene gene = new RemotePatientGene(geneId);
-                    geneSet.add(gene);
-                    // TODO: variants
-                }
-                return geneSet;
+            if (!json.has(ApiConfiguration.JSON_GENES)) {
+                return null;
             }
-        } catch (ApiViolationException ex) {
-            throw ex;
+
+            Set<MatchingPatientGene> geneSet = new HashSet<>();
+            JSONArray genesJson = json.optJSONArray(ApiConfiguration.JSON_GENES);
+
+            for (Object jsonGeneUncast : genesJson) {
+                JSONObject jsonGenomicFeature = (JSONObject) jsonGeneUncast;
+
+                JSONObject jsonGeneId = jsonGenomicFeature.optJSONObject(ApiConfiguration.JSON_GENES_GENE);
+                String geneName = (jsonGeneId != null)
+                    ? jsonGeneId.optString(ApiConfiguration.JSON_GENES_GENE_ID) : "";
+
+                if (StringUtils.isBlank(geneName)) {
+                    LOGGER.error("Patient genomic features parser: gene has no id");
+                    continue;
+                }
+                String geneId;
+                try {
+                    geneId = normalizeGeneId(geneName);
+                    if (!geneName.equals(geneId)) {
+                        LOGGER.debug("Converted incoming gene id [{}] to symbol [{}]", geneName, geneId);
+                    }
+                } catch (Exception ex) {
+                    LOGGER.error("Patient genomic features parser: can not obtain gene symbol for gene ID [{}]", geneName);
+                    continue;
+                }
+                MatchingPatientGene gene = new RemotePatientGene(geneId);
+                geneSet.add(gene);
+                // TODO: variants
+            }
+
+            return geneSet;
         } catch (Exception ex) {
             LOGGER.error("Error converting genes: {}", ex);
         }

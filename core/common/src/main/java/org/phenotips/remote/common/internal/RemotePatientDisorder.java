@@ -22,17 +22,18 @@ import org.phenotips.data.internal.AbstractPhenoTipsVocabularyProperty;
 
 public class RemotePatientDisorder extends AbstractPhenoTipsVocabularyProperty implements Disorder
 {
-    private String value;
-
-    public RemotePatientDisorder(String id, String value)
+    public RemotePatientDisorder(String id, String label)
     {
         super(id);
-        this.value = value;
+        if (this.name == null) {
+            this.name = label;
+        }
     }
 
     @Override
     public String getValue()
     {
-        return this.value;
+        // TODO: not very clear what a "Phenotips value" of a disorder should be
+        return null;
     }
 }
