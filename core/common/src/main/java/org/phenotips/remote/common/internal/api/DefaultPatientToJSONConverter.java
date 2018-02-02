@@ -117,7 +117,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             // TODO: replace this with a URL to a match/contact page
             List<String> email = contact.getEmails();
             if (!email.isEmpty() && !StringUtils.isBlank(email.get(0))) {
-                href += email.get(0) + ",matchmaker@phenomecentral.org";
+                href += email.get(0) + ", matchmaker@phenomecentral.org";
             } else {
                 href += "matchmaker@phenomecentral.org";
             }
