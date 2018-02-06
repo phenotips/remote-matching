@@ -75,7 +75,12 @@ $response.setContentType('application/json')##
 #if (!$wasSent || !$matches)
   #if (!$wasSent)
     #set($result.errorCode = $lastRequest.get("errorCode"))
-    #set($result.error = "unable to connect to remote server")
+    #set($result.errorContactingRemoteServer = $lastRequest.get("errorContactingRemoteServer"))
+    #if ($result.errorContactingRemoteServer)
+        #set($result.error = "unable to connect to remote server")
+    #else
+        #set($result.error = "unable to send request for this patient")
+    #end
   #else
     #set($result.errorCode = $lastRequest.get("responseHTTPCode"))
     #if ($result.errorCode == 401)

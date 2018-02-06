@@ -142,4 +142,6 @@ public interface ApiConfiguration
     Integer ERROR_NOT_SENT = -1;
 
     Integer ERROR_INTERNAL = -2;
+
+    Integer ERROR_COMMUNICATION_PROBLEM = -3;
 }

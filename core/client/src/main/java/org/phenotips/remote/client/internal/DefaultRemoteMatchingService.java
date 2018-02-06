@@ -185,11 +185,11 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
             httpResponse = client.execute(httpRequest);
         } catch (javax.net.ssl.SSLHandshakeException ex) {
             this.logger.error("Error sending matching request to [" + targetURL +
-                "]: SSL handshake exception: [{}]", ex);
-            return this.generateErrorRequest(ApiConfiguration.ERROR_NOT_SENT, "SSL handshake problem", request);
+                "]: SSL handshake exception: [{}]", ex.getMessage());
+            return this.generateErrorRequest(ApiConfiguration.ERROR_COMMUNICATION_PROBLEM, "SSL handshake problem", request);
         } catch (Exception ex) {
-            this.logger.error("Error sending matching request to [" + targetURL + "]: [{}]", ex);
-            return this.generateErrorRequest(ApiConfiguration.ERROR_NOT_SENT, ex.getMessage(), request);
+            this.logger.error("Error sending matching request to [" + targetURL + "]: [{}]", ex.getMessage());
+            return this.generateErrorRequest(ApiConfiguration.ERROR_COMMUNICATION_PROBLEM, ex.getMessage(), request);
         }
 
         try {
