@@ -93,6 +93,8 @@ public class RemoteMatchingScriptService implements ScriptService
 
         if (request.wasSent()) {
             result.put("responseHTTPCode", request.getRequestStatusCode());
+        } else {
+            result.put("errorContactingRemoteServer", request.errorContactingRemoteServer());
         }
 
         if (request.gotValidReply()) {

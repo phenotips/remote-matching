@@ -116,6 +116,12 @@ public class RemoteMatchFinder extends AbstractMatchFinder implements MatchFinde
 
     private MatchRunStatus checkRequestValidity(OutgoingMatchRequest request, String patientId, String remoteId)
     {
+        if (request != null && request.errorContactingRemoteServer()) {
+            this.logger.error("Unable to connect to remote server [{}] to send a request for patient [{}]",
+                    remoteId, patientId);
+            return MatchRunStatus.ERROR;
+        }
+
         if (request == null || !request.wasSent()) {
             this.logger.error("Request for patientId [{}] was not sent to server [{}]", patientId, remoteId);
             return MatchRunStatus.NOT_RUN;
