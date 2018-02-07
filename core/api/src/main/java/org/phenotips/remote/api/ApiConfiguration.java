@@ -79,6 +79,8 @@ public interface ApiConfiguration
     // JSON Feature subfields
     String JSON_FEATURE_ID = "id";
 
+    String JSON_FEATURE_LABEL = "label";
+
     String JSON_FEATURE_AGE_OF_ONSET = "ageOfOnset";
 
     String JSON_FEATURE_OBSERVED = "observed";
@@ -91,14 +93,14 @@ public interface ApiConfiguration
 
     String JSON_FEATURE_MATCHED = "matched";
 
-    String JSON_FEATURE_OBFUSCATED = "obfuscated";
-
     String JSON_DISORDERS = "disorders";
 
-    String JSON_DIAGNOSIS = "clinical_diagnosis";
+    String JSON_DISORDER_ORPHANET_PREFIX = "Orphanet:";
 
     // JSON disorder subfields
     String JSON_DISORDER_ID = "id";
+
+    String JSON_DISORDER_LABEL = "label";
 
     String JSON_GENES = "genomicFeatures";
 
@@ -140,4 +142,6 @@ public interface ApiConfiguration
     Integer ERROR_NOT_SENT = -1;
 
     Integer ERROR_INTERNAL = -2;
+
+    Integer ERROR_COMMUNICATION_PROBLEM = -3;
 }

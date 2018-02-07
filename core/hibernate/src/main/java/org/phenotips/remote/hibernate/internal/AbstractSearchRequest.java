@@ -43,6 +43,10 @@ public abstract class AbstractSearchRequest implements MatchRequest
     @GeneratedValue
     private Long id;
 
+    // Note on indexing:
+    //  since this is a @MappedSuperclass a simple @Index(name=xxx) annotation can not be used here, since if used
+    //  an index with the same name "xxx" will be created for all derived classes, causing a duplicate index name error
+
     @Basic
     private String remoteServerId;
 

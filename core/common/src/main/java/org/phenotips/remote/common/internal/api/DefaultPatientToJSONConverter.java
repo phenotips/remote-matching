@@ -29,7 +29,6 @@ import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.tojson.PatientToJSONConverter;
 import org.phenotips.remote.common.ApplicationConfiguration;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -44,20 +43,12 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 
 /**
- * Patient to MME JSON represenation conveter.
+ * Patient to MME JSON representation converter.
  *
  * See https://github.com/ga4gh/mme-apis/blob/master/search-api.md
  */
 public class DefaultPatientToJSONConverter implements PatientToJSONConverter
 {
-    private final static String PATIENTMATCHING_JSON_FEATUREMATCHES = "featureMatches";
-
-    private final static String PATIENTMATCHING_JSON_CATEGORY = "category";
-
-    private final static String PATIENTMATCHING_JSON_CATEGORY_ID = "id";
-
-    private final static String PATIENTMATCHING_JSON_MATCH = "match";
-
     private Logger logger;
 
     private final Pattern hpoTerm; // not static: may be different from api version to api version
@@ -70,13 +61,13 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
     }
 
     @Override
-    public JSONObject convert(Patient patient, boolean removePrivateData)
+    public JSONObject convert(Patient patient)
     {
-        return this.convert(patient, removePrivateData, 0);
+        return this.convert(patient, 0);
     }
 
     @Override
-    public JSONObject convert(Patient patient, boolean removePrivateData, int includedTopGenes)
+    public JSONObject convert(Patient patient, int includedTopGenes)
     {
         JSONObject json = new JSONObject();
 
@@ -97,22 +88,9 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             json.put(ApiConfiguration.JSON_DISORDERS, disorders);
         }
 
-        JSONArray clinicalDisorders = DefaultPatientToJSONConverter.clinicalDisorders(patient);
-        if (disorders.length() > 0) {
-            json.put(ApiConfiguration.JSON_DIAGNOSIS, clinicalDisorders);
-        }
+        json.put(ApiConfiguration.JSON_FEATURES, this.features(patient));
 
-        // TODO: rework this part, as Patient may be an instance of a Patient (for outgoing requests) or
-        // RestrictedSimilarityView (for returning replies to incoming requests), and the two
-        // behave differently
-        if (removePrivateData) {
-            json.put(ApiConfiguration.JSON_FEATURES, this.nonPersonalFeatures(patient));
-        } else {
-            json.put(ApiConfiguration.JSON_FEATURES, this.features(patient));
-        }
-        JSONArray genes =
-            removePrivateData ? DefaultPatientToJSONConverter.restrictedGenes(patient, includedTopGenes, this.logger)
-                : DefaultPatientToJSONConverter.genes(patient, includedTopGenes, this.logger);
+        JSONArray genes = DefaultPatientToJSONConverter.genes(patient, includedTopGenes, this.logger);
         if (genes.length() > 0) {
             json.put(ApiConfiguration.JSON_GENES, genes);
         }
@@ -186,135 +164,18 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         return ApiConfiguration.JSON_FEATURE_OBSERVED_NO;
     }
 
-    private JSONArray nonPersonalFeatures(Patient patient)
-    {
-        // Example of a expected reply which should be parsed for features:
-        //
-        // QUERY: "features": [ {"id": "HP:0000316", "observed": "yes"},
-        // {"id": "HP:0004325", "observed": "yes"},
-        // {"id": "HP:0001999", "observed": "yes"} ]
-        //
-        // REPLY:
-        // 1) "matchable" patient with the same set of symptoms {"HP:0000316", "HP:0004325", "HP:0001999"}
-        // and two other unmatched feature:
-        //
-        // "features": [{"score":0.46,"category":{"id":"HP:0100886",...},"reference":["HP:0000316"],"match":[""]},
-        // {"score":0.44,"category":{"id":"HP:0004323",...},"reference":["HP:0004325"],"match":[""]},
-        // {"score":0.40,"category":{"id":"HP:0000271",...},"reference":["HP:0001999"],"match":[""]},
-        // {"score":0,"category":{"id":"","name":"Unmatched"},"match":["",""]}]
-        //
-        // 2) "public" patient with {"HP:0004325", "HP:0001999", "HP:0000479"} and two other unmatched features:
-        //
-        // "features":
-        // [{"score":0.44,"category":{"id":"HP:0004325",...},"reference":["HP:0004325"],"match":["HP:0004325"]},
-        // {"score":0.40,"category":{"id":"HP:0001999",...},"reference":["HP:0001999"],"match":["HP:0001999"]},
-        // {"score":0.22,"category":{"id":"HP:0000478",...},"reference":["HP:0000316"],"match":["HP:0000479"]},
-        // {"score":0,"category":{"id":"","name":"Unmatched"},"match":["HP:0011276","HP:0000505"]}]
-        //
-        // For now feature info returned by the patient-network component will be used, in order
-        // not to reinvent the "privacy" wheel. All non-matched features will be returned as
-        // HP:0000118 ("Phenotypic abnormality"), and (given how patient-network component works)
-        // all non-observed features will be ignored.
-
-        JSONArray features = new JSONArray();
-
-        JSONArray similarityFeaturesJson = patient.toJSON().optJSONArray(PATIENTMATCHING_JSON_FEATUREMATCHES);
-        if (similarityFeaturesJson == null) {
-            return features;
-        }
-
-        Map<String, Integer> featureCounts = new HashMap<>();
-        Set<String> obfuscatedFeatures = new HashSet<>();
-        Set<String> notMatchedFeatures = new HashSet<>();
-
-        for (Object featureMatchUC : similarityFeaturesJson) {
-            JSONObject featureMatch = (JSONObject) featureMatchUC;
-
-            JSONObject featureCategory = featureMatch.optJSONObject(PATIENTMATCHING_JSON_CATEGORY);
-            if (featureCategory == null) {
-                // FIXME: throw new Exception(ERROR_MESSAGE_UNSUPPORTED_JSON_FORMAT);
-                continue;
-            }
-
-            String catId = featureCategory.optString(PATIENTMATCHING_JSON_CATEGORY_ID, "");
-
-            // an unmatched feature
-            JSONArray featureMatches = featureMatch.optJSONArray(PATIENTMATCHING_JSON_MATCH);
-            if (featureMatches == null) {
-                // FIXME: need to throw to indicate unsuported format:throw new
-                // Exception(ERROR_MESSAGE_UNSUPPORTED_JSON_FORMAT);
-                continue;
-            }
-            for (int i = 0; i < featureMatches.length(); i++) {
-                String matchFeature = featureMatches.getString(i);
-
-                // if feature id is obfuscated use category Id instead as the best available substitute
-                String featureId = matchFeature.isEmpty() ? catId : matchFeature;
-
-                // replace empty features by the most generic generic term,
-                // and (possibly) re-format feature ID to the expected output format
-                featureId = processFeatureID(featureId);
-
-                if (catId.isEmpty()) {
-                    notMatchedFeatures.add(featureId);
-                }
-                if (matchFeature.isEmpty()) {
-                    obfuscatedFeatures.add(featureId);
-                }
-
-                Integer count = featureCounts.containsKey(featureId) ? featureCounts.get(featureId) : 0;
-                featureCounts.put(featureId, count + 1);
-            }
-        }
-
-        // convert featuresWithCounts to features
-        // note: for now only observed features are supported, so "observed" is hardcoded to "yes" for now
-
-        for (String featureId : featureCounts.keySet()) {
-            if (featureId.isEmpty() || !this.hpoTerm.matcher(featureId).matches()) {
-                this.logger.error("Patient feature parser: ignoring term with non-HPO id [{}]", featureId);
-                continue;
-            }
-
-            JSONObject featureJson = new JSONObject();
-            featureJson.put(ApiConfiguration.JSON_FEATURE_ID, featureId);
-            featureJson.put(ApiConfiguration.JSON_FEATURE_OBSERVED, ApiConfiguration.JSON_FEATURE_OBSERVED_YES);
-            featureJson.put(ApiConfiguration.JSON_FEATURE_MATCHED, !notMatchedFeatures.contains(featureId));
-            featureJson.put(ApiConfiguration.JSON_FEATURE_OBFUSCATED, obfuscatedFeatures.contains(featureId));
-            int count = featureCounts.get(featureId);
-            if (count > 1) {
-                featureJson.put(ApiConfiguration.JSON_FEATURE_COUNT, count);
-            }
-            features.put(featureJson);
-        }
-
-        return features;
-    }
-
-    private static String processFeatureID(String featureIdFromMatching)
-    {
-        if (featureIdFromMatching.isEmpty()) {
-            return ApiConfiguration.REPLY_JSON_FEATURE_HPO_MOST_GENERIC_TERM;
-        }
-        return featureIdFromMatching;
-    }
-
     private static JSONArray disorders(Patient patient)
     {
         JSONArray disorders = new JSONArray();
         for (Disorder disease : patient.getDisorders()) {
             if (!StringUtils.isBlank(disease.getId())) {
                 JSONObject disorderJson = new JSONObject();
-                disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, disease.getId());
+                disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, getMMEDisorderID(disease.getId()));
+                disorderJson.put(ApiConfiguration.JSON_DISORDER_LABEL, disease.getName());
                 disorders.put(disorderJson);
             }
         }
-        return disorders;
-    }
 
-    private static JSONArray clinicalDisorders(Patient patient)
-    {
-        JSONArray disorders = new JSONArray();
         PatientData<Disorder> data = patient.getData("clinical-diagnosis");
         if (data != null) {
             Iterator<Disorder> iterator = data.iterator();
@@ -322,12 +183,18 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
               Disorder disorder = iterator.next();
               if (!StringUtils.isBlank(disorder.getId())) {
                   JSONObject disorderJson = new JSONObject();
-                  disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, disorder.getId());
+                  disorderJson.put(ApiConfiguration.JSON_DISORDER_ID, getMMEDisorderID(disorder.getId()));
+                  disorderJson.put(ApiConfiguration.JSON_DISORDER_LABEL, disorder.getName());
                   disorders.put(disorderJson);
               }
             }
         }
         return disorders;
+    }
+
+    private static String getMMEDisorderID(String id)
+    {
+        return id.replace("ORDO:", ApiConfiguration.JSON_DISORDER_ORPHANET_PREFIX);
     }
 
     private static JSONArray genes(Patient patient, int includedTopGenes, Logger logger)
@@ -366,46 +233,6 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             logger.error("Error getting genes for patient [{}]: [{}]", patient.getId(), ex);
             return new JSONArray();
         }
-        return genes;
-    }
-
-    private static JSONArray restrictedGenes(Patient patient, int includedTopGenes, Logger logger)
-    {
-        // logger.error("[reply] Getting candidate genes for patient [{}]", patient.getId());
-
-        JSONArray genes = new JSONArray();
-
-        try {
-            JSONArray orderedPatientGenes = patient.toJSON().optJSONArray("genes");
-
-            if (orderedPatientGenes == null || includedTopGenes <= 0) {
-                return genes;
-            }
-
-            int useGenes = Math.min(orderedPatientGenes.length(), includedTopGenes);
-            for (int i = 0; i < useGenes; ++i) {
-                JSONObject nextGeneInfo = orderedPatientGenes.optJSONObject(i);
-                // no check for null so that if nextGeneInfo is not a JSONObject an error will be logged
-                String geneName = nextGeneInfo.optString("gene", null);
-                // Only include gene if listed as a candidate (score of 1)
-                double geneScore = nextGeneInfo.optDouble("score", 0.0);
-                if (geneName != null && geneScore >= 1.0) {
-                    JSONObject gene = new JSONObject();
-                    gene.put(ApiConfiguration.JSON_GENES_GENE_ID, geneName);
-                    // TODO: add gene status (solved/candidate/exome) here
-
-                    JSONObject nextGene = new JSONObject();
-                    nextGene.put(ApiConfiguration.JSON_GENES_GENE, gene);
-
-                    genes.put(nextGene);
-                }
-            }
-
-        } catch (Exception ex) {
-            logger.error("Error getting genes for patient [{}]: [{}]", patient.getId(), ex);
-            return new JSONArray();
-        }
-
         return genes;
     }
 

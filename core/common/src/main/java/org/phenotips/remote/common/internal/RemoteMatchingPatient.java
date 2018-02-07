@@ -28,7 +28,6 @@ import org.phenotips.remote.api.MatchingPatientGene;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -57,14 +56,12 @@ public class RemoteMatchingPatient implements Patient
 
     final private Set<? extends Disorder> disorders;
 
-    final private Set<? extends Disorder> clinicalDisorders;
-
     final private Set<MatchingPatientGene> genes;
 
     final private ContactInfo contactInfo;
 
     public RemoteMatchingPatient(String remotePatientId, String label, Set<Feature> features, Set<Disorder> disorders,
-        Set<Disorder> clinicalDisorders, Set<MatchingPatientGene> genes, ContactInfo contactInfo)
+        Set<MatchingPatientGene> genes, ContactInfo contactInfo)
     {
         this.remotePatientId = remotePatientId;
         this.label = label;
@@ -72,7 +69,6 @@ public class RemoteMatchingPatient implements Patient
         this.disorders = (disorders != null) ? disorders : new HashSet<Disorder>();
         this.genes = (genes != null) ? genes : new HashSet<MatchingPatientGene>();
         this.contactInfo = contactInfo;
-        this.clinicalDisorders = clinicalDisorders;
     }
 
     @Override
@@ -132,11 +128,6 @@ public class RemoteMatchingPatient implements Patient
         if (name == "contact") {
             return (PatientData<T>) new IndexedPatientData<>("contact",
                 Collections.singletonList(this.contactInfo));
-        }
-
-        if (name == "clinical-diagnosis" && this.clinicalDisorders != null) {
-            return (PatientData<T>) new IndexedPatientData<>("clinical-diagnosis",
-                new ArrayList<>(this.clinicalDisorders));
         }
 
         return null;

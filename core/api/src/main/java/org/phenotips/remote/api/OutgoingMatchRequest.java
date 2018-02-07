@@ -35,6 +35,11 @@ public interface OutgoingMatchRequest extends MatchRequest
     boolean wasSent();
 
     /**
+     * @return {@code true} if there was a problem contacting remote server
+     */
+    boolean errorContactingRemoteServer();
+
+    /**
      * @return {@code true} if the remote server replied with a valid response
      */
     boolean gotValidReply();

@@ -33,9 +33,9 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -82,93 +82,67 @@ public class RemoteMatchFinder extends AbstractMatchFinder implements MatchFinde
     }
 
     @Override
-    public String getName()
-    {
-        return "MME";
-    }
-
-    @Override
-    protected List<String> getRunInfoDocumentIdList()
+    protected Set<String> getSupportedServerIdList()
     {
         return this.getRemotesList();
     }
 
     @Override
-    public List<PatientMatch> findMatches(Patient patient, boolean onlyUpdatedAfterLastRun)
+    protected MatchRunStatus specificFindMatches(Patient patient, String remoteId, List<PatientMatch> matchesList)
     {
-        List<PatientMatch> patientMatches = new LinkedList<>();
-
         // Checking if a patient has a consent for remote matching
         if (!this.consentManager.hasConsent(patient, REMOTE_MATCHING_CONSENT_ID)) {
             this.logger.debug("Skipping patient {}. No consent for remote matching", patient.getId());
-            return patientMatches;
+            return MatchRunStatus.NOT_RUN;
         }
 
-        if (onlyUpdatedAfterLastRun && this.isPatientUpdatedAfterLastRun(patient)) {
-            return patientMatches;
-        }
-
-        this.logger.debug("Finding remote matches for patient {}.", patient.getId());
-
-        List<String> remoteIds = this.getRemotesList();
-        for (String remoteId : remoteIds) {
-            List<PatientMatch> currentMatches = this.sendAndProcessRequest(patient.getId(), remoteId);
-            patientMatches.addAll(currentMatches);
-        }
-
-        this.numPatientsTestedForMatches++;
-
-        return patientMatches;
-    }
-
-    private List<PatientMatch> sendAndProcessRequest(String patientId, String remoteId)
-    {
-        List<PatientMatch> patientMatchList = new ArrayList<>();
-
-        this.logger.debug("Processing request for patientId {}, remoteId {}.", patientId, remoteId);
+        this.logger.debug("Finding remote matches for patient [{}] on server [{}]", patient.getId(), remoteId);
 
         OutgoingMatchRequest request =
-            this.matchingService.sendRequest(patientId, remoteId, ADD_TOP_N_GENES_PARAMETER);
+            this.matchingService.sendRequest(patient.getId(), remoteId, ADD_TOP_N_GENES_PARAMETER);
 
-        if (!checkRequestValidity(request, patientId, remoteId)) {
-            return patientMatchList;
+        MatchRunStatus status = checkRequestValidity(request, patient.getId(), remoteId);
+        if (status != MatchRunStatus.OK) {
+            return status;
         }
 
         List<RemotePatientSimilarityView> parsedResults = this.matchingService.getSimilarityResults(request);
         for (RemotePatientSimilarityView result : parsedResults) {
             PatientMatch match = new DefaultPatientMatch(result, null, remoteId);
-            patientMatchList.add(match);
+            matchesList.add(match);
         }
-        return patientMatchList;
+        return MatchRunStatus.OK;
     }
 
-    private boolean checkRequestValidity(OutgoingMatchRequest request, String patientId, String remoteId)
+    private MatchRunStatus checkRequestValidity(OutgoingMatchRequest request, String patientId, String remoteId)
     {
-        if (request == null) {
-            return false;
+        if (request != null && request.errorContactingRemoteServer()) {
+            this.logger.error("Unable to connect to remote server [{}] to send a request for patient [{}]",
+                    remoteId, patientId);
+            return MatchRunStatus.ERROR;
         }
 
-        if (!request.wasSent()) {
-            this.logger.error("Request for patientId {}, remoteId {} was not sent.", patientId, remoteId);
-            return false;
+        if (request == null || !request.wasSent()) {
+            this.logger.error("Request for patientId [{}] was not sent to server [{}]", patientId, remoteId);
+            return MatchRunStatus.NOT_RUN;
         }
 
         if (!request.gotValidReply()) {
             this.logger.error("Request for patientId {}, remoteId {} returned with status code: {}",
                 patientId, remoteId, request.getRequestStatusCode());
-            this.logger.error("and error details {}.", request.getRequestJSON());
-            return false;
+            this.logger.error(" ...and error details: [{}]", request.getResponseJSON());
+            return MatchRunStatus.ERROR;
         }
 
-        return true;
+        return MatchRunStatus.OK;
     }
 
-    private List<String> getRemotesList()
+    private Set<String> getRemotesList()
     {
         XWikiContext context = this.contextProvider.get();
         List<BaseObject> potentialRemotes = this.RemoteConfigurationManager.getListOfRemotes(context);
 
-        List<String> remoteIdsList = new LinkedList<>();
+        Set<String> remoteIdsList = new HashSet<>();
         for (BaseObject remote : potentialRemotes) {
             if (remote == null) {
                 continue;

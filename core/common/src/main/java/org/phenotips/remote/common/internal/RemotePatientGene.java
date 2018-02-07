@@ -23,12 +23,6 @@ public class RemotePatientGene implements MatchingPatientGene
 {
     private String geneName;
 
-    // private String assembly;
-    // private String referenceName;
-    // private Long start;
-    // private Long end;
-    // private String mutationType;
-
     public RemotePatientGene(String geneName)
     {
         this.geneName = geneName;
@@ -38,5 +32,15 @@ public class RemotePatientGene implements MatchingPatientGene
     public String getName()
     {
         return this.geneName;
+    }
+
+    @Override
+    public boolean equals(Object other)
+    {
+        if (!(other instanceof MatchingPatientGene)) {
+            return false;
+        }
+        MatchingPatientGene otherLevel = (MatchingPatientGene) other;
+        return getName().equals(otherLevel.getName());
     }
 }
