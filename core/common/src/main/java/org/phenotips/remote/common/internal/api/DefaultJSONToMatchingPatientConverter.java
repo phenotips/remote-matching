@@ -74,7 +74,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
     /**
      * Parsing some patients generates a huge amount of errors, which may spam the server log.
      * So this implementation supports grouping all errors together and displaying them on request,
-     * the the goal of displaying only one error message per match response (not one per patient).
+     * with the goal of displaying only one error message per match response (not one per patient).
      * This is not a very clean solution, but otherwise server log is way too busy with these.
      */
     private boolean groupMinorErrors;
