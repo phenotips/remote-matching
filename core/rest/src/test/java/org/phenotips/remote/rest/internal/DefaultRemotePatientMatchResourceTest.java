@@ -113,7 +113,7 @@ public class DefaultRemotePatientMatchResourceTest
 
     @Rule
     public MockitoComponentMockingRule<RemotePatientMatchResource> mocker =
-        new MockitoComponentMockingRule<>(DefaultRemotePatientMatchResource.class);
+        new MockitoComponentMockingRule<RemotePatientMatchResource>(DefaultRemotePatientMatchResource.class);
 
     @Mock
     private Patient reference;
