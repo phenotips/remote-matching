@@ -19,11 +19,11 @@ package org.phenotips.remote.rest.internal;
 
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientRepository;
+import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.client.RemoteMatchingService;
 import org.phenotips.remote.common.internal.RemotePatientSimilarityView;
 import org.phenotips.remote.rest.RemotePatientMatchResource;
-
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.container.Container;
@@ -176,6 +176,7 @@ public class DefaultRemotePatientMatchResourceTest
         when(this.response.getRequestJSON()).thenReturn(new JSONObject().put(REQUEST_JSON, REQUEST_JSON));
         when(this.response.getResponseJSON()).thenReturn(new JSONObject().put(RESPONSE_JSON, RESPONSE_JSON));
         when(this.response.gotValidReply()).thenReturn(true);
+        when(this.response.wasSent()).thenReturn(true);
 
         final Container container = this.mocker.getInstance(Container.class);
         // Mock container interactions.
@@ -270,12 +271,40 @@ public class DefaultRemotePatientMatchResourceTest
     {
         when(this.matchingService.getLastRequestSent(REFERENCE, REMOTE_SERVER)).thenReturn(null);
         final Response response = this.component.findRemoteMatchingPatients(REFERENCE);
-        verify(this.logger).warn("Remote match request was never initiated.");
+        verify(this.logger).warn("Remote match request to [{}] was never initiated for patient [{}]",
+                REMOTE_SERVER, REFERENCE);
         Assert.assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
     }
 
     @Test
-    public void findRemoteMatchingPatientRetrieveOldNonvalidRequestResultsInInternalServerError()
+    public void findRemoteMatchingPatientReturnsProperErrorWhenFailedToConnectToRemoteServer()
+    {
+        final String message = "I'm not valid.";
+        final JSONObject errJSON = new JSONObject().put(ERROR, message);
+        when(this.response.gotValidReply()).thenReturn(false);
+        when(this.response.wasSent()).thenReturn(false);
+        when(this.response.errorContactingRemoteServer()).thenReturn(true);
+        when(this.response.getRequestJSON()).thenReturn(errJSON);
+        final Response response = this.component.findRemoteMatchingPatients(REFERENCE);
+        verify(this.logger).error("Unable to connect to remote server [{}]", REMOTE_SERVER);
+        Assert.assertEquals(Response.Status.SERVICE_UNAVAILABLE.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    public void findRemoteMatchingPatientReturnsProperErrorWhenNotAuthorizedOnRemoteServer()
+    {
+        final String message = "I'm not valid.";
+        final JSONObject errJSON = new JSONObject().put(ERROR, message);
+        when(this.response.gotValidReply()).thenReturn(false);
+        when(this.response.getRequestStatusCode()).thenReturn(ApiConfiguration.HTTP_UNAUTHORIZED);
+        when(this.response.getRequestJSON()).thenReturn(errJSON);
+        final Response response = this.component.findRemoteMatchingPatients(REFERENCE);
+        verify(this.logger).error("Not authorized to contact selected MME server [{}]", REMOTE_SERVER);
+        Assert.assertEquals(Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    public void findRemoteMatchingPatientReturnsProperErrorWhenRetrieveOldNonvalidRequest()
     {
         final String message = "I'm not valid.";
         final JSONObject errJSON = new JSONObject().put(ERROR, message);
@@ -283,8 +312,9 @@ public class DefaultRemotePatientMatchResourceTest
         when(this.response.getRequestStatusCode()).thenReturn(-1);
         when(this.response.getRequestJSON()).thenReturn(errJSON);
         final Response response = this.component.findRemoteMatchingPatients(REFERENCE);
-        verify(this.logger).error("The response received from remote server {} was not valid: {}", -1, errJSON);
-        Assert.assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+        verify(this.logger).error("Remote MME server [{}] rejected match request with status code [{}]",
+                REMOTE_SERVER, -1);
+        Assert.assertEquals(Response.Status.NOT_ACCEPTABLE.getStatusCode(), response.getStatus());
     }
 
     @Test

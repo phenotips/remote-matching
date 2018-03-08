@@ -34,9 +34,9 @@ import javax.ws.rs.core.Response;
  * Resource for working with remote similar cases data.
  *
  * @version $Id$
- * @since 1.2
+ * @since 1.1
  */
-@Unstable("New API introduced in 1.2")
+@Unstable("New API introduced in 1.1")
 @Path("/patients/{entity-id}/similar-remote-cases")
 @Relation("https://phenotips.org/rel/patientSimilarityRemote")
 @ParentResource(PatientResource.class)

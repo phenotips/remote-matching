@@ -20,12 +20,12 @@ package org.phenotips.remote.rest.internal;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientRepository;
 import org.phenotips.data.similarity.MatchedPatientClusterView;
+import org.phenotips.matchingnotification.storage.MatchStorageManager;
+import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.client.RemoteMatchingService;
-import org.phenotips.remote.common.internal.RemoteMatchedPatientClusterView;
 import org.phenotips.remote.common.internal.RemotePatientSimilarityView;
 import org.phenotips.remote.rest.RemotePatientMatchResource;
-
 import org.xwiki.component.annotation.Component;
 import org.xwiki.container.Container;
 import org.xwiki.container.Request;
@@ -50,7 +50,7 @@ import org.slf4j.Logger;
  * Default implementation of the {@link RemotePatientMatchResource}.
  *
  * @version $Id$
- * @since 1.2
+ * @since 1.1
  */
 @Component
 @Named("org.phenotips.remote.rest.internal.DefaultRemotePatientMatchResource")
@@ -83,6 +83,9 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
     /** The XWiki container. */
     @Inject
     private Container container;
+
+    @Inject
+    private MatchStorageManager matchStorageManager;
 
     @Override
     public Response findRemoteMatchingPatients(final String patientId)
@@ -145,22 +148,43 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
             final OutgoingMatchRequest remoteResponse = newRequest
                 ? this.matchingService.sendRequest(patientId, server, 0)
                 : this.matchingService.getLastRequestSent(patientId, server);
+
             // If the response is null, the request was never initiated.
             if (remoteResponse == null) {
-                this.logger.warn("Remote match request was never initiated.");
+                this.logger.warn("Remote match request to [{}] was never initiated for patient [{}]",
+                        server, patientId);
                 return Response.status(Response.Status.NO_CONTENT).build();
+            }
+
+            if (!remoteResponse.wasSent()) {
+                if (remoteResponse.errorContactingRemoteServer()) {
+                    this.logger.error("Unable to connect to remote server [{}]", server);
+                        return Response.status(Response.Status.SERVICE_UNAVAILABLE).build();
+                } else {
+                    this.logger.error("Could not initialte an MME match request for patient [{}]", patientId);
+                    return Response.status(Response.Status.CONFLICT).build();
+                }
             }
             // If no valid reply, retrieve the request status code and the JSON.
             if (!remoteResponse.gotValidReply()) {
-                this.logger.error("The response received from remote server {} was not valid: {}",
-                    remoteResponse.getRequestStatusCode(), remoteResponse.getRequestJSON());
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+                if (remoteResponse.getRequestStatusCode().equals(ApiConfiguration.HTTP_UNAUTHORIZED)) {
+                    this.logger.error("Not authorized to contact selected MME server [{}]", server);
+                    return Response.status(Response.Status.FORBIDDEN).build();
+                }
+                if (remoteResponse.getRequestStatusCode().equals(ApiConfiguration.HTTP_UNSUPPORTED_API_VERSION)) {
+                    this.logger.error("Unsupported MME version when contacting MME server [{}]", server);
+                    return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).build();
+                }
+                this.logger.error("Remote MME server [{}] rejected match request with status code [{}]",
+                    server, remoteResponse.getRequestStatusCode());
+                return Response.status(Response.Status.NOT_ACCEPTABLE).build();
             }
+
             return buildMatches(patient, remoteResponse, offset, limit, reqNo);
         } catch (final SecurityException e) {
             this.logger.error("Failed to retrieve patient with ID [{}]: {}", patientId, e.getMessage());
             return Response.status(Response.Status.UNAUTHORIZED).build();
-        } catch (final IndexOutOfBoundsException | IllegalArgumentException e) {
+        } catch (final IndexOutOfBoundsException e) {
             this.logger.error("The requested offset [{}] is out of bounds", offset);
             return Response.status(Response.Status.BAD_REQUEST).build();
         } catch (final Exception e) {
@@ -173,7 +197,7 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
      * Builds a response containing the reference patient and matched patients data.
      *
      * @param patient the reference {@link Patient} object
-     * @param remoteResponse the response received from the remote server
+     * @param mmeMatchRequest the response received from the remote server
      * @param offset the offset for the returned matches
      * @param limit the maximum number of matches to return after the offset
      * @param reqNo the current request number
@@ -181,35 +205,21 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
      */
     private Response buildMatches(
         @Nonnull final Patient patient,
-        @Nonnull final OutgoingMatchRequest remoteResponse,
+        @Nonnull final OutgoingMatchRequest mmeMatchRequest,
         final int offset,
         final int limit,
         final int reqNo)
     {
-        final List<RemotePatientSimilarityView> matches = this.matchingService.getSimilarityResults(remoteResponse);
+        final List<RemotePatientSimilarityView> matches = this.matchingService.getSimilarityResults(mmeMatchRequest);
+
+        this.matchStorageManager.saveRemoteMatches(matches, patient.getId(),
+                mmeMatchRequest.getRemoteServerId(), false);
+
         final MatchedPatientClusterView matchedCluster =
-            new RemoteMatchedPatientClusterView(patient, remoteResponse, matches);
-        final JSONObject matchesJson = !matches.isEmpty()
-            ? matchedCluster.toJSON(offset - 1, getLastIndex(matchedCluster, offset, limit))
-            : matchedCluster.toJSON();
+            new RemoteMatchedPatientClusterView(patient, mmeMatchRequest, matches);
+
+        final JSONObject matchesJson = matchedCluster.toJSON(offset - 1, limit);
         matchesJson.put(REQ_NO, reqNo);
         return Response.ok(matchesJson, MediaType.APPLICATION_JSON_TYPE).build();
-    }
-
-    /**
-     * Calculates the last index based on the provided {@code offset}, {@code limit}, and size of
-     * {@code matchedCluster}.
-     *
-     * @param matchedCluster the {@link MatchedPatientClusterView} object containing the matches for requested patient
-     * @param offset the offset for the match data to be returned
-     * @param limit the limit for the number of matches to be returned
-     * @return the index of the last match to be returned
-     */
-    private int getLastIndex(@Nonnull final MatchedPatientClusterView matchedCluster, final int offset, final int limit)
-    {
-        final int totalSize = matchedCluster.size();
-        final int lastItemIdx = totalSize - 1;
-        final int requestedLast = limit >= 0 ? offset + limit - 2 : lastItemIdx;
-        return requestedLast <= lastItemIdx ? requestedLast : lastItemIdx;
     }
 }
