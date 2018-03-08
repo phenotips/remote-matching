@@ -207,8 +207,10 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
             request.setReplayHTTPStatus(httpStatus);
             this.requestStorageManager.saveOutgoingRequest(request);
 
-            List<RemotePatientSimilarityView> parsedResults = this.getSimilarityResults(request);
-            this.notificationManager.saveOutgoingMatches(parsedResults, patientId, request.getRemoteServerId());
+            if (ApiConfiguration.HTTP_OK.equals(httpStatus)) {
+                List<RemotePatientSimilarityView> parsedResults = this.getSimilarityResults(request);
+                this.notificationManager.saveOutgoingMatches(parsedResults, patientId, request.getRemoteServerId());
+            }
 
             return request;
         } catch (Exception ex) {

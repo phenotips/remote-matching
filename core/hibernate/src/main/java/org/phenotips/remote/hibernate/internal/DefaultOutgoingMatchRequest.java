@@ -85,13 +85,16 @@ public class DefaultOutgoingMatchRequest extends AbstractSearchRequest implement
     @Override
     public boolean errorContactingRemoteServer()
     {
-        return (this.replyHTTPStatus == ApiConfiguration.ERROR_COMMUNICATION_PROBLEM);
+        return (this.getRequestStatusCode().equals(ApiConfiguration.ERROR_COMMUNICATION_PROBLEM));
     }
 
     @Override
     public boolean gotValidReply()
     {
-        return (this.wasSent() && this.getResponseJSON() != null);
+        return (this.wasSent()
+                && this.getRequestStatusCode().equals(ApiConfiguration.HTTP_OK)
+                && this.getResponseJSON() != null
+                && this.getResponseJSON().has(ApiConfiguration.REPLY_JSON_RESULTS));
     }
 
     @Override
