@@ -15,13 +15,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/
  */
-package org.phenotips.remote.common.internal;
+package org.phenotips.remote.rest.internal;
 
 import org.phenotips.data.Patient;
 import org.phenotips.data.similarity.MatchedPatientClusterView;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.OutgoingMatchRequest;
-
+import org.phenotips.remote.common.internal.RemotePatientSimilarityView;
 import org.xwiki.model.reference.DocumentReference;
 
 import java.util.Arrays;
@@ -161,12 +161,6 @@ public class RemoteMatchedPatientClusterViewTest
         new RemoteMatchedPatientClusterView(this.reference, null, this.matchList);
     }
 
-    @Test(expected = NullPointerException.class)
-    public void instantiatingClassWithNullRemoteMatchesThrowsException()
-    {
-        new RemoteMatchedPatientClusterView(this.reference, this.response, null);
-    }
-
     @Test
     public void getReferenceReturnsTheReferenceThatWasSet()
     {
@@ -213,16 +207,10 @@ public class RemoteMatchedPatientClusterViewTest
         this.matches.toJSON(-1, 3);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void toJSONThrowsExceptionIfToIndexIsGreaterThanFromIndex()
-    {
-        this.matches.toJSON(3, 0);
-    }
-
     @Test(expected = IndexOutOfBoundsException.class)
-    public void toJSONThrowsExceptionIfToIndexInvalid()
+    public void toJSONThrowsExceptionIfFromIndexIsGreaterThanDataSize()
     {
-        this.matches.toJSON(1, 20);
+        this.matches.toJSON(300, 10);
     }
 
     @Test
