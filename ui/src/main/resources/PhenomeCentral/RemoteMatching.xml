@@ -493,6 +493,7 @@ $xwiki.ssx.use('PhenomeCentral.RemoteMatching')##
       (% class="similarity-results-container" id="similar-remote-patients-container-${escapetool.xml($serverID)}" %)((({{html clean=false}}
         &lt;input type="hidden" name="service" value="$escapetool.xml($resultsURL)"/&gt;
         &lt;input type="hidden" name="mmeServer" value="$escapetool.xml($serverID)"/&gt;
+        &lt;input type="hidden" name="mmeServerName" value="$escapetool.xml($serverName)"/&gt;
         &lt;input type="hidden" name="serviceDisclaimer" value="$escapetool.xml($disclaimer)"/&gt;{{/html}})))##
       {{html clean=false}}&lt;span class="xwiki-livetable-pagination" id="pagination-similar-cases-${escapetool.xml($serverID)}"&gt;&lt;span class="controlPagination"&gt;
           &lt;a title="$escapetool.xml($services.localization.render('platform.livetable.paginationPagePrevTitle'))" class="prevPagination" id="pagination-prev-${escapetool.xml($serverID)}" href="#"&gt;&lt;span class="hidden"&gt;$services.localization.render('platform.livetable.paginationPagePrevTitle')&lt;/span&gt;&lt;/a&gt;
