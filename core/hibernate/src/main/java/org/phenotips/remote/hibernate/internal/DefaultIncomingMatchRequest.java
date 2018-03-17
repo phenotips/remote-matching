@@ -55,8 +55,10 @@ public class DefaultIncomingMatchRequest extends AbstractSearchRequest implement
     }
 
     /**
-     * @param queryID when not null, the ID of the request that needs to be updated; iff null, an auto-generated ID will
-     *            be assigned when the request is stored in the database
+     * @param remoteServerId
+     * @param apiVersionUsed
+     * @param request
+     * @param remotePatient
      */
     public DefaultIncomingMatchRequest(String remoteServerId, String apiVersionUsed,
         String request, Patient remotePatient, boolean isTestRequest)

@@ -17,7 +17,6 @@
  */
 package org.phenotips.remote.server.internal;
 
-import org.phenotips.data.ConsentManager;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.matchingnotification.MatchingNotificationManager;
 import org.phenotips.remote.api.ApiDataConverter;
@@ -32,7 +31,6 @@ import org.xwiki.component.annotation.Component;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -61,14 +59,11 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
     private RemoteMatchingStorageManager requestStorageManager;
 
     @Inject
-    private ConsentManager consentManager;
-
-    @Inject
     private MatchingNotificationManager notificationManager;
 
     @Override
     public JSONObject processHTTPSearchRequest(ApiDataConverter apiVersionSpecificConverter, String stringJson,
-        ExecutorService queue, String remoteServerId, HttpServletRequest httpRequest)
+        String remoteServerId, HttpServletRequest httpRequest)
     {
         this.logger.debug("Received JSON search request: <<{}>>", stringJson);
         boolean requestIncomplete = true;
@@ -80,7 +75,7 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
                 apiVersionSpecificConverter.getIncomingJSONParser().parseIncomingRequest(json, remoteServerId);
 
             List<PatientSimilarityView> matches =
-                    patientsFinder.findSimilarPatients(request.getModelPatient(), REMOTE_MATCHING_CONSENT_ID);
+                    this.patientsFinder.findSimilarPatients(request.getModelPatient(), REMOTE_MATCHING_CONSENT_ID);
 
             List<PatientSimilarityView> filteredMatches = filterMatches(matches);
 
@@ -121,7 +116,7 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
         IncomingMatchRequest request =
             new DefaultIncomingMatchRequest(remoteServerId, apiVersion, requestString, null, false);
 
-        requestStorageManager.saveIncomingRequest(request);
+        this.requestStorageManager.saveIncomingRequest(request);
     }
 
     private List<PatientSimilarityView> filterMatches(List<PatientSimilarityView> matches)
@@ -130,25 +125,18 @@ public class IncomingSearchRequestProcessor implements SearchRequestProcessor
         //
         // TODO: use CollectionUtils.filter once a) updated Apache Commons that support parameterized types are used
         // and b) a workaround for anonymous classes only being able to use final local variables is tested
-
         List<PatientSimilarityView> filteredMatches = new LinkedList<PatientSimilarityView>();
 
         for (PatientSimilarityView match : matches) {
-            if (consentManager.hasConsent(match.getId(), "matching")) {
-                // For now, only include results where the genotype score is high enough to indicate a candidate
-                // gene matched (exome data gives max score of 0.5, and candidate genes have score of 1.0)
-                //
-                // FIXME: once PatientSimilarityView exposes candidate genes, use that to check if candidate genes
-                // matched instead of this indirect test based on the score
-                if (match.getGenotypeScore() >= 1.0) {
-                    filteredMatches.add(match);
-                }
-            } else {
-                logger.error("Patient [{}] is excluded form match results because match consent is unchecked",
-                    match.getId());
+            // For now, only include results where the genotype score is high enough to indicate a candidate
+            // gene matched (exome data gives max score of 0.5, and candidate genes have score of 1.0)
+            //
+            // FIXME: once PatientSimilarityView exposes candidate genes, use that to check if candidate genes
+            // matched instead of this indirect test based on the score
+            if (match.getGenotypeScore() >= 1.0) {
+                filteredMatches.add(match);
             }
         }
-
         return filteredMatches;
     }
 }

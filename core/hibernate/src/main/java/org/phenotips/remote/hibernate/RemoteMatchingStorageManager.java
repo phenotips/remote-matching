@@ -26,18 +26,26 @@ import org.xwiki.component.annotation.Role;
 public interface RemoteMatchingStorageManager
 {
     /**
-     * Stores the incoming request and the generated reply for audit purposes
+     * Stores the incoming request and the generated reply for audit purposes.
+     *
+     * @param request
      */
     void saveIncomingRequest(IncomingMatchRequest request);
 
     /**
-     * Stores the incoming request and the generated reply for audit purposes
+     * Stores the incoming request and the generated reply for audit purposes.
+     *
+     * @param request
      */
     void saveOutgoingRequest(OutgoingMatchRequest request);
 
     /**
      * Returns the last request+response received form the given server when querying for the given patient. Returns
      * null if no responses are currently cached.
+     *
+     * @param remoteServerId
+     * @param patientId
+     * @return
      */
     OutgoingMatchRequest loadCachedOutgoingRequest(String remoteServerId, String patientId);
 

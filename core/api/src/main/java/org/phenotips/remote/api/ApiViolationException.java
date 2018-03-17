@@ -19,10 +19,10 @@ package org.phenotips.remote.api;
 
 public class ApiViolationException extends IllegalArgumentException
 {
+    private static final long serialVersionUID = 1L;
+
     public ApiViolationException(String message)
     {
         super(message);
     }
-
-    private static final long serialVersionUID = 1L;
 }

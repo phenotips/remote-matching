@@ -47,9 +47,9 @@ import org.slf4j.Logger;
 @Named("api-data-converter-v1")
 public class ApiDataConverterV1 implements ApiDataConverter, Initializable
 {
-    private final static String VERSION_STRING = "1.0";
+    private static final String VERSION_STRING = "1.0";
 
-    private final static Integer DEFAULT_NUMBER_OF_GENES_IN_REPLIES = 5;
+    private static final Integer DEFAULT_NUMBER_OF_GENES_IN_REPLIES = 5;
 
     private IncomingJSONParser incomingJSONParser;
 
@@ -76,10 +76,10 @@ public class ApiDataConverterV1 implements ApiDataConverter, Initializable
     {
         this.incomingJSONParser = new DefaultIncomingJSONParser(getApiVersion());
 
-        this.patientToJSONConverter = new DefaultPatientToJSONConverter(getApiVersion(), logger);
+        this.patientToJSONConverter = new DefaultPatientToJSONConverter(getApiVersion(), this.logger);
 
-        this.outgoingJSONGenerator =
-            new DefaultOutgoingJSONGenerator(getApiVersion(), logger, patientRepository, access, bridge);
+        this.outgoingJSONGenerator = new DefaultOutgoingJSONGenerator(getApiVersion(), this.logger,
+            this.patientRepository, this.access, this.bridge);
     }
 
     @Override
