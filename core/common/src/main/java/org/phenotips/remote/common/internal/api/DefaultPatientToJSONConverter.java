@@ -49,6 +49,8 @@ import org.slf4j.Logger;
  */
 public class DefaultPatientToJSONConverter implements PatientToJSONConverter
 {
+    private static final String PUBMED_BASE_URL = "https://www.ncbi.nlm.nih.gov/pubmed/?term=";
+
     private Logger logger;
 
     private final Pattern hpoTerm; // not static: may be different from api version to api version
@@ -103,23 +105,31 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         // Default contact info
         String name = "PhenomeCentral Support";
         String institution = "PhenomeCentral";
-        String href = "mailto:";
+        String href = "";
 
-        PatientData<ContactInfo> data = patient.getData("contact");
-        if (data != null && data.isIndexed() && data.size() > 0) {
-            ContactInfo contact = data.get(0);
-            String contactName = contact.getName();
-            if (!StringUtils.isBlank(contactName)) {
-                name = contactName;
-            }
-            // Replace institution, even if blank
-            institution = contact.getInstitution();
-            // TODO: replace this with a URL to a match/contact page
-            List<String> email = contact.getEmails();
-            if (!email.isEmpty() && !StringUtils.isBlank(email.get(0))) {
-                href += email.get(0) + ",matchmaker@phenomecentral.org";
-            } else {
-                href += "matchmaker@phenomecentral.org";
+        String solvedPubmedID = getSolvedPubmedID(patient);
+        if (StringUtils.isNotBlank(solvedPubmedID)) {
+            // for solved cases which have PubMedID send the link to the article
+            // instead of sending user contact information
+            href = PUBMED_BASE_URL + solvedPubmedID;
+        } else {
+            href = "mailto:";
+            PatientData<ContactInfo> data = patient.getData("contact");
+            if (data != null && data.isIndexed() && data.size() > 0) {
+                ContactInfo contact = data.get(0);
+                String contactName = contact.getName();
+                if (!StringUtils.isBlank(contactName)) {
+                    name = contactName;
+                }
+                // Replace institution, even if blank
+                institution = contact.getInstitution();
+                // TODO: replace this with a URL to a match/contact page
+                List<String> email = contact.getEmails();
+                if (!email.isEmpty() && !StringUtils.isBlank(email.get(0))) {
+                    href += email.get(0) + ",matchmaker@phenomecentral.org";
+                } else {
+                    href += "matchmaker@phenomecentral.org";
+                }
             }
         }
 
@@ -131,6 +141,20 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         }
         contactJson.put(ApiConfiguration.JSON_CONTACT_HREF, href);
         return contactJson;
+    }
+
+    private static String getSolvedPubmedID(Patient patient)
+    {
+        PatientData<String> data = patient.getData("solved");
+        if (data != null && data.size() > 0) {
+            if ("1".equals(data.get("solved"))) {
+                String pubmed = data.get("solved__pubmed_id");
+                if (!StringUtils.isBlank(pubmed)) {
+                    return pubmed;
+                }
+            }
+        }
+        return null;
     }
 
     private JSONArray features(Patient patient)
