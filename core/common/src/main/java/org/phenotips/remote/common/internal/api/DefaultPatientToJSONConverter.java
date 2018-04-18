@@ -49,7 +49,7 @@ import org.slf4j.Logger;
  */
 public class DefaultPatientToJSONConverter implements PatientToJSONConverter
 {
-    private static final String PUBMED_BASE_URL = "https://www.ncbi.nlm.nih.gov/pubmed/?term=";
+    private static final String PUBMED_BASE_URL = "https://www.ncbi.nlm.nih.gov/pubmed/";
 
     private Logger logger;
 
