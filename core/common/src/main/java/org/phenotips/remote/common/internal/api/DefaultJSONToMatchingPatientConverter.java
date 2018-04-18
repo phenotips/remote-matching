@@ -355,7 +355,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
         contactInfo.withUrl(href);
         contactInfo.withInstitution(institution);
 
-        if (href.startsWith("mailto:")) {
+        if (href != null && href.startsWith("mailto:")) {
             URL emailUrl;
             try {
                 emailUrl = new URL(href);
