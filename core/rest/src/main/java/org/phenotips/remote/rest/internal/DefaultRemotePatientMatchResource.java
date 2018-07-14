@@ -26,6 +26,7 @@ import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.client.RemoteMatchingService;
 import org.phenotips.remote.common.internal.RemotePatientSimilarityView;
 import org.phenotips.remote.rest.RemotePatientMatchResource;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.container.Container;
 import org.xwiki.container.Request;
@@ -44,7 +45,6 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.json.JSONObject;
-import org.slf4j.Logger;
 
 /**
  * Default implementation of the {@link RemotePatientMatchResource}.
@@ -66,10 +66,6 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
     private static final String SERVER = "server";
 
     private static final String SEND_NEW_REQUEST = "sendNewRequest";
-
-    /** The logging object. */
-    @Inject
-    private Logger logger;
 
     /** The secure patient repository. */
     @Inject
@@ -94,19 +90,19 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
         final Request request = this.container.getRequest();
         // The patient ID must not be blank.
         if (StringUtils.isBlank(patientId)) {
-            this.logger.error("Patient ID is not specified.");
+            this.slf4Jlogger.error("Patient ID is not specified.");
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
         // The server must not be blank.
         final String server = (String) request.getProperty(SERVER);
         if (StringUtils.isBlank(server)) {
-            this.logger.error("Server is not specified.");
+            this.slf4Jlogger.error("Server is not specified.");
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
         // Get the other parameters, if specified, or set the defaults.
         final int offset = NumberUtils.toInt((String) request.getProperty(OFFSET), 1);
         if (offset < 1) {
-            this.logger.error("The requested offset is out of bounds: {}", offset);
+            this.slf4Jlogger.error("The requested offset is out of bounds: {}", offset);
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
         final boolean newRequest = BooleanUtils.toBoolean((String) request.getProperty(SEND_NEW_REQUEST));
@@ -141,7 +137,7 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
             final Patient patient = this.repository.get(patientId);
             // If patient with requested ID is not found, this is an error.
             if (patient == null) {
-                this.logger.error("Patient with ID: {} could not be found.", patientId);
+                this.slf4Jlogger.error("Patient with ID: {} could not be found.", patientId);
                 return Response.status(Response.Status.BAD_REQUEST).build();
             }
             // don't send any top Exomiser genes in outgoing requests
@@ -151,44 +147,44 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
 
             // If the response is null, the request was never initiated.
             if (remoteResponse == null) {
-                this.logger.warn("Remote match request to [{}] was never initiated for patient [{}]",
-                        server, patientId);
+                this.slf4Jlogger.warn("Remote match request to [{}] was never initiated for patient [{}]",
+                    server, patientId);
                 return Response.status(Response.Status.NO_CONTENT).build();
             }
 
             if (!remoteResponse.wasSent()) {
                 if (remoteResponse.errorContactingRemoteServer()) {
-                    this.logger.error("Unable to connect to remote server [{}]", server);
-                        return Response.status(Response.Status.SERVICE_UNAVAILABLE).build();
+                    this.slf4Jlogger.error("Unable to connect to remote server [{}]", server);
+                    return Response.status(Response.Status.SERVICE_UNAVAILABLE).build();
                 } else {
-                    this.logger.error("Could not initialte an MME match request for patient [{}]", patientId);
+                    this.slf4Jlogger.error("Could not initialte an MME match request for patient [{}]", patientId);
                     return Response.status(Response.Status.CONFLICT).build();
                 }
             }
             // If no valid reply, retrieve the request status code and the JSON.
             if (!remoteResponse.gotValidReply()) {
                 if (remoteResponse.getRequestStatusCode().equals(ApiConfiguration.HTTP_UNAUTHORIZED)) {
-                    this.logger.error("Not authorized to contact selected MME server [{}]", server);
+                    this.slf4Jlogger.error("Not authorized to contact selected MME server [{}]", server);
                     return Response.status(Response.Status.FORBIDDEN).build();
                 }
                 if (remoteResponse.getRequestStatusCode().equals(ApiConfiguration.HTTP_UNSUPPORTED_API_VERSION)) {
-                    this.logger.error("Unsupported MME version when contacting MME server [{}]", server);
+                    this.slf4Jlogger.error("Unsupported MME version when contacting MME server [{}]", server);
                     return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).build();
                 }
-                this.logger.error("Remote MME server [{}] rejected match request with status code [{}]",
+                this.slf4Jlogger.error("Remote MME server [{}] rejected match request with status code [{}]",
                     server, remoteResponse.getRequestStatusCode());
                 return Response.status(Response.Status.NOT_ACCEPTABLE).build();
             }
 
             return buildMatches(patient, remoteResponse, offset, limit, reqNo);
         } catch (final SecurityException e) {
-            this.logger.error("Failed to retrieve patient with ID [{}]: {}", patientId, e.getMessage());
+            this.slf4Jlogger.error("Failed to retrieve patient with ID [{}]: {}", patientId, e.getMessage());
             return Response.status(Response.Status.UNAUTHORIZED).build();
         } catch (final IndexOutOfBoundsException e) {
-            this.logger.error("The requested offset [{}] is out of bounds", offset);
+            this.slf4Jlogger.error("The requested offset [{}] is out of bounds", offset);
             return Response.status(Response.Status.BAD_REQUEST).build();
         } catch (final Exception e) {
-            this.logger.error("Unexpected exception while generating remote matches: {}", e.getMessage());
+            this.slf4Jlogger.error("Unexpected exception while generating remote matches: {}", e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -213,7 +209,7 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
         final List<RemotePatientSimilarityView> matches = this.matchingService.getSimilarityResults(mmeMatchRequest);
 
         this.matchStorageManager.saveRemoteMatches(matches, patient.getId(),
-                mmeMatchRequest.getRemoteServerId(), false);
+            mmeMatchRequest.getRemoteServerId(), false);
 
         final MatchedPatientClusterView matchedCluster =
             new RemoteMatchedPatientClusterView(patient, mmeMatchRequest, matches);

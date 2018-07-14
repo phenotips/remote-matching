@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>remote-matching-core</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.2-SNAPSHOT</version>
   </parent>
   <properties>
     <coverage.instructionRatio>0.23</coverage.instructionRatio>
@@ -72,7 +72,7 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.phenotips</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>patient-data-api</artifactId>
       <version>${phenotips.version}</version>
     </dependency>
@@ -88,11 +88,6 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>patient-access-rules-api</artifactId>
-      <version>${phenotips.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
       <artifactId>patient-similarity-data-api</artifactId>
       <version>${patientNetwork.version}</version>
     </dependency>
@@ -100,6 +95,16 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>matching-notification-api</artifactId>
       <version>${patientNetwork.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>phenotips-consents-api</artifactId>
+      <version>${phenotips.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>entity-access-rules-api</artifactId>
+      <version>${phenotips.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
