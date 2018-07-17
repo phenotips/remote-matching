@@ -20,10 +20,12 @@ package org.phenotips.remote.common.internal;
 import org.phenotips.data.ContactInfo;
 import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
+import org.phenotips.data.Gene;
 import org.phenotips.data.IndexedPatientData;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
 import org.phenotips.data.PatientWritePolicy;
+import org.phenotips.data.internal.PhenoTipsGene;
 import org.phenotips.remote.api.MatchingPatientGene;
 
 import org.xwiki.model.reference.DocumentReference;
@@ -32,10 +34,8 @@ import org.xwiki.model.reference.EntityReference;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.json.JSONObject;
@@ -87,16 +87,22 @@ public class RemoteMatchingPatient implements Patient
         return this.label;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @deprecated use {@link #getDocumentReference()} instead
+     */
+    @Deprecated
     @Override
     public DocumentReference getDocument()
     {
-        return null;
+        return this.getDocumentReference();
     }
 
     @Override
     public DocumentReference getDocumentReference()
     {
-        return this.getDocument();
+        return null;
     }
 
     @Override
@@ -125,11 +131,10 @@ public class RemoteMatchingPatient implements Patient
         if ("genes".equals(name)) {
             Set<? extends MatchingPatientGene> matchingPatientGenes = this.genes;
 
-            List<Map<String, String>> allGenes = new LinkedList<>();
+            List<Gene> allGenes = new LinkedList<>();
 
             for (MatchingPatientGene gene : matchingPatientGenes) {
-                Map<String, String> singleGene = new LinkedHashMap<>();
-                singleGene.put("gene", gene.getName());
+                Gene singleGene = new PhenoTipsGene(null, gene.getName(), null, Collections.singleton(""), null);
                 allGenes.add(singleGene);
             }
             return (PatientData<T>) new IndexedPatientData<>("genes", allGenes);
@@ -176,7 +181,7 @@ public class RemoteMatchingPatient implements Patient
     @Override
     public XWikiDocument getXDocument()
     {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override

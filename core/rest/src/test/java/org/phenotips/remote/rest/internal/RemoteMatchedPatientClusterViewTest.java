@@ -22,6 +22,7 @@ import org.phenotips.data.similarity.MatchedPatientClusterView;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.common.internal.RemotePatientSimilarityView;
+
 import org.xwiki.model.reference.DocumentReference;
 
 import java.util.Arrays;
@@ -125,22 +126,22 @@ public class RemoteMatchedPatientClusterViewTest
         MockitoAnnotations.initMocks(this);
 
         when(this.reference.toJSON()).thenReturn(new JSONObject().put(ID_LABEL, REFERENCE));
-        when(this.reference.getDocument()).thenReturn(this.docRef);
+        when(this.reference.getDocumentReference()).thenReturn(this.docRef);
 
         when(this.patient1.toJSON()).thenReturn(new JSONObject().put(ID_LABEL, PATIENT_1));
-        when(this.patient1.getDocument()).thenReturn(this.doc1);
+        when(this.patient1.getDocumentReference()).thenReturn(this.doc1);
 
         when(this.patient2.toJSON()).thenReturn(new JSONObject().put(ID_LABEL, PATIENT_2));
-        when(this.patient2.getDocument()).thenReturn(this.doc2);
+        when(this.patient2.getDocumentReference()).thenReturn(this.doc2);
 
         when(this.patient3.toJSON()).thenReturn(new JSONObject().put(ID_LABEL, PATIENT_3));
-        when(this.patient3.getDocument()).thenReturn(this.doc3);
+        when(this.patient3.getDocumentReference()).thenReturn(this.doc3);
 
         when(this.patient4.toJSON()).thenReturn(new JSONObject().put(ID_LABEL, PATIENT_4));
-        when(this.patient4.getDocument()).thenReturn(this.doc4);
+        when(this.patient4.getDocumentReference()).thenReturn(this.doc4);
 
         when(this.patient5.toJSON()).thenReturn(new JSONObject().put(ID_LABEL, PATIENT_5));
-        when(this.patient5.getDocument()).thenReturn(this.doc5);
+        when(this.patient5.getDocumentReference()).thenReturn(this.doc5);
 
         when(this.response.getRequestJSON()).thenReturn(new JSONObject().put(REQUEST_JSON, REQUEST_JSON));
         when(this.response.getResponseJSON()).thenReturn(new JSONObject().put(RESPONSE_JSON, RESPONSE_JSON));
