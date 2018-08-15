@@ -168,6 +168,7 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
             }
             JSONObject featureJson = new JSONObject();
             featureJson.put(ApiConfiguration.JSON_FEATURE_ID, featureId);
+            featureJson.put(ApiConfiguration.JSON_FEATURE_LABEL, patientFeature.getName());
             featureJson.put(ApiConfiguration.JSON_FEATURE_OBSERVED, observedStatusToJSONString(patientFeature));
 
             Map<String, ? extends FeatureMetadatum> metadata = patientFeature.getMetadata();
