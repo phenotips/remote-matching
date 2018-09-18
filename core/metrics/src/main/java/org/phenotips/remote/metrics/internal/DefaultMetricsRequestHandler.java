@@ -15,15 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/
  */
-package org.phenotips.remote.server.internal;
+package org.phenotips.remote.metrics.internal;
 
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.ApiDataConverter;
 import org.phenotips.remote.common.ApiFactory;
 import org.phenotips.remote.common.ApplicationConfiguration;
 import org.phenotips.remote.common.RemoteConfigurationManager;
-import org.phenotips.remote.server.ApiRequestHandler;
-import org.phenotips.remote.server.SearchRequestProcessor;
+import org.phenotips.remote.metrics.MetricsRequestHandler;
+import org.phenotips.remote.metrics.MetricsRequestProcessor;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.rest.XWikiResource;
@@ -47,19 +47,19 @@ import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 
 /**
- * Resource for listing full patient phenotype.
+ * Resource for implementing the MME API of metrics endpoint.
  *
  * @version $Id$
  */
 @Singleton
-@Component("org.phenotips.remote.server.internal.DefaultApiRequestHandler")
-public class DefaultApiRequestHandler extends XWikiResource implements ApiRequestHandler
+@Component("org.phenotips.remote.metrics.internal.DefaultMetricsRequestHandler")
+public class DefaultMetricsRequestHandler extends XWikiResource implements MetricsRequestHandler
 {
     @Inject
     private Logger logger;
 
     @Inject
-    private SearchRequestProcessor searchRequestProcessor;
+    private MetricsRequestProcessor metricsRequestProcessor;
 
     @Inject
     private ApiFactory apiFactory;
@@ -68,7 +68,7 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
     private RemoteConfigurationManager remoteConfigurationManager;
 
     @Override
-    public Response matchPost(String json) throws XWikiRestException
+    public Response getMetrics(String json) throws XWikiRestException
     {
         this.logger.debug("MME MATCH REQUEST; INPUT JSON: [{}]", json);
 
@@ -85,7 +85,8 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
 
             String apiVersion = this.parseApiVersion(httpRequest.getHeader(ApiConfiguration.HTTPHEADER_API_VERSION));
             try {
-                ApiDataConverter apiVersionSpecificConverter = this.apiFactory.getDataConverterForApiVersion(apiVersion);
+                ApiDataConverter apiVersionSpecificConverter =
+                    this.apiFactory.getDataConverterForApiVersion(apiVersion);
 
                 this.logger.debug("Request version: <<{}>>", apiVersion);
 
@@ -98,11 +99,7 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
                     jsonResponse.put(ApiConfiguration.REPLY_JSON_HTTP_STATUS, ApiConfiguration.HTTP_UNAUTHORIZED);
                     jsonResponse.put(ApiConfiguration.REPLY_JSON_ERROR_DESCRIPTION, "unauthorized server");
                 } else {
-                    String remoteServerId =
-                        remoteServerConfiguration.getStringValue(ApplicationConfiguration.CONFIGDOC_REMOTE_SERVER_ID);
-
-                    jsonResponse = this.searchRequestProcessor.processHTTPSearchRequest(
-                        apiVersionSpecificConverter, json, remoteServerId, httpRequest);
+                    jsonResponse = this.metricsRequestProcessor.generateMetricsResponse(apiVersionSpecificConverter);
                 }
             } catch (IllegalArgumentException ex) {
                 this.logger.error("Incorrect incoming request: unsupported API version: [{}]", apiVersion);
@@ -133,7 +130,7 @@ public class DefaultApiRequestHandler extends XWikiResource implements ApiReques
             response.type(this.generateContentType(apiVersion));
             return response.build();
         } catch (Exception ex) {
-            this.logger.error("Could not process remote matching request: {}", ex.getMessage(), ex);
+            this.logger.error("Could not process remote metrics request: {}", ex.getMessage(), ex);
             return Response.status(ApiConfiguration.HTTP_SERVER_ERROR).build();
         }
     }

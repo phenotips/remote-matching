@@ -36,5 +36,6 @@
     <module>server</module>
     <module>client</module>
     <module>rest</module>
+    <module>metrics</module>
   </modules>
 </project>

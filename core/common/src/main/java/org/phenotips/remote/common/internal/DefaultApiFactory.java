@@ -48,7 +48,7 @@ public class DefaultApiFactory implements ApiFactory, Initializable
     }
 
     @Override
-    public ApiDataConverter getApiVersion(String apiVersion)
+    public ApiDataConverter getDataConverterForApiVersion(String apiVersion)
     {
         if (this.allApiDataConverters.containsKey(apiVersion)) {
             return this.allApiDataConverters.get(apiVersion);
