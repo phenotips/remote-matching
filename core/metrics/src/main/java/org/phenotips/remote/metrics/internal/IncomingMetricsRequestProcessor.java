@@ -89,7 +89,7 @@ public class IncomingMetricsRequestProcessor implements MetricsRequestProcessor
             metricsJson.put(MMEMetricsApiConfiguration.JSON_MME_NUMBER_OF_CASES_WITH_DIAGNOSIS,
                 getNumberOfCasesWithDiagnosis(session));
             metricsJson.put(MMEMetricsApiConfiguration.JSON_MME_NUMBER_OF_POTENTIAL_MATCHES_SENT,
-                getNumberOfPotentialMatchesSent());
+                this.matchStorageManager.getNumberOfRemoteMatches());
             metricsJson.put(MMEMetricsApiConfiguration.JSON_MME_DATE_GENERATED, new Date().toString());
 
             responseJSON.put(MMEMetricsApiConfiguration.JSON_MME_METRICS, metricsJson);
@@ -105,8 +105,6 @@ public class IncomingMetricsRequestProcessor implements MetricsRequestProcessor
      */
     private Long getNumberOfCases(Session session)
     {
-        long result = -1;
-
         try {
             Query q = session.createQuery(
                 "select count (distinct doc.name) from XWikiDocument as doc, "
@@ -118,12 +116,12 @@ public class IncomingMetricsRequestProcessor implements MetricsRequestProcessor
                     + "consentObj.className = 'PhenoTips.PatientConsent' and :m in elements(consentProp.list)");
             q.setString("g", CONSENT_PROPERTY_NAME);
             q.setString("m", MATCHING_CONSENT_ID);
-            result = (Long) q.uniqueResult();
+            return (Long) q.uniqueResult();
         } catch (Exception e) {
             this.logger.error("Error retrieving a list of patients for matching: {}", e);
         }
 
-        return result;
+        return null;
     }
 
     /**
@@ -131,8 +129,6 @@ public class IncomingMetricsRequestProcessor implements MetricsRequestProcessor
      */
     private Long getNumberOfSubmitters(Session session)
     {
-        long result = -1;
-
         try {
             Query q = session.createQuery(
                 "select count (distinct ownerProp.value) from XWikiDocument as doc, "
@@ -148,12 +144,12 @@ public class IncomingMetricsRequestProcessor implements MetricsRequestProcessor
             q.setString("o", OWNER_PROPERTY_NAME);
             q.setString("g", CONSENT_PROPERTY_NAME);
             q.setString("m", MATCHING_CONSENT_ID);
-            result = (Long) q.uniqueResult();
+            return (Long) q.uniqueResult();
         } catch (Exception e) {
             this.logger.error("Error retrieving a list of patients for matching: {}", e);
         }
 
-        return result;
+        return null;
     }
 
     /**
@@ -161,8 +157,6 @@ public class IncomingMetricsRequestProcessor implements MetricsRequestProcessor
      */
     private Long getNumberOfGenes(Session session)
     {
-        long result = -1;
-
         try {
             Query q = session.createQuery(
                 "select count (geneObj.name) from XWikiDocument as doc, "
@@ -181,12 +175,12 @@ public class IncomingMetricsRequestProcessor implements MetricsRequestProcessor
             q.setString("v2", GENE_SOLVED);
             q.setString("c", CONSENT_PROPERTY_NAME);
             q.setString("m", MATCHING_CONSENT_ID);
-            result = (Long) q.uniqueResult();
+            return (Long) q.uniqueResult();
         } catch (Exception e) {
             this.logger.error("Error retrieving a list of patients for matching: {}", e);
         }
 
-        return result;
+        return null;
     }
 
     /**
@@ -194,8 +188,6 @@ public class IncomingMetricsRequestProcessor implements MetricsRequestProcessor
      */
     private Long getNumberOfUniqueGenes(Session session)
     {
-        long result = -1;
-
         try {
             Query q = session.createQuery(
                 "select count (distinct geneIDProp.value) from XWikiDocument as doc, "
@@ -217,12 +209,12 @@ public class IncomingMetricsRequestProcessor implements MetricsRequestProcessor
             q.setString("v2", GENE_SOLVED);
             q.setString("c", CONSENT_PROPERTY_NAME);
             q.setString("m", MATCHING_CONSENT_ID);
-            result = (Long) q.uniqueResult();
+            return (Long) q.uniqueResult();
         } catch (Exception e) {
             this.logger.error("Error retrieving a list of patients for matching: {}", e);
         }
 
-        return result;
+        return null;
     }
 
     /**
@@ -230,8 +222,6 @@ public class IncomingMetricsRequestProcessor implements MetricsRequestProcessor
      */
     private Long getNumberOfCasesWithDiagnosis(Session session)
     {
-        long result = -1;
-
         try {
             Query q = session.createQuery(
                 "select count (distinct doc.name) from XWikiDocument as doc, "
@@ -249,27 +239,11 @@ public class IncomingMetricsRequestProcessor implements MetricsRequestProcessor
             q.setString("d", DIAGNOSIS_PROPERTY_NAME);
             q.setString("c", CONSENT_PROPERTY_NAME);
             q.setString("m", MATCHING_CONSENT_ID);
-            result = (Long) q.uniqueResult();
+            return (Long) q.uniqueResult();
         } catch (Exception e) {
             this.logger.error("Error retrieving a list of patients for matching: {}", e);
         }
 
-        return result;
-    }
-
-    /**
-     * Returns number of rows in the matching notification table with one remote case.
-     */
-    private Long getNumberOfPotentialMatchesSent()
-    {
-        long result = -1;
-
-        try {
-            return this.matchStorageManager.getNumberOfRemoteMatches();
-        } catch (Exception e) {
-            this.logger.error("Error retrieving a list of patients for matching: {}", e);
-        }
-
-        return result;
+        return null;
     }
 }
