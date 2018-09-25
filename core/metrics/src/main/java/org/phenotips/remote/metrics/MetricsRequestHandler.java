@@ -32,24 +32,33 @@ import javax.ws.rs.core.Response;
  *
  * @version $Id$
  */
-@Path("/remoteMatcher")
+@Path("/remoteMatcher/metrics")
 public interface MetricsRequestHandler
 {
     /**
-     * Every request must specify the API version within the HTTP Content-Type header.
-     * Content-Type: application/vnd.ga4gh.matchmaker.<version>+json.
-     * Where <version> takes the form vX.Y, where X is a major version and Y is a minor version.
-     * Minor versions are cross-compatible. For example:
-     * Content-Type: application/vnd.ga4gh.matchmaker.v1.0+json
+     * An endpoint to get MME metrics.
      *
+     * Takes no inputs.
+     *
+     * Returns a JSON in the format specified in
+     *  https://github.com/ga4gh/mme-apis/blob/1.1/metrics-api.md
+     *
+     * Possible error codes are defined in the same document.
+     *
+     * Note: as for all other MME requests, every request must specify the API version
+     * within the HTTP Content-Type header as "application/vnd.ga4gh.matchmaker.{version}+json",
+     * where {version} takes the form "vX.Y", where X is a major version and Y is a minor version.
+     * It is generally assumed that a server supporting major version X can handle requests
+     * with major version X and any minor version Y.
+     *
+     * For example for version "1.0": Content-Type: application/vnd.ga4gh.matchmaker.v1.0+json
      */
-    @Path("metrics")
     @Consumes({ MediaType.APPLICATION_JSON,
-    ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX
-        + ApiConfiguration.LATEST_API_VERSION_STRING
-        + ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX,
-    ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SIMPLE,
-    "application/*+json" })
+        ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX
+            + ApiConfiguration.LATEST_API_VERSION_STRING
+            + ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX,
+        ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SIMPLE,
+        "application/*+json" })
     @GET
     Response getMetrics(String json) throws XWikiRestException;
 }

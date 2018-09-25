@@ -32,19 +32,31 @@ import javax.ws.rs.core.Response;
  *
  * @version $Id$
  */
-@Path("/remoteMatcher")
+@Path("/remoteMatcher/match")
 public interface ApiRequestHandler
 {
     /**
-     * Place a search request to this server.
+     * An endpoint to get matches given a sample patient.
      *
-     * TODO fix the doc.
+     * The request body should be a JOSN in the format defined in
+     *  https://github.com/ga4gh/mme-apis/blob/1.1/search-api.md
+     *
+     * Returns a JSON in the format defined in the document referenced above.
+     *
+     * Possible error codes are defined in the same document as well.
+     *
+     * Note: as for all other MME requests, every request must specify the API version
+     * within the HTTP Content-Type header as "application/vnd.ga4gh.matchmaker.{version}+json",
+     * where {version} takes the form "vX.Y", where X is a major version and Y is a minor version.
+     * It is generally assumed that a server supporting major version X can handle requests
+     * with major version X and any minor version Y.
+     *
+     * For example for version "1.0": Content-Type: application/vnd.ga4gh.matchmaker.v1.0+json
      */
-    @Path("match")
     @Consumes({ MediaType.APPLICATION_JSON,
         ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX
-        + ApiConfiguration.LATEST_API_VERSION_STRING
-        + ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX,
+            + ApiConfiguration.LATEST_API_VERSION_STRING
+            + ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX,
         ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SIMPLE,
         "application/*+json" })
     @POST
