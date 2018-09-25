@@ -24,6 +24,8 @@ import org.phenotips.remote.metrics.MetricsRequestProcessor;
 
 import org.xwiki.component.annotation.Component;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.inject.Inject;
@@ -61,6 +63,23 @@ public class IncomingMetricsRequestProcessor implements MetricsRequestProcessor
 
     private static final String DIAGNOSIS_PROPERTY_NAME = "clinical_diagnosis";
 
+    /** A "from" part of a query to select not private patients with matching MME consent granted **/
+    private static final String HQL_BASE_MME_PATIENT_FILTER_FROM =
+        "XWikiDocument as doc, BaseObject as patientObj, BaseObject consentObj, "
+            + "DBStringListProperty consentProp, BaseObject visibilityObj, StringProperty visibilityProp";
+
+    /** A "where" part of a query to select not private patients with matching MME consent granted **/
+    private static final String HQL_BASE_MME_PATIENT_FILTER_WHERE =
+        "patientObj.name = doc.fullName and patientObj.className = 'PhenoTips.PatientClass' and "
+            + "patientObj.name <> 'PhenoTips.PatientTemplate' and "
+            + "visibilityObj.name = doc.fullName and visibilityProp.id.id = visibilityObj.id and "
+            + "consentObj.name = doc.fullName and consentProp.id.id = consentObj.id and "
+            + "visibilityObj.className = 'PhenoTips.VisibilityClass' and "
+            + "visibilityProp.id.name = 'visibility' and visibilityProp.value <> 'private' and "
+            + "consentProp.id.name = '" + CONSENT_PROPERTY_NAME + "' and "
+            + "consentObj.className = 'PhenoTips.PatientConsent' and '" + MATCHING_CONSENT_ID
+            + "' in elements(consentProp.list)";
+
     @Inject
     private MatchStorageManager matchStorageManager;
 
@@ -90,7 +109,8 @@ public class IncomingMetricsRequestProcessor implements MetricsRequestProcessor
                 getNumberOfCasesWithDiagnosis(session));
             metricsJson.put(MMEMetricsApiConfiguration.JSON_MME_NUMBER_OF_POTENTIAL_MATCHES_SENT,
                 this.matchStorageManager.getNumberOfRemoteMatches());
-            metricsJson.put(MMEMetricsApiConfiguration.JSON_MME_DATE_GENERATED, new Date().toString());
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            metricsJson.put(MMEMetricsApiConfiguration.JSON_MME_DATE_GENERATED, df.format(new Date()));
 
             responseJSON.put(MMEMetricsApiConfiguration.JSON_MME_METRICS, metricsJson);
             return responseJSON;
@@ -101,21 +121,16 @@ public class IncomingMetricsRequestProcessor implements MetricsRequestProcessor
     }
 
     /**
-     * Returns number of patient records with the MME consent ON.
+     * Returns number of not private patient records with the MME consent ON.
      */
     private Long getNumberOfCases(Session session)
     {
         try {
             Query q = session.createQuery(
-                "select count (distinct doc.name) from XWikiDocument as doc, "
-                    + "BaseObject as obj, BaseObject consentObj, DBStringListProperty consentProp where "
-                    + "obj.name = doc.fullName and obj.className = 'PhenoTips.PatientClass' and "
-                    + "obj.name <> 'PhenoTips.PatientTemplate' and "
-                    + "consentObj.name = doc.fullName and consentProp.id.id = consentObj.id and "
-                    + "consentProp.id.name = :g and "
-                    + "consentObj.className = 'PhenoTips.PatientConsent' and :m in elements(consentProp.list)");
-            q.setString("g", CONSENT_PROPERTY_NAME);
-            q.setString("m", MATCHING_CONSENT_ID);
+                "select count (distinct doc.name) from "
+                    + HQL_BASE_MME_PATIENT_FILTER_FROM
+                    + " where "
+                    + HQL_BASE_MME_PATIENT_FILTER_WHERE);
             return (Long) q.uniqueResult();
         } catch (Exception e) {
             this.logger.error("Error retrieving a list of patients for matching: {}", e);
@@ -125,25 +140,20 @@ public class IncomingMetricsRequestProcessor implements MetricsRequestProcessor
     }
 
     /**
-     * Returns number of unique owners of patient records with the MME consent ON.
+     * Returns number of unique owners of not private patient records with the MME consent ON.
      */
     private Long getNumberOfSubmitters(Session session)
     {
         try {
             Query q = session.createQuery(
-                "select count (distinct ownerProp.value) from XWikiDocument as doc, "
-                    + "BaseObject as patientObj, BaseObject ownerObj, StringProperty ownerProp, "
-                    + "BaseObject consentObj, DBStringListProperty consentProp where "
-                    + "patientObj.name = doc.fullName and patientObj.className = 'PhenoTips.PatientClass' and "
-                    + "patientObj.name <> 'PhenoTips.PatientTemplate' and "
-                    + "ownerObj.name = doc.fullName and ownerProp.id.id = ownerObj.id and ownerProp.id.name = :o and "
-                    + "ownerObj.className = 'PhenoTips.OwnerClass' and "
-                    + "consentObj.name = doc.fullName and consentProp.id.id = consentObj.id and "
-                    + "consentProp.id.name = :g and "
-                    + "consentObj.className = 'PhenoTips.PatientConsent' and :m in elements(consentProp.list)");
+                "select count (distinct ownerProp.value) from "
+                    + HQL_BASE_MME_PATIENT_FILTER_FROM
+                    + ", BaseObject ownerObj, StringProperty ownerProp"
+                    + " where "
+                    + HQL_BASE_MME_PATIENT_FILTER_WHERE
+                    + " and ownerObj.name = doc.fullName and ownerProp.id.id = ownerObj.id and ownerProp.id.name = :o"
+                    + " and ownerObj.className = 'PhenoTips.OwnerClass'");
             q.setString("o", OWNER_PROPERTY_NAME);
-            q.setString("g", CONSENT_PROPERTY_NAME);
-            q.setString("m", MATCHING_CONSENT_ID);
             return (Long) q.uniqueResult();
         } catch (Exception e) {
             this.logger.error("Error retrieving a list of patients for matching: {}", e);
@@ -153,28 +163,23 @@ public class IncomingMetricsRequestProcessor implements MetricsRequestProcessor
     }
 
     /**
-     * Returns number of gene objects with status solved or candidate from patient records with the MME consent ON.
+     * Returns number of gene objects with status solved or candidate from not private patient records with the MME consent ON.
      */
     private Long getNumberOfGenes(Session session)
     {
         try {
             Query q = session.createQuery(
-                "select count (geneObj.name) from XWikiDocument as doc, "
-                    + "BaseObject as patientObj, BaseObject geneObj, StringProperty geneProp, "
-                    + "BaseObject consentObj, DBStringListProperty consentProp where "
-                    + "patientObj.name = doc.fullName and patientObj.className = 'PhenoTips.PatientClass' and "
-                    + "patientObj.name <> 'PhenoTips.PatientTemplate' and "
-                    + "geneObj.name = doc.fullName and geneProp.id.id = geneObj.id and geneProp.id.name = :s and "
-                    + "(geneProp.value = :v1 or geneProp.value = :v2) and "
-                    + "geneObj.className = 'PhenoTips.GeneClass' and "
-                    + "consentObj.name = doc.fullName and consentProp.id.id = consentObj.id and "
-                    + "consentProp.id.name = :c and "
-                    + "consentObj.className = 'PhenoTips.PatientConsent' and :m in elements(consentProp.list)");
+                "select count (geneObj.name) from "
+                    + HQL_BASE_MME_PATIENT_FILTER_FROM
+                    + ", BaseObject geneObj, StringProperty geneProp"
+                    + " where "
+                    + HQL_BASE_MME_PATIENT_FILTER_WHERE
+                    + " and geneObj.name = doc.fullName and geneProp.id.id = geneObj.id and geneProp.id.name = :s"
+                    + " and (geneProp.value = :v1 or geneProp.value = :v2)"
+                    + " and geneObj.className = 'PhenoTips.GeneClass'");
             q.setString("s", GENE_STATUS_PROPERTY_NAME);
             q.setString("v1", GENE_CANDIDATE);
             q.setString("v2", GENE_SOLVED);
-            q.setString("c", CONSENT_PROPERTY_NAME);
-            q.setString("m", MATCHING_CONSENT_ID);
             return (Long) q.uniqueResult();
         } catch (Exception e) {
             this.logger.error("Error retrieving a list of patients for matching: {}", e);
@@ -184,31 +189,26 @@ public class IncomingMetricsRequestProcessor implements MetricsRequestProcessor
     }
 
     /**
-     * Returns number of unique genes with status solved or candidate from patient records with the MME consent ON.
+     * Returns number of unique genes with status solved or candidate from not private patient records with the MME consent ON.
      */
     private Long getNumberOfUniqueGenes(Session session)
     {
         try {
             Query q = session.createQuery(
-                "select count (distinct geneIDProp.value) from XWikiDocument as doc, "
-                    + "BaseObject as patientObj, BaseObject geneObj, StringProperty geneStatusProp, "
-                    + "StringProperty geneIDProp, BaseObject consentObj, DBStringListProperty consentProp where "
-                    + "patientObj.name = doc.fullName and patientObj.className = 'PhenoTips.PatientClass' and "
-                    + "patientObj.name <> 'PhenoTips.PatientTemplate' and "
-                    + "geneIDProp.id.id = geneObj.id and geneIDProp.id.name = :g and "
-                    + "geneObj.name = doc.fullName and geneStatusProp.id.id = geneObj.id and "
-                    + "geneStatusProp.id.name = :s and "
-                    + "(geneStatusProp.value = :v1 or geneStatusProp.value = :v2) and "
-                    + "geneObj.className = 'PhenoTips.GeneClass' and "
-                    + "consentObj.name = doc.fullName and consentProp.id.id = consentObj.id and "
-                    + "consentProp.id.name = :c and "
-                    + "consentObj.className = 'PhenoTips.PatientConsent' and :m in elements(consentProp.list)");
+                "select count (distinct geneIDProp.value) from "
+                    + HQL_BASE_MME_PATIENT_FILTER_FROM
+                    + ", BaseObject geneObj, StringProperty geneStatusProp, StringProperty geneIDProp"
+                    + " where "
+                    + HQL_BASE_MME_PATIENT_FILTER_WHERE
+                    + " and geneIDProp.id.id = geneObj.id and geneIDProp.id.name = :g"
+                    + " and geneObj.name = doc.fullName and geneStatusProp.id.id = geneObj.id"
+                    + " and geneStatusProp.id.name = :s"
+                    + " and (geneStatusProp.value = :v1 or geneStatusProp.value = :v2)"
+                    + " and geneObj.className = 'PhenoTips.GeneClass'");
             q.setString("g", GENE_ID_PROPERTY_NAME);
             q.setString("s", GENE_STATUS_PROPERTY_NAME);
             q.setString("v1", GENE_CANDIDATE);
             q.setString("v2", GENE_SOLVED);
-            q.setString("c", CONSENT_PROPERTY_NAME);
-            q.setString("m", MATCHING_CONSENT_ID);
             return (Long) q.uniqueResult();
         } catch (Exception e) {
             this.logger.error("Error retrieving a list of patients for matching: {}", e);
@@ -218,27 +218,22 @@ public class IncomingMetricsRequestProcessor implements MetricsRequestProcessor
     }
 
     /**
-     * Returns number of unique genes with status solved or candidate from patient records with the MME consent ON.
+     * Returns number of unique genes with status solved or candidate from not private patient records with the MME consent ON.
      */
     private Long getNumberOfCasesWithDiagnosis(Session session)
     {
         try {
             Query q = session.createQuery(
-                "select count (distinct doc.name) from XWikiDocument as doc, "
-                    + "BaseObject as patientObj, DBStringListProperty as omimProp, DBStringListProperty as ordoProp, "
-                    + "BaseObject consentObj, DBStringListProperty consentProp where "
-                    + "patientObj.name = doc.fullName and patientObj.className = 'PhenoTips.PatientClass' and "
-                    + "patientObj.name <> 'PhenoTips.PatientTemplate' and "
-                    + "omimProp.id.id = patientObj.id and omimProp.id.name = :o and "
-                    + "ordoProp.id.id = patientObj.id and ordoProp.id.name = :d and "
-                    + "(omimProp.list.size > 0 or ordoProp.list.size > 0) and "
-                    + "consentObj.name = doc.fullName and consentProp.id.id = consentObj.id and "
-                    + "consentProp.id.name = :c and "
-                    + "consentObj.className = 'PhenoTips.PatientConsent' and :m in elements(consentProp.list)");
+                "select count (distinct doc.name) from "
+                    + HQL_BASE_MME_PATIENT_FILTER_FROM
+                    + ", DBStringListProperty as omimProp, DBStringListProperty as ordoProp"
+                    + " where "
+                    + HQL_BASE_MME_PATIENT_FILTER_WHERE
+                    + " and omimProp.id.id = patientObj.id and omimProp.id.name = :o"
+                    + " and ordoProp.id.id = patientObj.id and ordoProp.id.name = :d"
+                    + " and (omimProp.list.size > 0 or ordoProp.list.size > 0)");
             q.setString("o", OMIM_ID_PROPERTY_NAME);
             q.setString("d", DIAGNOSIS_PROPERTY_NAME);
-            q.setString("c", CONSENT_PROPERTY_NAME);
-            q.setString("m", MATCHING_CONSENT_ID);
             return (Long) q.uniqueResult();
         } catch (Exception e) {
             this.logger.error("Error retrieving a list of patients for matching: {}", e);
