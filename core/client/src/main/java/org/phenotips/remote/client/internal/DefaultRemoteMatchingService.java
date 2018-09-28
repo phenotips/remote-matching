@@ -141,7 +141,7 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
         JSONObject requestJSON;
         try {
             ApiDataConverter apiVersionSpecificConverter =
-                this.apiFactory.getApiVersion(ApiConfiguration.LATEST_API_VERSION_STRING);
+                this.apiFactory.getDataConverterForApiVersion(ApiConfiguration.LATEST_API_VERSION_STRING);
 
             requestJSON = apiVersionSpecificConverter.getOutgoingJSONGenerator()
                 .generateRequestJSON(remoteServerId, patientId, addTopNGenes);

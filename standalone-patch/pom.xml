@@ -72,6 +72,12 @@
                   <version>${project.version}</version>
                   <type>jar</type>
                 </artifactItem>
+                <artifactItem>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>remote-matching-core-metrics</artifactId>
+                  <version>${project.version}</version>
+                  <type>jar</type>
+                </artifactItem>
               </artifactItems>
               <outputDirectory>patch</outputDirectory>
             </configuration>

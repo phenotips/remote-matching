@@ -29,7 +29,7 @@ import java.util.Set;
 @Role
 public interface ApiFactory
 {
-    ApiDataConverter getApiVersion(String apiVersion);
+    ApiDataConverter getDataConverterForApiVersion(String apiVersion);
 
     Set<String> getSupportedApiVersions();
 }

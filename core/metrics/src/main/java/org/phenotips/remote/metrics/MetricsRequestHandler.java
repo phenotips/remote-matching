@@ -15,35 +15,35 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/
  */
-package org.phenotips.remote.server;
+package org.phenotips.remote.metrics;
 
 import org.phenotips.remote.api.ApiConfiguration;
 
 import org.xwiki.rest.XWikiRestException;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
+import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
- * Interface for the /match endpoint. This is where a remote request would send the request to.
+ * Interface for the MME API of /metrics endpoint. This is where a remote request would send the request to.
  *
  * @version $Id$
  */
-@Path("/remoteMatcher/match")
-public interface ApiRequestHandler
+@Path("/remoteMatcher/metrics")
+public interface MetricsRequestHandler
 {
     /**
-     * An endpoint to get matches given a sample patient.
+     * An endpoint to get MME metrics.
      *
-     * The request body should be a JOSN in the format defined in
-     *  https://github.com/ga4gh/mme-apis/blob/1.1/search-api.md
+     * Takes no inputs.
      *
-     * Returns a JSON in the format defined in the document referenced above.
+     * Returns a JSON in the format specified in
+     *  https://github.com/ga4gh/mme-apis/blob/1.1/metrics-api.md
      *
-     * Possible error codes are defined in the same document as well.
+     * Possible error codes are defined in the same document.
      *
      * Note: as for all other MME requests, every request must specify the API version
      * within the HTTP Content-Type header as "application/vnd.ga4gh.matchmaker.{version}+json",
@@ -59,6 +59,6 @@ public interface ApiRequestHandler
             + ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX,
         ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SIMPLE,
         "application/*+json" })
-    @POST
-    Response matchPost(String json) throws XWikiRestException;
+    @GET
+    Response getMetrics(String json) throws XWikiRestException;
 }
