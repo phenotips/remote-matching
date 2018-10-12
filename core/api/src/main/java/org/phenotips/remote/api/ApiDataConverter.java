@@ -27,8 +27,10 @@ import java.util.List;
 
 import org.json.JSONObject;
 
-/*
+/**
  * Converts matching requests and replies to and from JSON.
+ *
+ * @version $Id$
  */
 @Role
 public interface ApiDataConverter
