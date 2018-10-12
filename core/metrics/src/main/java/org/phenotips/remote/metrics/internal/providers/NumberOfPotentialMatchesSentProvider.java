@@ -15,28 +15,33 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/
  */
-package org.phenotips.remote.metrics;
+package org.phenotips.remote.metrics.internal.providers;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import org.phenotips.matchingnotification.storage.MatchStorageManager;
+import org.phenotips.remote.metrics.spi.MetricProvider;
+
+import org.xwiki.component.annotation.Component;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 
 /**
- * Interface for the MME API of /metrics endpoint. This is where a remote request would send the request to.
+ * Computes the number of potential matches returned by this node as the result of all MME requests.
  *
  * @version $Id$
  */
-@Path("/remoteMatcher/metrics")
-public interface MetricsRequestHandler
+@Component
+@Named("numberOfPotentialMatchesSent")
+@Singleton
+public class NumberOfPotentialMatchesSentProvider implements MetricProvider
 {
-    /**
-     * An endpoint to get MME metrics.
-     *
-     * @return a JSON in the format specified in https://github.com/ga4gh/mme-apis/blob/1.1/metrics-api.md
-     */
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    Response getMetrics();
+    @Inject
+    private MatchStorageManager matchStorageManager;
+
+    @Override
+    public Object compute()
+    {
+        return this.matchStorageManager.getNumberOfRemoteMatches();
+    }
 }
