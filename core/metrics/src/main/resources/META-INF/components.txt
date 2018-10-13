@@ -1,3 +1,8 @@
 org.phenotips.remote.metrics.internal.DefaultMetricsRequestHandler
-org.phenotips.remote.metrics.internal.IncomingMetricsRequestProcessor
-
+org.phenotips.remote.metrics.internal.providers.DateGeneratedProvider
+org.phenotips.remote.metrics.internal.providers.NumberOfCasesProvider
+org.phenotips.remote.metrics.internal.providers.NumberOfCasesWithDiagnosisProvider
+org.phenotips.remote.metrics.internal.providers.NumberOfGenesProvider
+org.phenotips.remote.metrics.internal.providers.NumberOfPotentialMatchesSentProvider
+org.phenotips.remote.metrics.internal.providers.NumberOfSubmittersProvider
+org.phenotips.remote.metrics.internal.providers.NumberOfUniqueGenesProvider

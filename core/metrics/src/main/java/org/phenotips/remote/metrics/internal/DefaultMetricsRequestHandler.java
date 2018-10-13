@@ -18,26 +18,23 @@
 package org.phenotips.remote.metrics.internal;
 
 import org.phenotips.remote.api.ApiConfiguration;
-import org.phenotips.remote.api.ApiDataConverter;
-import org.phenotips.remote.common.ApiFactory;
 import org.phenotips.remote.common.ApplicationConfiguration;
 import org.phenotips.remote.common.RemoteConfigurationManager;
 import org.phenotips.remote.metrics.MetricsRequestHandler;
-import org.phenotips.remote.metrics.MetricsRequestProcessor;
+import org.phenotips.remote.metrics.spi.MetricProvider;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.rest.XWikiResource;
-import org.xwiki.rest.XWikiRestException;
 
-import java.util.regex.Pattern;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 
@@ -59,21 +56,16 @@ public class DefaultMetricsRequestHandler extends XWikiResource implements Metri
     private Logger logger;
 
     @Inject
-    private MetricsRequestProcessor metricsRequestProcessor;
-
-    @Inject
-    private ApiFactory apiFactory;
-
-    @Inject
     private RemoteConfigurationManager remoteConfigurationManager;
 
-    @Override
-    public Response getMetrics(String json) throws XWikiRestException
-    {
-        this.logger.debug("MME MATCH REQUEST; INPUT JSON: [{}]", json);
+    @Inject
+    private Map<String, MetricProvider> providers;
 
+    @Override
+    public Response getMetrics()
+    {
         try {
-            JSONObject jsonResponse;
+            JSONObject jsonResponse = new JSONObject();
 
             // XWiki boilerplate
             XWikiContext context = this.getXWikiContext();
@@ -83,69 +75,39 @@ public class DefaultMetricsRequestHandler extends XWikiResource implements Metri
 
             HttpServletRequest httpRequest = context.getRequest().getHttpServletRequest();
 
-            String apiVersion = this.parseApiVersion(httpRequest.getHeader(ApiConfiguration.HTTPHEADER_API_VERSION));
-            try {
-                ApiDataConverter apiVersionSpecificConverter =
-                    this.apiFactory.getDataConverterForApiVersion(apiVersion);
+            String requestKey = httpRequest.getHeader(ApiConfiguration.HTTPHEADER_KEY_PARAMETER);
+            BaseObject remoteServerConfiguration = this.remoteConfigurationManager
+                .getRemoteConfigurationGivenRemoteIPAndToken(httpRequest.getRemoteAddr(), requestKey, context);
 
-                this.logger.debug("Request version: <<{}>>", apiVersion);
-
-                String requestKey = httpRequest.getHeader(ApiConfiguration.HTTPHEADER_KEY_PARAMETER);
-                BaseObject remoteServerConfiguration = this.remoteConfigurationManager
-                    .getRemoteConfigurationGivenRemoteIPAndToken(httpRequest.getRemoteAddr(), requestKey, context);
-
-                if (remoteServerConfiguration == null) {
-                    jsonResponse = new JSONObject();
-                    jsonResponse.put(ApiConfiguration.REPLY_JSON_HTTP_STATUS, ApiConfiguration.HTTP_UNAUTHORIZED);
-                    jsonResponse.put(ApiConfiguration.REPLY_JSON_ERROR_DESCRIPTION, "unauthorized server");
-                } else {
-                    jsonResponse = this.metricsRequestProcessor.generateMetricsResponse(apiVersionSpecificConverter);
+            if (remoteServerConfiguration == null) {
+                jsonResponse.put(ApiConfiguration.REPLY_JSON_HTTP_STATUS, ApiConfiguration.HTTP_UNAUTHORIZED);
+                jsonResponse.put(ApiConfiguration.REPLY_JSON_ERROR_DESCRIPTION, "unauthorized server");
+            } else {
+                JSONObject metrics = new JSONObject();
+                for (Map.Entry<String, MetricProvider> provider : this.providers.entrySet()) {
+                    try {
+                        metrics.putOpt(provider.getKey(), provider.getValue().compute());
+                    } catch (Exception ex) {
+                        this.logger.error("Error computing {} for MME metrics: {}", provider.getKey(), ex.getMessage(),
+                            ex);
+                    }
                 }
-            } catch (IllegalArgumentException ex) {
-                this.logger.error("Incorrect incoming request: unsupported API version: [{}]", apiVersion);
-                jsonResponse = new JSONObject();
-                jsonResponse.put(ApiConfiguration.REPLY_JSON_HTTP_STATUS,
-                    ApiConfiguration.HTTP_UNSUPPORTED_API_VERSION);
-                jsonResponse.put(ApiConfiguration.REPLY_JSON_ERROR_DESCRIPTION,
-                    "unsupported API version");
-                jsonResponse.put(ApiConfiguration.REPLY_JSON_SUPPORTEDVERSIONS,
-                    new JSONArray(this.apiFactory.getSupportedApiVersions()));
-                apiVersion = ApiConfiguration.LATEST_API_VERSION_STRING;
-            } catch (Exception ex) {
-                jsonResponse = new JSONObject();
-                jsonResponse.put(ApiConfiguration.REPLY_JSON_HTTP_STATUS,
-                    ApiConfiguration.HTTP_SERVER_ERROR);
-                apiVersion = ApiConfiguration.LATEST_API_VERSION_STRING;
+                jsonResponse.put("metrics", metrics);
             }
-
             this.logger.debug("RESPONSE JSON: [{}]", jsonResponse.toString());
 
             Integer status = (Integer) jsonResponse.remove(ApiConfiguration.REPLY_JSON_HTTP_STATUS);
             if (status == null) {
-                status = ApiConfiguration.HTTP_SERVER_ERROR;
+                status = ApiConfiguration.HTTP_OK;
             }
 
             ResponseBuilder response = Response.status(status);
             response.entity(jsonResponse.toString());
-            response.type(this.generateContentType(apiVersion));
+            response.type(MediaType.APPLICATION_JSON_TYPE);
             return response.build();
         } catch (Exception ex) {
             this.logger.error("Could not process remote metrics request: {}", ex.getMessage(), ex);
             return Response.status(ApiConfiguration.HTTP_SERVER_ERROR).build();
         }
-    }
-
-    private String parseApiVersion(String apiHeader)
-    {
-        String result = apiHeader.replaceAll("^" + Pattern.quote(ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX)
-            + "(\\d+\\.\\d+)" + Pattern.quote(ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX) + "(.*)$", "$1");
-        this.logger.debug("Request api version: [{}]", result);
-        return result;
-    }
-
-    private String generateContentType(String apiVersion)
-    {
-        return ApiConfiguration.HTTPHEADER_CONTENT_TYPE_PREFIX + apiVersion
-            + ApiConfiguration.HTTPHEADER_CONTENT_TYPE_SUFFIX;
     }
 }

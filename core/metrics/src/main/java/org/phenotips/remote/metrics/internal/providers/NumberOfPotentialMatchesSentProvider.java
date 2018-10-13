@@ -15,35 +15,33 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/
  */
-package org.phenotips.remote.api;
+package org.phenotips.remote.metrics.internal.providers;
 
-import org.phenotips.data.similarity.PatientSimilarityView;
-import org.phenotips.remote.api.fromjson.IncomingJSONParser;
-import org.phenotips.remote.api.tojson.OutgoingJSONGenerator;
+import org.phenotips.matchingnotification.storage.MatchStorageManager;
+import org.phenotips.remote.metrics.spi.MetricProvider;
 
-import org.xwiki.component.annotation.Role;
+import org.xwiki.component.annotation.Component;
 
-import java.util.List;
-
-import org.json.JSONObject;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 
 /**
- * Converts matching requests and replies to and from JSON.
+ * Computes the number of potential matches returned by this node as the result of all MME requests.
  *
  * @version $Id$
  */
-@Role
-public interface ApiDataConverter
+@Component
+@Named("numberOfPotentialMatchesSent")
+@Singleton
+public class NumberOfPotentialMatchesSentProvider implements MetricProvider
 {
-    String getApiVersion();
+    @Inject
+    private MatchStorageManager matchStorageManager;
 
-    JSONObject generateWrongInputDataResponse(String reasonMsg);
-
-    JSONObject generateInternalServerErrorResponse(String reasonMsg);
-
-    IncomingJSONParser getIncomingJSONParser();
-
-    JSONObject generateServerResponse(IncomingMatchRequest request, List<PatientSimilarityView> resultList);
-
-    OutgoingJSONGenerator getOutgoingJSONGenerator();
+    @Override
+    public Object compute()
+    {
+        return this.matchStorageManager.getNumberOfRemoteMatches();
+    }
 }
