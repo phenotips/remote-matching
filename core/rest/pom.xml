@@ -32,6 +32,10 @@
   <name>Remote Matching - Core - REST</name>
   <dependencies>
     <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-store-api</artifactId>
       <version>${xwiki.version}</version>
@@ -114,11 +118,6 @@
     <dependency>
       <groupId>javax.ws.rs</groupId>
       <artifactId>jsr311-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>annotations</artifactId>
-      <version>3.0.1u2</version>
     </dependency>
     <dependency>
       <groupId>org.json</groupId>
