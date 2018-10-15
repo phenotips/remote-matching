@@ -17,7 +17,7 @@
  */
 package org.phenotips.remote.client.internal;
 
-import org.phenotips.data.ConsentManager;
+import org.phenotips.consents.ConsentManager;
 import org.phenotips.data.Patient;
 import org.phenotips.matchingnotification.finder.MatchFinder;
 import org.phenotips.matchingnotification.finder.internal.AbstractMatchFinder;
@@ -118,7 +118,7 @@ public class RemoteMatchFinder extends AbstractMatchFinder implements MatchFinde
     {
         if (request != null && request.errorContactingRemoteServer()) {
             this.logger.error("Unable to connect to remote server [{}] to send a request for patient [{}]",
-                    remoteId, patientId);
+                remoteId, patientId);
             return MatchRunStatus.ERROR;
         }
 

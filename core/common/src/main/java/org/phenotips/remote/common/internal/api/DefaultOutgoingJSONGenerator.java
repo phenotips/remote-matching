@@ -74,7 +74,7 @@ public class DefaultOutgoingJSONGenerator implements OutgoingJSONGenerator
             if ((!patientJson.has(ApiConfiguration.JSON_FEATURES)
                 || patientJson.getJSONArray(ApiConfiguration.JSON_FEATURES).length() == 0)
                 && (!patientJson.has(ApiConfiguration.JSON_GENES)
-                    || patientJson.getJSONArray(ApiConfiguration.JSON_GENES).length() == 0)) {
+                || patientJson.getJSONArray(ApiConfiguration.JSON_GENES).length() == 0)) {
                 this.logger.error("Can't send a query for a patient with no features and no genes");
                 throw new ApiViolationException("Can't send a query for a patient with no features and no genes");
             }
@@ -105,7 +105,7 @@ public class DefaultOutgoingJSONGenerator implements OutgoingJSONGenerator
         String accessLevelName = "view";
         // TODO: should access rights should be checked in the script service?
         if (!this.access.hasAccess(Right.toRight(accessLevelName), this.bridge.getCurrentUserReference(),
-            patient.getDocument())) {
+            patient.getDocumentReference())) {
             this.logger.error("Can't send outgoing matching request for patient [{}]: no access level [{}]",
                 patientID, accessLevelName);
             return null;

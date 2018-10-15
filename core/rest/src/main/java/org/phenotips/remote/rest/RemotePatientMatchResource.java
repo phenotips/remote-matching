@@ -37,7 +37,7 @@ import javax.ws.rs.core.Response;
  * @since 1.1
  */
 @Unstable("New API introduced in 1.1")
-@Path("/patients/{patient-id}/similar-remote-cases")
+@Path("/patients/{entity-id}/similar-remote-cases")
 @Relation("https://phenotips.org/rel/patientSimilarityRemote")
 @ParentResource(PatientResource.class)
 public interface RemotePatientMatchResource
@@ -66,5 +66,5 @@ public interface RemotePatientMatchResource
      */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    Response findRemoteMatchingPatients(@PathParam("patient-id") String patientId);
+    Response findRemoteMatchingPatients(@PathParam("entity-id") String patientId);
 }
