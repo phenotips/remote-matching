@@ -19,7 +19,6 @@ package org.phenotips.remote.metrics.internal;
 
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.common.ApplicationConfiguration;
-import org.phenotips.remote.common.RemoteConfigurationManager;
 import org.phenotips.remote.metrics.MetricsRequestHandler;
 import org.phenotips.remote.metrics.spi.MetricProvider;
 
@@ -30,7 +29,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -41,7 +39,6 @@ import org.slf4j.Logger;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.objects.BaseObject;
 
 /**
  * Resource for implementing the MME API of metrics endpoint.
@@ -54,9 +51,6 @@ public class DefaultMetricsRequestHandler extends XWikiResource implements Metri
 {
     @Inject
     private Logger logger;
-
-    @Inject
-    private RemoteConfigurationManager remoteConfigurationManager;
 
     @Inject
     private Map<String, MetricProvider> providers;
@@ -73,27 +67,17 @@ public class DefaultMetricsRequestHandler extends XWikiResource implements Metri
             XWikiDocument currentDoc = wiki.getDocument(ApplicationConfiguration.ABSOLUTE_DOCUMENT_REFERENCE, context);
             context.setDoc(currentDoc);
 
-            HttpServletRequest httpRequest = context.getRequest().getHttpServletRequest();
-
-            String requestKey = httpRequest.getHeader(ApiConfiguration.HTTPHEADER_KEY_PARAMETER);
-            BaseObject remoteServerConfiguration = this.remoteConfigurationManager
-                .getRemoteConfigurationGivenRemoteIPAndToken(httpRequest.getRemoteAddr(), requestKey, context);
-
-            if (remoteServerConfiguration == null) {
-                jsonResponse.put(ApiConfiguration.REPLY_JSON_HTTP_STATUS, ApiConfiguration.HTTP_UNAUTHORIZED);
-                jsonResponse.put(ApiConfiguration.REPLY_JSON_ERROR_DESCRIPTION, "unauthorized server");
-            } else {
-                JSONObject metrics = new JSONObject();
-                for (Map.Entry<String, MetricProvider> provider : this.providers.entrySet()) {
-                    try {
-                        metrics.putOpt(provider.getKey(), provider.getValue().compute());
-                    } catch (Exception ex) {
-                        this.logger.error("Error computing {} for MME metrics: {}", provider.getKey(), ex.getMessage(),
-                            ex);
-                    }
+            JSONObject metrics = new JSONObject();
+            for (Map.Entry<String, MetricProvider> provider : this.providers.entrySet()) {
+                try {
+                    metrics.putOpt(provider.getKey(), provider.getValue().compute());
+                } catch (Exception ex) {
+                    this.logger.error("Error computing {} for MME metrics: {}", provider.getKey(), ex.getMessage(),
+                        ex);
                 }
-                jsonResponse.put("metrics", metrics);
             }
+            jsonResponse.put("metrics", metrics);
+
             this.logger.debug("RESPONSE JSON: [{}]", jsonResponse.toString());
 
             Integer status = (Integer) jsonResponse.remove(ApiConfiguration.REPLY_JSON_HTTP_STATUS);
