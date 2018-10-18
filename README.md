@@ -1,6 +1,9 @@
 Remote matching module [VERSION 1.0]
 =======================
 
+## Current Build Status ##
+Jenkins CI : [![Build Status](https://ci.phenotips.org/job/remote-matching/badge/icon)](https://ci.phenotips.org/job/remote-matching)
+
 * Implements [v1.0 of the MME specification](https://github.com/ga4gh/mme-apis/tree/v1.0a).
 
 #####Installation (some experience with PhenoTips/XWiki required):
