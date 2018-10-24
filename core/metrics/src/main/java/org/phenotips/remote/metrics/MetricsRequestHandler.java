@@ -19,8 +19,6 @@ package org.phenotips.remote.metrics;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
@@ -37,6 +35,5 @@ public interface MetricsRequestHandler
      * @return a JSON in the format specified in https://github.com/ga4gh/mme-apis/blob/1.1/metrics-api.md
      */
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
     Response getMetrics();
 }
