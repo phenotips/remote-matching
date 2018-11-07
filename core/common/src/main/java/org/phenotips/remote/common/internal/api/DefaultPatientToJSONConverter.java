@@ -23,6 +23,7 @@ import org.phenotips.data.Feature;
 import org.phenotips.data.FeatureMetadatum;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientData;
+import org.phenotips.data.internal.SolvedData;
 import org.phenotips.data.similarity.PatientGenotype;
 import org.phenotips.data.similarity.genotype.DefaultPatientGenotype;
 import org.phenotips.remote.api.ApiConfiguration;
@@ -107,11 +108,11 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         String institution = "PhenomeCentral";
         String href = "";
 
-        String solvedPubmedID = getSolvedPubmedID(patient);
-        if (StringUtils.isNotBlank(solvedPubmedID)) {
-            // for solved cases which have PubMedID send the link to the article
+        List<String> solvedPubmedIDs = getSolvedPubmedID(patient);
+        if (solvedPubmedIDs != null) {
+            // for solved cases which have PubMedIDs send the link to the first article
             // instead of sending user contact information
-            href = PUBMED_BASE_URL + solvedPubmedID;
+            href = PUBMED_BASE_URL + solvedPubmedIDs.get(0);
         } else {
             href = "mailto:";
             PatientData<ContactInfo> data = patient.getData("contact");
@@ -143,15 +144,17 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         return contactJson;
     }
 
-    private static String getSolvedPubmedID(Patient patient)
+    private static List<String> getSolvedPubmedID(Patient patient)
     {
-        PatientData<String> data = patient.getData("solved");
-        if (data != null && data.size() > 0) {
-            if ("1".equals(data.get("solved"))) {
-                String pubmed = data.get("solved__pubmed_id");
-                if (!StringUtils.isBlank(pubmed)) {
-                    return pubmed;
-                }
+        PatientData<SolvedData> data = patient.getData("solved");
+        if (data == null) {
+            return null;
+        }
+        SolvedData patientData = data.getValue();
+        if ("1".equals(patientData.getStatus())) {
+            List<String> pubmedIds = patientData.getPubmedIds();
+            if (!pubmedIds.isEmpty()) {
+                return pubmedIds;
             }
         }
         return null;
@@ -273,26 +276,26 @@ public class DefaultPatientToJSONConverter implements PatientToJSONConverter
         return ApiConfiguration.JSON_PATIENT_GENDER_OTHER;
     }
 
-//    private static Map<String, String> globalQualifiers(Patient patient)
-//    {
-//        Map<String, String> globalQualifiers = new HashMap<String, String>();
-//        Map<String, String> remappedGlobalQualifierStrings = new HashMap<String, String>();
-//        remappedGlobalQualifierStrings.put("global_age_of_onset", "age_of_onset");
-//        remappedGlobalQualifierStrings.put("global_mode_of_inheritance", "mode_of_inheritance");
-//        // These are the actual qualifiers, that are remapped to have the keys compliant with the remote JSON standard.
-//        PatientData<ImmutablePair<String, SolrOntologyTerm>> existingQualifiers =
-//            patient.<ImmutablePair<String, SolrOntologyTerm>>getData("global-qualifiers");
-//        if (globalQualifiers != null) {
-//            for (ImmutablePair<String, SolrOntologyTerm> qualifierPair : existingQualifiers) {
-//                for (String key : remappedGlobalQualifierStrings.keySet()) { // Could do contains, but is it safe?
-//                    if (StringUtils.equalsIgnoreCase(qualifierPair.getLeft(), key)) {
-//                        globalQualifiers.put(remappedGlobalQualifierStrings.get(key), qualifierPair.getRight().getId());
-//                        break;
-//                    }
-//                }
-//            }
-//        }
-//        return globalQualifiers;
-//    }
+    // private static Map<String, String> globalQualifiers(Patient patient)
+    // {
+    // Map<String, String> globalQualifiers = new HashMap<String, String>();
+    // Map<String, String> remappedGlobalQualifierStrings = new HashMap<String, String>();
+    // remappedGlobalQualifierStrings.put("global_age_of_onset", "age_of_onset");
+    // remappedGlobalQualifierStrings.put("global_mode_of_inheritance", "mode_of_inheritance");
+    // // These are the actual qualifiers, that are remapped to have the keys compliant with the remote JSON standard.
+    // PatientData<ImmutablePair<String, SolrOntologyTerm>> existingQualifiers =
+    // patient.<ImmutablePair<String, SolrOntologyTerm>>getData("global-qualifiers");
+    // if (globalQualifiers != null) {
+    // for (ImmutablePair<String, SolrOntologyTerm> qualifierPair : existingQualifiers) {
+    // for (String key : remappedGlobalQualifierStrings.keySet()) { // Could do contains, but is it safe?
+    // if (StringUtils.equalsIgnoreCase(qualifierPair.getLeft(), key)) {
+    // globalQualifiers.put(remappedGlobalQualifierStrings.get(key), qualifierPair.getRight().getId());
+    // break;
+    // }
+    // }
+    // }
+    // }
+    // return globalQualifiers;
+    // }
 
 }

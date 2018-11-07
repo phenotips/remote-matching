@@ -55,7 +55,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJSONToMatchingPatientConverter.class);
 
     // note: different API versions may have different patterns, may need to add support
-    //       for multiple patterns when we support multiple API versions
+    // for multiple patterns when we support multiple API versions
 
     private static final Pattern HPO_TERM_PATTERN = Pattern.compile("^HP:\\d+$");
 
@@ -85,21 +85,21 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
 
     static {
         Vocabulary mim = null;
-        Vocabulary hpo  = null;
+        Vocabulary hpo = null;
         Vocabulary hgnc = null;
         Vocabulary ordo = null;
         try {
             ComponentManager ccm = ComponentManagerRegistry.getContextComponentManager();
             VocabularyManager vm = ccm.getInstance(VocabularyManager.class);
-            mim  = vm.getVocabulary("MIM");
-            hpo  = vm.getVocabulary("HPO");
+            mim = vm.getVocabulary("MIM");
+            hpo = vm.getVocabulary("HPO");
             hgnc = vm.getVocabulary("HGNC");
             ordo = vm.getVocabulary("ORDO");
         } catch (ComponentLookupException e) {
             LOGGER.error("Error loading static components: {}", e.getMessage(), e);
         }
-        MIM_VOCABULARY  = mim;
-        HPO_VOCABULARY  = hpo;
+        MIM_VOCABULARY = mim;
+        HPO_VOCABULARY = hpo;
         HGNC_VOCABULARY = hgnc;
         ORDO_VOCABULARY = ordo;
     }
@@ -124,14 +124,14 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
 
     public boolean hasLoggedMinorErrors()
     {
-        return !this.groupedUnsupportedFeatures.isEmpty() || !this.groupedUnsupportedDisorders.isEmpty() ;
+        return !this.groupedUnsupportedFeatures.isEmpty() || !this.groupedUnsupportedDisorders.isEmpty();
     }
 
     private void logUnsuportedFeatures(Set<String> unsupportedFeatureIdList)
     {
         if (unsupportedFeatureIdList.size() > 0) {
             LOGGER.error("Patient feature parser: received {} unsupported terms: [{}]",
-                    unsupportedFeatureIdList.size(), String.join(",",unsupportedFeatureIdList));
+                unsupportedFeatureIdList.size(), String.join(",", unsupportedFeatureIdList));
         }
     }
 
@@ -139,7 +139,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
     {
         if (unsupportedDisorderIdList.size() > 0) {
             LOGGER.error("Patient disorders parser: ignored {} unsupported disorders: [{}]",
-                    unsupportedDisorderIdList.size(), String.join(",",unsupportedDisorderIdList));
+                unsupportedDisorderIdList.size(), String.join(",", unsupportedDisorderIdList));
         }
     }
 
@@ -172,7 +172,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
             String label = patientJSON.optString(ApiConfiguration.JSON_PATIENT_LABEL, null);
 
             RemoteMatchingPatient patient = new RemoteMatchingPatient(remotePatientId, label, features, disorders,
-                 genes, contactInfo);
+                genes, contactInfo);
 
             return patient;
         } catch (ApiViolationException ex) {
@@ -314,7 +314,8 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                     ? jsonGeneId.optString(ApiConfiguration.JSON_GENES_GENE_ID) : "";
 
                 if (StringUtils.isBlank(geneName)) {
-                    LOGGER.error("Patient genomic features parser: gene has no id");
+                    LOGGER.error("Patient genomic features parser: gene has no id in JSON [{}]",
+                        jsonGenomicFeature.toString());
                     continue;
                 }
                 String geneId;
@@ -324,7 +325,8 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                         LOGGER.debug("Converted incoming gene id [{}] to symbol [{}]", geneName, geneId);
                     }
                 } catch (Exception ex) {
-                    LOGGER.error("Patient genomic features parser: can not obtain gene symbol for gene ID [{}]", geneName);
+                    LOGGER.error("Patient genomic features parser: can not obtain gene symbol for gene ID [{}]",
+                        geneName);
                     continue;
                 }
                 MatchingPatientGene gene = new RemotePatientGene(geneId);
