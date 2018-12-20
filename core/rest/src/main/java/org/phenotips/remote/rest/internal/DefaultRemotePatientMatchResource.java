@@ -176,7 +176,7 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
                 return Response.status(Response.Status.NOT_ACCEPTABLE).build();
             }
 
-            return buildMatches(patient, remoteResponse, offset, limit, reqNo);
+            return buildMatches(patient, remoteResponse, offset, limit, reqNo, newRequest);
         } catch (final SecurityException e) {
             this.slf4Jlogger.error("Failed to retrieve patient with ID [{}]: {}", patientId, e.getMessage());
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -197,6 +197,8 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
      * @param offset the offset for the returned matches
      * @param limit the maximum number of matches to return after the offset
      * @param reqNo the current request number
+     * @param saveMatchesToNotificationTable when true, the matches parsed from the mmeMatchRequest will
+     *        be saved into the matching notification database
      * @return a {@link Response} containing the matched patients data
      */
     private Response buildMatches(
@@ -204,12 +206,15 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
         @Nonnull final OutgoingMatchRequest mmeMatchRequest,
         final int offset,
         final int limit,
-        final int reqNo)
+        final int reqNo,
+        final boolean saveMatchesToNotificationTable)
     {
         final List<RemotePatientSimilarityView> matches = this.matchingService.getSimilarityResults(mmeMatchRequest);
 
-        this.matchStorageManager.saveRemoteMatches(matches, patient.getId(),
-            mmeMatchRequest.getRemoteServerId(), false);
+        if (saveMatchesToNotificationTable) {
+            this.matchStorageManager.saveRemoteMatches(matches, patient.getId(),
+                mmeMatchRequest.getRemoteServerId(), false);
+        }
 
         final MatchedPatientClusterView matchedCluster =
             new RemoteMatchedPatientClusterView(patient, mmeMatchRequest, matches);
