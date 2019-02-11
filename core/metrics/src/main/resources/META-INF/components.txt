@@ -6,3 +6,9 @@ org.phenotips.remote.metrics.internal.providers.NumberOfGenesProvider
 org.phenotips.remote.metrics.internal.providers.NumberOfPotentialMatchesSentProvider
 org.phenotips.remote.metrics.internal.providers.NumberOfSubmittersProvider
 org.phenotips.remote.metrics.internal.providers.NumberOfUniqueGenesProvider
+org.phenotips.remote.metrics.internal.providers.NumberOfVariantsProvider
+org.phenotips.remote.metrics.internal.providers.NumberOfUniqueVariantsProvider
+org.phenotips.remote.metrics.internal.providers.NumberOfCasesWithFeaturesProvider
+org.phenotips.remote.metrics.internal.providers.NumberOfFeaturesProvider
+org.phenotips.remote.metrics.internal.providers.NumberOfUniqueFeaturesProvider
+org.phenotips.remote.metrics.internal.providers.NumberOfRequestsReceivedProvider
