@@ -53,12 +53,15 @@ public class NumberOfVariantsProvider implements MetricProvider
             Query q = session.createQuery("select count (variantObj.name) from "
                 + HQL_BASE_MME_PATIENT_FILTER_FROM
                 + ", BaseObject geneObj, BaseObject variantObj, StringProperty geneStatusProp"
-                + " where "
+                + ", StringProperty geneIDProp, StringProperty variantGeneProp where "
                 + HQL_BASE_MME_PATIENT_FILTER_WHERE
                 + " and geneObj.name = doc.fullName and geneObj.className = 'PhenoTips.GeneClass'"
                 + " and variantObj.name = doc.fullName and variantObj.className = 'PhenoTips.GeneVariantClass'"
                 + " and geneStatusProp.id.id = geneObj.id and geneStatusProp.id.name = 'status'"
-                + " and geneStatusProp.value in ('candidate', 'solved')");
+                + " and geneStatusProp.value in ('candidate', 'solved')"
+                + " and variantGeneProp.id.id = variantObj.id and variantGeneProp.id.name = 'gene'"
+                + " and geneIDProp.id.id = geneObj.id and geneIDProp.id.name = 'gene'"
+                + " and geneIDProp.value = variantGeneProp.value");
             return q.uniqueResult();
         } finally {
             if (session != null) {
