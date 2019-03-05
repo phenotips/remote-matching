@@ -195,33 +195,37 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
             JSONArray featuresJson = json.optJSONArray(ApiConfiguration.JSON_FEATURES);
 
             for (Object jsonFeatureUncast : featuresJson) {
-                JSONObject jsonFeature = (JSONObject) jsonFeatureUncast;
-                String id = jsonFeature.getString(ApiConfiguration.JSON_FEATURE_ID).toUpperCase();
+                try {
+                    JSONObject jsonFeature = (JSONObject) jsonFeatureUncast;
+                    String id = jsonFeature.getString(ApiConfiguration.JSON_FEATURE_ID).toUpperCase().trim();
 
-                if (!HPO_TERM_PATTERN.matcher(id).matches()) {
-                    ignoredTerms.add(id);
-                    // save this term as a free text term using its label, if available
-                    String label = jsonFeature.getString(ApiConfiguration.JSON_FEATURE_LABEL);
-                    if (StringUtils.isNotBlank(label)) {
-                        id = label;
+                    if (!HPO_TERM_PATTERN.matcher(id).matches()) {
+                        ignoredTerms.add(id);
+                        // save this term as a free text term using its label, if available
+                        String label = jsonFeature.getString(ApiConfiguration.JSON_FEATURE_LABEL);
+                        if (StringUtils.isNotBlank(label)) {
+                            id = label;
+                        }
                     }
+
+                    // resolve the given feature identifier to an human phenotype ontology feature ID
+                    VocabularyTerm term = HPO_VOCABULARY.getTerm(id);
+                    id = (term != null) ? term.getId() : id;
+
+                    String observed = jsonFeature.optString(ApiConfiguration.JSON_FEATURE_OBSERVED,
+                        ApiConfiguration.JSON_FEATURE_OBSERVED_YES).toLowerCase();
+                    if (!observed.equals(ApiConfiguration.JSON_FEATURE_OBSERVED_YES) &&
+                        !observed.equals(ApiConfiguration.JSON_FEATURE_OBSERVED_NO)) {
+                        LOGGER.error("Patient feature parser: ignoring term with unsupported observed status [{}]",
+                            observed);
+                        continue;
+                    }
+
+                    Feature feature = new RemotePatientFeature(id, observed);
+                    featureSet.add(feature);
+                } catch (Exception ex) {
+                    LOGGER.error("Error converting a single feature: [{}]", ex);
                 }
-
-                // resolve the given feature identifier to an human phenotype ontology feature ID
-                VocabularyTerm term = HPO_VOCABULARY.getTerm(id);
-                id = (term != null) ? term.getId() : id;
-
-                String observed = jsonFeature.optString(ApiConfiguration.JSON_FEATURE_OBSERVED,
-                    ApiConfiguration.JSON_FEATURE_OBSERVED_YES).toLowerCase();
-                if (!observed.equals(ApiConfiguration.JSON_FEATURE_OBSERVED_YES) &&
-                    !observed.equals(ApiConfiguration.JSON_FEATURE_OBSERVED_NO)) {
-                    LOGGER.error("Patient feature parser: ignoring term with unsupported observed status [{}]",
-                        observed);
-                    continue;
-                }
-
-                Feature feature = new RemotePatientFeature(id, observed);
-                featureSet.add(feature);
             }
 
             // print all rejected terms together in order not to clutter the log
@@ -254,28 +258,32 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
             JSONArray disorderJson = json.optJSONArray(ApiConfiguration.JSON_DISORDERS);
 
             for (Object jsonDisorderUncast : disorderJson) {
-                JSONObject jsonDisorder = (JSONObject) jsonDisorderUncast;
-                String id = jsonDisorder.getString(ApiConfiguration.JSON_DISORDER_ID);
-                String label = jsonDisorder.optString(ApiConfiguration.JSON_DISORDER_LABEL, null);
+                try {
+                    JSONObject jsonDisorder = (JSONObject) jsonDisorderUncast;
+                    String id = jsonDisorder.getString(ApiConfiguration.JSON_DISORDER_ID).trim();
+                    String label = jsonDisorder.optString(ApiConfiguration.JSON_DISORDER_LABEL, null);
 
-                if (MIM_DISORDER_TERM_PATTERN.matcher(id).matches()) {
-                    // resolve the given disease identifier to a MIM ontology disease ID
-                    VocabularyTerm term = MIM_VOCABULARY.getTerm(id);
-                    // since MIM vocabulary terms ids are stored in solr without prefix
-                    // prefix has to be manually added to every id
-                    id = (term != null) ? "MIM:" + term.getId() : id;
-                } else if (ORPHANET_DISORDER_TERM_PATTERN.matcher(id).matches()) {
-                    id = id.replace(ApiConfiguration.JSON_DISORDER_ORPHANET_PREFIX, "ORDO:");
-                    // resolve the given disease identifier to a ORDO ontology disease ID
-                    VocabularyTerm term = ORDO_VOCABULARY.getTerm(id);
-                    id = (term != null) ? term.getId() : id;
-                } else {
-                    ignoredTerms.add(id);
-                    continue;
+                    if (MIM_DISORDER_TERM_PATTERN.matcher(id).matches()) {
+                        // resolve the given disease identifier to a MIM ontology disease ID
+                        VocabularyTerm term = MIM_VOCABULARY.getTerm(id);
+                        // since MIM vocabulary terms ids are stored in solr without prefix
+                        // prefix has to be manually added to every id
+                        id = (term != null) ? "MIM:" + term.getId() : id;
+                    } else if (ORPHANET_DISORDER_TERM_PATTERN.matcher(id).matches()) {
+                        id = id.replace(ApiConfiguration.JSON_DISORDER_ORPHANET_PREFIX, "ORDO:");
+                        // resolve the given disease identifier to a ORDO ontology disease ID
+                        VocabularyTerm term = ORDO_VOCABULARY.getTerm(id);
+                        id = (term != null) ? term.getId() : id;
+                    } else {
+                        ignoredTerms.add(id);
+                        continue;
+                    }
+
+                    Disorder disorder = new RemotePatientDisorder(id, label);
+                    disorderSet.add(disorder);
+                } catch (Exception ex) {
+                    LOGGER.error("Error converting a single disorder: [{}]", ex);
                 }
-
-                Disorder disorder = new RemotePatientDisorder(id, label);
-                disorderSet.add(disorder);
             }
 
             // print all rejected disorders together in order not to clutter the log
@@ -291,7 +299,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
 
             return disorderSet;
         } catch (Exception ex) {
-            LOGGER.error("Error converting disorders: {}", ex);
+            LOGGER.error("Error converting disorders: [{}]", ex);
         }
         return null;
     }
