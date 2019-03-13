@@ -45,7 +45,7 @@
   <scm>
     <connection>scm:git:git://github.com/phenotips/remote-matching.git</connection>
     <developerConnection>scm:git:git@github.com:phenotips/remote-matching.git</developerConnection>
-    <url>https://github.com/phenotips/remote-matching.git/tree/master/</url>
+    <url>https://github.com/phenotips/remote-matching/tree/stable-1.2.x/</url>
     <tag>stable-1.2.x</tag>
   </scm>
 
