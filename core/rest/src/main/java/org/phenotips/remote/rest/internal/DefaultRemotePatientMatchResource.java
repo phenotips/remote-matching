@@ -20,19 +20,21 @@ package org.phenotips.remote.rest.internal;
 import org.phenotips.data.Patient;
 import org.phenotips.data.PatientRepository;
 import org.phenotips.data.similarity.MatchedPatientClusterView;
+import org.phenotips.data.similarity.PatientSimilarityView;
+import org.phenotips.matchingnotification.match.PatientMatch;
 import org.phenotips.matchingnotification.storage.MatchStorageManager;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.client.RemoteMatchingService;
 import org.phenotips.remote.common.internal.RemotePatientSimilarityView;
 import org.phenotips.remote.rest.RemotePatientMatchResource;
-
 import org.xwiki.component.annotation.Component;
 import org.xwiki.container.Container;
 import org.xwiki.container.Request;
 import org.xwiki.rest.XWikiResource;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -176,7 +178,7 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
                 return Response.status(Response.Status.NOT_ACCEPTABLE).build();
             }
 
-            return buildMatches(patient, remoteResponse, offset, limit, reqNo, newRequest);
+            return buildMatches(patient, remoteResponse, offset, limit, reqNo);
         } catch (final SecurityException e) {
             this.slf4Jlogger.error("Failed to retrieve patient with ID [{}]: {}", patientId, e.getMessage());
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -197,8 +199,6 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
      * @param offset the offset for the returned matches
      * @param limit the maximum number of matches to return after the offset
      * @param reqNo the current request number
-     * @param saveMatchesToNotificationTable when true, the matches parsed from the mmeMatchRequest will
-     *        be saved into the matching notification database
      * @return a {@link Response} containing the matched patients data
      */
     private Response buildMatches(
@@ -206,18 +206,21 @@ public class DefaultRemotePatientMatchResource extends XWikiResource implements 
         @Nonnull final OutgoingMatchRequest mmeMatchRequest,
         final int offset,
         final int limit,
-        final int reqNo,
-        final boolean saveMatchesToNotificationTable)
+        final int reqNo)
     {
         final List<RemotePatientSimilarityView> matches = this.matchingService.getSimilarityResults(mmeMatchRequest);
 
-        if (saveMatchesToNotificationTable) {
-            this.matchStorageManager.saveRemoteMatches(matches, patient.getId(),
-                mmeMatchRequest.getRemoteServerId(), false);
-        }
+        // FIXME saveRemoteMatches() is the most reliable way to get PatientMatch ids corresponding to
+        //       SimilarityViews. However this is inefficient (though with latest Pn code supposedly nothing will
+        //       be written to the DB if matches do not change), and in the future we need to combine
+        //       SimilarityView and PatientMatch and operate on a single entity, which would be obtained from
+        //       a single table.
+
+        final Map<PatientSimilarityView, PatientMatch> matchMapping = this.matchStorageManager.saveRemoteMatches(
+                matches, patient.getId(), mmeMatchRequest.getRemoteServerId(), false);
 
         final MatchedPatientClusterView matchedCluster =
-            new RemoteMatchedPatientClusterView(patient, mmeMatchRequest, matches);
+            new RemoteMatchedPatientClusterView(patient, mmeMatchRequest, matches, matchMapping);
 
         final JSONObject matchesJson = matchedCluster.toJSON(offset - 1, limit);
         matchesJson.put(REQ_NO, reqNo);
