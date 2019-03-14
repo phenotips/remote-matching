@@ -21,10 +21,12 @@ import org.phenotips.data.Patient;
 import org.phenotips.data.similarity.MatchedPatientClusterView;
 import org.phenotips.data.similarity.PatientSimilarityView;
 import org.phenotips.data.similarity.internal.DefaultMatchedPatientClusterView;
+import org.phenotips.matchingnotification.match.PatientMatch;
 import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.common.internal.RemotePatientSimilarityView;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.annotation.Nonnull;
@@ -52,13 +54,15 @@ public class RemoteMatchedPatientClusterView extends DefaultMatchedPatientCluste
      * @param patient the local reference {@code patient}
      * @param response the response from the remote server, as {@link OutgoingMatchRequest}
      * @param remoteMatches a list of {@link PatientSimilarityView} objects representing remote matching patients
+     * @param matchesIds a map of {@link PatientSimilarityView} objects to the IDs of corresponding matches saved in DB
      */
     public RemoteMatchedPatientClusterView(
         @Nonnull final Patient patient,
         @Nonnull final OutgoingMatchRequest mmeMatchRequest,
-        @Nullable final List<RemotePatientSimilarityView> remoteMatches)
+        @Nullable final List<RemotePatientSimilarityView> remoteMatches,
+        @Nullable final Map<PatientSimilarityView, PatientMatch> matchesIds)
     {
-        super(patient, remoteMatches);
+        super(patient, remoteMatches, matchesIds);
 
         Validate.notNull(mmeMatchRequest, "The remote response must not be null.");
         this.mmeMatchRequest = mmeMatchRequest;

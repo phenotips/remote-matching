@@ -147,19 +147,19 @@ public class RemoteMatchedPatientClusterViewTest
         when(this.response.getResponseJSON()).thenReturn(new JSONObject().put(RESPONSE_JSON, RESPONSE_JSON));
 
         this.matchList = Arrays.asList(this.patient1, this.patient2, this.patient3, this.patient4, this.patient5);
-        this.matches = new RemoteMatchedPatientClusterView(this.reference, this.response, this.matchList);
+        this.matches = new RemoteMatchedPatientClusterView(this.reference, this.response, this.matchList, null);
     }
 
     @Test(expected = NullPointerException.class)
     public void instantiatingClassWithNullPatientThrowsException()
     {
-        new RemoteMatchedPatientClusterView(null, this.response, this.matchList);
+        new RemoteMatchedPatientClusterView(null, this.response, this.matchList, null);
     }
 
     @Test(expected = NullPointerException.class)
     public void instantiatingClassWithNullResponseThrowsException()
     {
-        new RemoteMatchedPatientClusterView(this.reference, null, this.matchList);
+        new RemoteMatchedPatientClusterView(this.reference, null, this.matchList, null);
     }
 
     @Test
@@ -172,7 +172,7 @@ public class RemoteMatchedPatientClusterViewTest
     public void getMatchesReturnsEmptyListIfNoMatchesSet()
     {
         final MatchedPatientClusterView matches = new RemoteMatchedPatientClusterView(this.reference, this.response,
-            Collections.<RemotePatientSimilarityView>emptyList());
+            Collections.<RemotePatientSimilarityView>emptyList(), null);
         Assert.assertTrue(matches.getMatches().isEmpty());
     }
 
@@ -192,7 +192,7 @@ public class RemoteMatchedPatientClusterViewTest
     public void sizeIsZeroIfMatchesIsEmpty()
     {
         final MatchedPatientClusterView matches = new RemoteMatchedPatientClusterView(this.reference, this.response,
-            Collections.<RemotePatientSimilarityView>emptyList());
+            Collections.<RemotePatientSimilarityView>emptyList(), null);
         Assert.assertEquals(0, matches.size());
     }
 
@@ -266,7 +266,7 @@ public class RemoteMatchedPatientClusterViewTest
     public void equalsReturnsTrueForTwoDifferentObjectsWithSameData()
     {
         final MatchedPatientClusterView v2 = new RemoteMatchedPatientClusterView(this.reference, this.response,
-            this.matchList);
+            this.matchList, null);
         Assert.assertTrue(v2.equals(this.matches));
     }
 
@@ -281,7 +281,7 @@ public class RemoteMatchedPatientClusterViewTest
     {
         final OutgoingMatchRequest response2 = mock(OutgoingMatchRequest.class);
         final MatchedPatientClusterView v2 = new RemoteMatchedPatientClusterView(this.reference, response2,
-            this.matchList);
+            this.matchList, null);
         Assert.assertFalse(v2.equals(this.matches));
     }
 
@@ -289,7 +289,7 @@ public class RemoteMatchedPatientClusterViewTest
     public void equalsReturnsFalseForTwoDifferentObjectsWithDifferentReference()
     {
         final MatchedPatientClusterView v2 = new RemoteMatchedPatientClusterView(mock(Patient.class), this.response,
-            this.matchList);
+            this.matchList, null);
         Assert.assertFalse(v2.equals(this.matches));
     }
 
@@ -297,7 +297,7 @@ public class RemoteMatchedPatientClusterViewTest
     public void equalsReturnsFalseForTwoDifferentObjectsWithDifferentMatchList()
     {
         final List<RemotePatientSimilarityView> m2 = Arrays.asList(this.patient1, this.patient2, this.patient3);
-        final MatchedPatientClusterView v2 = new RemoteMatchedPatientClusterView(this.reference, this.response, m2);
+        final MatchedPatientClusterView v2 = new RemoteMatchedPatientClusterView(this.reference, this.response, m2, null);
         Assert.assertFalse(v2.equals(this.matches));
     }
 
@@ -305,7 +305,7 @@ public class RemoteMatchedPatientClusterViewTest
     public void hashCodeIsTheSameForTwoObjectsWithSameData()
     {
         final MatchedPatientClusterView v2 = new RemoteMatchedPatientClusterView(this.reference, this.response,
-            this.matchList);
+            this.matchList, null);
         Assert.assertEquals(v2.hashCode(), this.matches.hashCode());
     }
 }
