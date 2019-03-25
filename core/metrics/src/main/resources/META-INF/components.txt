@@ -12,3 +12,4 @@ org.phenotips.remote.metrics.internal.providers.NumberOfCasesWithFeaturesProvide
 org.phenotips.remote.metrics.internal.providers.NumberOfFeaturesProvider
 org.phenotips.remote.metrics.internal.providers.NumberOfUniqueFeaturesProvider
 org.phenotips.remote.metrics.internal.providers.NumberOfRequestsReceivedProvider
+org.phenotips.remote.metrics.internal.providers.TotalNumberOfCasesProvider
