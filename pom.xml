@@ -27,7 +27,7 @@
     <relativePath />
   </parent>
   <artifactId>remote-matching-parent</artifactId>
-  <version>1.2-SNAPSHOT</version>
+  <version>1.2-rc-3</version>
   <packaging>pom</packaging>
   <name>Remote Matching - Parent POM</name>
   <description>Remote Matching is a module for PhenoTips for interacting with other resources that do searches on patients with rare disorders.</description>
@@ -46,7 +46,7 @@
     <connection>scm:git:git://github.com/phenotips/remote-matching.git</connection>
     <developerConnection>scm:git:git@github.com:phenotips/remote-matching.git</developerConnection>
     <url>https://github.com/phenotips/remote-matching/tree/stable-1.2.x/</url>
-    <tag>stable-1.2.x</tag>
+    <tag>remote-matching-1.2-rc-3</tag>
   </scm>
 
   <organization>
