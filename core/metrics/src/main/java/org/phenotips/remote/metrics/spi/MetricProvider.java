@@ -17,9 +17,12 @@
  */
 package org.phenotips.remote.metrics.spi;
 
+import org.phenotips.data.internal.PhenoTipsGene;
 import org.phenotips.remote.metrics.MetricsRequestHandler;
 
 import org.xwiki.component.annotation.Role;
+
+import java.util.List;
 
 /**
  * Provides a specific metric to be included in a {@link MetricsRequestHandler#getMetrics() metrics response}. The
@@ -49,6 +52,8 @@ public interface MetricProvider
             + " and visibilityObj.name = doc.fullName and visibilityObj.className = 'PhenoTips.VisibilityClass'"
             + " and visibilityProp.id.id = visibilityObj.id and visibilityProp.id.name = 'visibility'"
             + " and visibilityProp.value <> 'private'";
+
+    List<String> GENE_STATUS_VALUES = PhenoTipsGene.getStatusValues();
 
     /**
      * Compute and return a specific metric to be included in the response to a MME metrics query.
