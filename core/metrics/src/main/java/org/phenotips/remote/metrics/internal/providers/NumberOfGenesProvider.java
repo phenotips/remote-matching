@@ -49,6 +49,12 @@ public class NumberOfGenesProvider implements MetricProvider
         Session session = null;
         try {
             session = this.sessionFactory.getSessionFactory().openSession();
+
+            String candidateStatuses = "";
+            GENE_STATUS_VALUES.stream()
+                .filter(status -> status.startsWith("candidate"))
+                .forEach(status -> candidateStatuses.concat("'" + status + "',"));
+
             Query q = session.createQuery("select count (geneObj.name) from "
                 + HQL_BASE_MME_PATIENT_FILTER_FROM
                 + ", BaseObject geneObj, StringProperty geneStatusProp"
@@ -56,7 +62,7 @@ public class NumberOfGenesProvider implements MetricProvider
                 + HQL_BASE_MME_PATIENT_FILTER_WHERE
                 + " and geneObj.name = doc.fullName and geneObj.className = 'PhenoTips.GeneClass'"
                 + " and geneStatusProp.id.id = geneObj.id and geneStatusProp.id.name = 'status'"
-                + " and geneStatusProp.value in ('candidate', 'solved')");
+                + " and geneStatusProp.value in (" + candidateStatuses + " 'solved')");
             return q.uniqueResult();
         } finally {
             if (session != null) {

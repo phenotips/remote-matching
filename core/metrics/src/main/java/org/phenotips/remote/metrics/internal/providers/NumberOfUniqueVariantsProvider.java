@@ -50,6 +50,12 @@ public class NumberOfUniqueVariantsProvider implements MetricProvider
         Session session = null;
         try {
             session = this.sessionFactory.getSessionFactory().openSession();
+
+            String candidateStatuses = "";
+            GENE_STATUS_VALUES.stream()
+                .filter(status -> status.startsWith("candidate"))
+                .forEach(status -> candidateStatuses.concat("'" + status + "',"));
+
             Query q = session.createQuery("select count (distinct variantIDProp.value) from "
                 + HQL_BASE_MME_PATIENT_FILTER_FROM
                 + ", BaseObject geneObj, BaseObject variantObj, StringProperty geneStatusProp"
@@ -58,7 +64,7 @@ public class NumberOfUniqueVariantsProvider implements MetricProvider
                 + " and geneObj.name = doc.fullName and geneObj.className = 'PhenoTips.GeneClass'"
                 + " and variantObj.name = doc.fullName and variantObj.className = 'PhenoTips.GeneVariantClass'"
                 + " and geneStatusProp.id.id = geneObj.id and geneStatusProp.id.name = 'status'"
-                + " and geneStatusProp.value in ('candidate', 'solved')"
+                + " and geneStatusProp.value in (" + candidateStatuses + " 'solved')"
                 + " and variantIDProp.id.id = variantObj.id and variantIDProp.id.name = 'cdna'"
                 + " and variantGeneProp.id.id = variantObj.id and variantGeneProp.id.name = 'gene'"
                 + " and geneIDProp.id.id = geneObj.id and geneIDProp.id.name = 'gene'"
