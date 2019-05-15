@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.phenotips</groupId>
     <artifactId>phenotips-components</artifactId>
-    <version>1.4.6</version>
+    <version>1.4.7</version>
     <relativePath />
   </parent>
   <artifactId>remote-matching-parent</artifactId>
@@ -85,7 +85,7 @@
   </repositories>
 
   <properties>
-    <patientNetwork.version>1.2-SNAPSHOT</patientNetwork.version>
+    <patientNetwork.version>1.2-rc-4</patientNetwork.version>
     <!-- Disable Clirr since this is the first version -->
     <clirr.skip>true</clirr.skip>
     <!-- Codestyle needs to be improved... -->
