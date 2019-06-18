@@ -22,12 +22,11 @@ import org.phenotips.data.Patient;
 import org.phenotips.matchingnotification.finder.MatchFinder;
 import org.phenotips.matchingnotification.finder.internal.AbstractMatchFinder;
 import org.phenotips.matchingnotification.match.PatientMatch;
-import org.phenotips.matchingnotification.match.internal.CurrentPatientMatch;
+import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.client.RemoteMatchingService;
 import org.phenotips.remote.common.ApplicationConfiguration;
 import org.phenotips.remote.common.RemoteConfigurationManager;
-import org.phenotips.remote.common.internal.RemotePatientSimilarityView;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReferenceResolver;
@@ -41,6 +40,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
+import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -82,59 +82,65 @@ public class RemoteMatchFinder extends AbstractMatchFinder implements MatchFinde
     }
 
     @Override
-    protected Set<String> getSupportedServerIdList()
+    public Set<String> getSupportedServerIdList()
     {
         return this.getRemotesList();
     }
 
     @Override
-    protected MatchRunStatus specificFindMatches(Patient patient, String remoteId, List<PatientMatch> matchesList)
+    protected Response specificFindMatches(Patient patient, String remoteId, List<PatientMatch> matchesList)
     {
-        // Checking if a patient has a consent for remote matching
-        if (!this.consentManager.hasConsent(patient, REMOTE_MATCHING_CONSENT_ID)) {
-            this.logger.debug("Skipping patient {}. No consent for remote matching", patient.getId());
-            return MatchRunStatus.NOT_RUN;
+        try {
+            // Checking if a patient has a consent for remote matching
+            if (!this.consentManager.hasConsent(patient, REMOTE_MATCHING_CONSENT_ID)) {
+                this.logger.debug("Skipping patient {}. No consent for remote matching", patient.getId());
+                return Response.status(Response.Status.FORBIDDEN).build();
+            }
+
+            this.logger.debug("Finding remote matches for patient [{}] on server [{}]", patient.getId(), remoteId);
+
+            OutgoingMatchRequest remoteResponse =
+                this.matchingService.sendRequest(patient.getId(), remoteId, ADD_TOP_N_GENES_PARAMETER, matchesList);
+
+            // If the response is null, the request was never initiated.
+            if (remoteResponse == null) {
+                this.logger.warn("Remote match request to [{}] was never initiated for patient [{}]",
+                    remoteId, patient.getId());
+                return Response.status(Response.Status.NO_CONTENT).build();
+            }
+
+            if (!remoteResponse.wasSent()) {
+                if (remoteResponse.errorContactingRemoteServer()) {
+                    this.logger.error("Unable to connect to remote server [{}]", remoteId);
+                    return Response.status(Response.Status.SERVICE_UNAVAILABLE).build();
+                } else {
+                    this.logger.error("Could not initialte an MME match request for patient [{}]", patient.getId());
+                    return Response.status(Response.Status.CONFLICT).build();
+                }
+            }
+            // If no valid reply, retrieve the request status code and the JSON.
+            if (!remoteResponse.gotValidReply()) {
+                if (remoteResponse.getRequestStatusCode().equals(ApiConfiguration.HTTP_UNAUTHORIZED)) {
+                    this.logger.error("Not authorized to contact selected MME server [{}]", remoteId);
+                    return Response.status(Response.Status.UNAUTHORIZED).build();
+                }
+                if (remoteResponse.getRequestStatusCode().equals(ApiConfiguration.HTTP_UNSUPPORTED_API_VERSION)) {
+                    this.logger.error("Unsupported MME version when contacting MME server [{}]", remoteId);
+                    return Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE).build();
+                }
+                this.logger.error("Remote MME server [{}] rejected match request with status code [{}]",
+                    remoteId, remoteResponse.getRequestStatusCode());
+                this.logger.error(" ...and error details: [{}]", remoteResponse.getResponseJSON());
+                return Response.status(Response.Status.NOT_ACCEPTABLE).build();
         }
 
-        this.logger.debug("Finding remote matches for patient [{}] on server [{}]", patient.getId(), remoteId);
+            return Response.status(Response.Status.OK).build();
 
-        OutgoingMatchRequest request =
-            this.matchingService.sendRequest(patient.getId(), remoteId, ADD_TOP_N_GENES_PARAMETER);
-
-        MatchRunStatus status = checkRequestValidity(request, patient.getId(), remoteId);
-        if (status != MatchRunStatus.OK) {
-            return status;
+        } catch (final Exception e) {
+            this.logger.error("Unexpected exception while generating remote matches: {}", e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
 
-        List<RemotePatientSimilarityView> parsedResults = this.matchingService.getSimilarityResults(request);
-        for (RemotePatientSimilarityView result : parsedResults) {
-            PatientMatch match = new CurrentPatientMatch(result, null, remoteId);
-            matchesList.add(match);
-        }
-        return MatchRunStatus.OK;
-    }
-
-    private MatchRunStatus checkRequestValidity(OutgoingMatchRequest request, String patientId, String remoteId)
-    {
-        if (request != null && request.errorContactingRemoteServer()) {
-            this.logger.error("Unable to connect to remote server [{}] to send a request for patient [{}]",
-                remoteId, patientId);
-            return MatchRunStatus.ERROR;
-        }
-
-        if (request == null || !request.wasSent()) {
-            this.logger.error("Request for patientId [{}] was not sent to server [{}]", patientId, remoteId);
-            return MatchRunStatus.NOT_RUN;
-        }
-
-        if (!request.gotValidReply()) {
-            this.logger.error("Request for patientId {}, remoteId {} returned with status code: {}",
-                patientId, remoteId, request.getRequestStatusCode());
-            this.logger.error(" ...and error details: [{}]", request.getResponseJSON());
-            return MatchRunStatus.ERROR;
-        }
-
-        return MatchRunStatus.OK;
     }
 
     private Set<String> getRemotesList()

@@ -24,6 +24,7 @@ import org.phenotips.data.similarity.AccessType;
 import org.phenotips.data.similarity.PatientSimilarityViewFactory;
 import org.phenotips.data.similarity.internal.DefaultAccessType;
 import org.phenotips.matchingnotification.MatchingNotificationManager;
+import org.phenotips.matchingnotification.match.PatientMatch;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.ApiDataConverter;
 import org.phenotips.remote.api.ApiViolationException;
@@ -122,7 +123,8 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
     private MatchingNotificationManager notificationManager;
 
     @Override
-    public OutgoingMatchRequest sendRequest(String patientId, String remoteServerId, int addTopNGenes)
+    public OutgoingMatchRequest sendRequest(String patientId, String remoteServerId, int addTopNGenes,
+        List<PatientMatch> matchesList)
     {
         DefaultOutgoingMatchRequest request =
             new DefaultOutgoingMatchRequest(remoteServerId, ApiConfiguration.LATEST_API_VERSION_STRING, patientId);
@@ -209,7 +211,8 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
 
             if (ApiConfiguration.HTTP_OK.equals(httpStatus)) {
                 List<RemotePatientSimilarityView> parsedResults = this.getSimilarityResults(request);
-                this.notificationManager.saveOutgoingMatches(parsedResults, patientId, request.getRemoteServerId());
+                matchesList.addAll(this.notificationManager.saveOutgoingMatches(parsedResults, patientId,
+                    request.getRemoteServerId()));
             }
 
             return request;
