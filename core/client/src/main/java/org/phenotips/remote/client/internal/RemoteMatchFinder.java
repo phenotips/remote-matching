@@ -22,7 +22,7 @@ import org.phenotips.data.Patient;
 import org.phenotips.matchingnotification.finder.MatchFinder;
 import org.phenotips.matchingnotification.finder.internal.AbstractMatchFinder;
 import org.phenotips.matchingnotification.match.PatientMatch;
-import org.phenotips.matchingnotification.match.internal.DefaultPatientMatch;
+import org.phenotips.matchingnotification.match.internal.CurrentPatientMatch;
 import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.client.RemoteMatchingService;
 import org.phenotips.remote.common.ApplicationConfiguration;
@@ -108,7 +108,7 @@ public class RemoteMatchFinder extends AbstractMatchFinder implements MatchFinde
 
         List<RemotePatientSimilarityView> parsedResults = this.matchingService.getSimilarityResults(request);
         for (RemotePatientSimilarityView result : parsedResults) {
-            PatientMatch match = new DefaultPatientMatch(result, null, remoteId);
+            PatientMatch match = new CurrentPatientMatch(result, null, remoteId);
             matchesList.add(match);
         }
         return MatchRunStatus.OK;
