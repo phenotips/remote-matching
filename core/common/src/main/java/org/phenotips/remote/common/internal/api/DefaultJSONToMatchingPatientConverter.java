@@ -37,8 +37,7 @@ import org.phenotips.vocabulary.VocabularyTerm;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -364,17 +363,8 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
         contactInfo.withInstitution(institution);
 
         if (href != null && href.startsWith("mailto:")) {
-            URL emailUrl;
-            try {
-                emailUrl = new URL(href);
-                String emails = emailUrl.getPath();
-                if (StringUtils.isNotBlank(emails) && !emails.contains(",")) {
-                    // Only one email in mailto
-                    contactInfo.withEmail(emails);
-                }
-            } catch (MalformedURLException e) {
-                LOGGER.warn("Invalid mailto URL: " + href);
-            }
+            String emailList = href.replace("mailto:", "");
+            contactInfo.withEmails(Arrays.asList(emailList.split(",|;")));
         }
 
         return contactInfo.build();
