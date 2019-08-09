@@ -17,6 +17,7 @@
  */
 package org.phenotips.remote.client;
 
+import org.phenotips.matchingnotification.match.PatientMatch;
 import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.common.internal.RemotePatientSimilarityView;
 
@@ -34,7 +35,8 @@ import java.util.List;
 @Role
 public interface RemoteMatchingService
 {
-    OutgoingMatchRequest sendRequest(String patientId, String remoteServerId, int addTopNGenes);
+    OutgoingMatchRequest sendRequest(String patientId, String remoteServerId, int addTopNGenes,
+        List<PatientMatch> matchesList);
 
     OutgoingMatchRequest getLastRequestSent(String patientId, String remoteServerId);
 
