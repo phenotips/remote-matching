@@ -32,6 +32,7 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -169,5 +170,17 @@ public class RemoteMatchFinder extends AbstractMatchFinder implements MatchFinde
         }
 
         return remoteIdsList;
+    }
+
+    @Override
+    public Date getLastUpdatedDateForServerForPatient(String patientId, String serverId)
+    {
+        Set<String> supportedServers = this.getSupportedServerIdList();
+        if (!supportedServers.contains(serverId)) {
+            return null;
+        }
+
+        OutgoingMatchRequest lastRequest = this.matchingService.getLastRequestSent(patientId, serverId);
+        return (lastRequest == null) ? null : lastRequest.getRequestTime();
     }
 }
