@@ -44,6 +44,7 @@ import javax.inject.Singleton;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.objects.BaseObject;
@@ -173,14 +174,32 @@ public class RemoteMatchFinder extends AbstractMatchFinder implements MatchFinde
     }
 
     @Override
-    public Date getLastUpdatedDateForServerForPatient(String patientId, String serverId)
+    public JSONObject getLastUpdatedDateForServerForPatient(String patientId, String serverId)
     {
         Set<String> supportedServers = this.getSupportedServerIdList();
         if (!supportedServers.contains(serverId)) {
             return null;
         }
 
-        OutgoingMatchRequest lastRequest = this.matchingService.getLastRequestSent(patientId, serverId);
-        return (lastRequest == null) ? null : lastRequest.getRequestTime();
+        JSONObject result = new JSONObject();
+
+        OutgoingMatchRequest lastRequest =
+                this.matchingService.getLastOutgoingRequest(serverId, patientId);
+        OutgoingMatchRequest lastSuccessfulRequest =
+                this.matchingService.getLastSuccessfulOutgoingRequest(serverId, patientId);
+
+        result.put("lastSuccessfulMatchUpdateDate", this.getRequestDateForJSON(lastSuccessfulRequest));
+        result.put("lastMatchUpdateDate", this.getRequestDateForJSON(lastRequest));
+
+        if (lastRequest != null && (!lastRequest.wasSent() || !lastRequest.gotValidReply())) {
+            result.put("lastMatchUpdateErrorCode", lastRequest.getRequestStatusCode());
+            result.put("lastMatchUpdateError", lastRequest.getResponseJSON());
+        }
+        return result;
+    }
+
+    private Object getRequestDateForJSON(OutgoingMatchRequest request)
+    {
+        return (request == null) ? JSONObject.NULL : request.getRequestTime();
     }
 }

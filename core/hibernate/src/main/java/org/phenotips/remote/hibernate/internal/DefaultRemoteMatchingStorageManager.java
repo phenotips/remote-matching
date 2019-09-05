@@ -17,6 +17,7 @@
  */
 package org.phenotips.remote.hibernate.internal;
 
+import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.IncomingMatchRequest;
 import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
@@ -25,6 +26,7 @@ import org.xwiki.component.annotation.Component;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -99,27 +101,44 @@ public class DefaultRemoteMatchingStorageManager implements RemoteMatchingStorag
     }
 
     @Override
-    public OutgoingMatchRequest loadCachedOutgoingRequest(String patientId, String remoteServerId)
+    public OutgoingMatchRequest getLastOutgoingRequest(String patientId, String remoteServerId)
+    {
+        return this.getLastOutgoingRequest(patientId, remoteServerId, false);
+    }
+
+    @Override
+    public OutgoingMatchRequest getLastSuccessfulOutgoingRequest(String patientId, String remoteServerId)
+    {
+        return this.getLastOutgoingRequest(patientId, remoteServerId, true);
+    }
+
+    private OutgoingMatchRequest getLastOutgoingRequest(String patientId, String remoteServerId, boolean successful)
     {
         if (patientId == null || remoteServerId == null) {
             return null;
         }
         Session session = this.sessionFactory.getSessionFactory().openSession();
         try {
-            OutgoingMatchRequest data = (OutgoingMatchRequest) session.createCriteria(DefaultOutgoingMatchRequest.class)
-                .add(Restrictions.eq("localReferencePatientId", patientId))
-                .add(Restrictions.eq("remoteServerId", remoteServerId))
+            Criteria queryCriteria = session.createCriteria(DefaultOutgoingMatchRequest.class);
+            queryCriteria.add(Restrictions.eq("localReferencePatientId", patientId))
+                         .add(Restrictions.eq("remoteServerId", remoteServerId));
+            if (successful) {
+                queryCriteria.add(Restrictions.eq("replyHTTPStatus", ApiConfiguration.HTTP_OK));
+            }
+
+            OutgoingMatchRequest data = (OutgoingMatchRequest) queryCriteria
                 .addOrder(Property.forName("requestTime").desc())
                 .setMaxResults(1)
                 .uniqueResult();
 
             if (data == null) {
-                this.logger.info("No outstanding match queries to server [{}] for patient [{}]", remoteServerId,
-                    patientId);
+                this.logger.info("Found no {}match requests to server [{}] for patient [{}]",
+                    (successful ? "successful " : ""), remoteServerId, patientId);
             } else {
-                this.logger.info("Found an outstanding query to server [{}] for patient [{}]", remoteServerId,
-                    patientId);
+                this.logger.info("Found a {}match request to server [{}] for patient [{}]",
+                    (successful ? "successful " : ""), remoteServerId, patientId);
             }
+
             return data;
         } catch (HibernateException ex) {
             this.logger.error("ERROR loading last outgoing request for local patient [{}] to server [{}]: {}",
