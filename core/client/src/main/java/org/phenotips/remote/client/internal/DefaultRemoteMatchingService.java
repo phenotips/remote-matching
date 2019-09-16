@@ -38,7 +38,6 @@ import org.phenotips.remote.common.internal.api.DefaultJSONToMatchingPatientConv
 import org.phenotips.remote.hibernate.RemoteMatchingStorageManager;
 import org.phenotips.remote.hibernate.internal.DefaultOutgoingMatchRequest;
 import org.phenotips.vocabulary.Vocabulary;
-
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
 import org.xwiki.stability.Unstable;
@@ -242,9 +241,15 @@ public class DefaultRemoteMatchingService implements RemoteMatchingService
     }
 
     @Override
-    public OutgoingMatchRequest getLastRequestSent(String patientId, String remoteServerId)
+    public OutgoingMatchRequest getLastOutgoingRequest(String remoteServerId, String patientId)
     {
-        return this.requestStorageManager.loadCachedOutgoingRequest(patientId, remoteServerId);
+        return this.requestStorageManager.getLastOutgoingRequest(patientId, remoteServerId);
+    }
+
+    @Override
+    public OutgoingMatchRequest getLastSuccessfulOutgoingRequest(String remoteServerId, String patientId)
+    {
+        return this.requestStorageManager.getLastSuccessfulOutgoingRequest(patientId, remoteServerId);
     }
 
     @Override

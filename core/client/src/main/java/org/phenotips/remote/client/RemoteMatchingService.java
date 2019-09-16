@@ -20,7 +20,6 @@ package org.phenotips.remote.client;
 import org.phenotips.matchingnotification.match.PatientMatch;
 import org.phenotips.remote.api.OutgoingMatchRequest;
 import org.phenotips.remote.common.internal.RemotePatientSimilarityView;
-
 import org.xwiki.component.annotation.Role;
 import org.xwiki.stability.Unstable;
 
@@ -38,7 +37,9 @@ public interface RemoteMatchingService
     OutgoingMatchRequest sendRequest(String patientId, String remoteServerId, int addTopNGenes,
         List<PatientMatch> matchesList);
 
-    OutgoingMatchRequest getLastRequestSent(String patientId, String remoteServerId);
+    OutgoingMatchRequest getLastOutgoingRequest(String remoteServerId, String patientId);
+
+    OutgoingMatchRequest getLastSuccessfulOutgoingRequest(String remoteServerId, String patientId);
 
     List<RemotePatientSimilarityView> getSimilarityResults(OutgoingMatchRequest request);
 }
