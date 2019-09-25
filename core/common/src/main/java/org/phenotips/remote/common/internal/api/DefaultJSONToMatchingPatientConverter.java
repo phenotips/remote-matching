@@ -21,15 +21,15 @@ import org.phenotips.components.ComponentManagerRegistry;
 import org.phenotips.data.ContactInfo;
 import org.phenotips.data.Disorder;
 import org.phenotips.data.Feature;
+import org.phenotips.data.Gene;
 import org.phenotips.data.Patient;
+import org.phenotips.data.internal.PhenoTipsGene;
+import org.phenotips.matchingnotification.match.internal.RemoteMatchingPatient;
 import org.phenotips.remote.api.ApiConfiguration;
 import org.phenotips.remote.api.ApiViolationException;
-import org.phenotips.remote.api.MatchingPatientGene;
 import org.phenotips.remote.api.fromjson.JSONToMatchingPatientConverter;
-import org.phenotips.remote.common.internal.RemoteMatchingPatient;
 import org.phenotips.remote.common.internal.RemotePatientDisorder;
 import org.phenotips.remote.common.internal.RemotePatientFeature;
-import org.phenotips.remote.common.internal.RemotePatientGene;
 import org.phenotips.vocabulary.Vocabulary;
 import org.phenotips.vocabulary.VocabularyManager;
 import org.phenotips.vocabulary.VocabularyTerm;
@@ -38,6 +38,7 @@ import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -159,7 +160,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
 
             Set<Feature> features = this.convertFeatures(patientJSON);
             Set<Disorder> disorders = this.convertDisorders(patientJSON);
-            Set<MatchingPatientGene> genes = this.convertGenes(patientJSON);
+            Set<Gene> genes = this.convertGenes(patientJSON);
 
             if ((features == null || features.isEmpty()) && (genes == null || genes.isEmpty())) {
                 LOGGER.error("There are no features and no genes: violates API requirements (patient JSON: [{}])",
@@ -303,14 +304,14 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
         return null;
     }
 
-    private Set<MatchingPatientGene> convertGenes(JSONObject json)
+    private Set<Gene> convertGenes(JSONObject json)
     {
         try {
             if (!json.has(ApiConfiguration.JSON_GENES)) {
                 return null;
             }
 
-            Set<MatchingPatientGene> geneSet = new HashSet<>();
+            Set<Gene> geneSet = new HashSet<>();
             JSONArray genesJson = json.optJSONArray(ApiConfiguration.JSON_GENES);
 
             for (Object jsonGeneUncast : genesJson) {
@@ -334,7 +335,7 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
                     LOGGER.error("Patient genomic features parser: can not obtain gene symbol for gene ID [{}]", geneName);
                     continue;
                 }
-                MatchingPatientGene gene = new RemotePatientGene(geneId);
+                Gene gene = new PhenoTipsGene(null, geneId, null, Collections.singleton(""), null);
                 geneSet.add(gene);
                 // TODO: variants
             }
