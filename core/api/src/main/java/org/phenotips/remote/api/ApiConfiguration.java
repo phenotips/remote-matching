@@ -60,6 +60,8 @@ public interface ApiConfiguration
 
     String JSON_CONTACT_HREF = "href";
 
+    String JSON_CONTACT_EMAIL = "email";
+
     String JSON_PATIENT_ID = "id";
 
     String JSON_PATIENT_TEST = "test";

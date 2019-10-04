@@ -39,6 +39,7 @@ import org.xwiki.component.manager.ComponentManager;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -356,15 +357,24 @@ public class DefaultJSONToMatchingPatientConverter implements JSONToMatchingPati
         String name = submitter.optString(ApiConfiguration.JSON_CONTACT_NAME, null);
         String href = submitter.optString(ApiConfiguration.JSON_CONTACT_HREF, null);
         String institution = submitter.optString(ApiConfiguration.JSON_CONTACT_INSTITUTION, null);
+        String email = submitter.optString(ApiConfiguration.JSON_CONTACT_EMAIL, null);
 
         ContactInfo.Builder contactInfo = new ContactInfo.Builder();
         contactInfo.withName(name);
         contactInfo.withUrl(href);
         contactInfo.withInstitution(institution);
 
-        if (href != null && href.startsWith("mailto:")) {
+        List<String> emails = new LinkedList<String>();
+        if (!StringUtils.isBlank(email)) {
+            String emailList = email.replace("mailto:", "");
+            emails.addAll(Arrays.asList(emailList.split(",|;")));
+        }
+        if (!StringUtils.isBlank(href) && href.startsWith("mailto:")) {
             String emailList = href.replace("mailto:", "");
-            contactInfo.withEmails(Arrays.asList(emailList.split(",|;")));
+            emails.addAll(Arrays.asList(emailList.split(",|;")));
+        }
+        if (!emails.isEmpty()) {
+            contactInfo.withEmails(emails);
         }
 
         return contactInfo.build();
