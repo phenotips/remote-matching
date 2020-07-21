@@ -85,7 +85,7 @@
   </repositories>
 
   <properties>
-    <patientNetwork.version>1.3-SNAPSHOT</patientNetwork.version>
+    <patientNetwork.version>1.3</patientNetwork.version>
     <!-- Disable Clirr since this is the first version -->
     <clirr.skip>true</clirr.skip>
     <!-- Codestyle needs to be improved... -->
